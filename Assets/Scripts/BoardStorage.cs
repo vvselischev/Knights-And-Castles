@@ -7,7 +7,7 @@ namespace Assets.Scripts
 {
     public class BoardStorage : MonoBehaviour
     {
-        public List<BoardStorageItem>[,] boardTable;
+        public BoardStorageItem[,] boardTable;
         public CheckeredBoard board;
         private static BoardStorage instance;
         public ControllerManager controllerManager;
@@ -17,17 +17,25 @@ namespace Assets.Scripts
             return instance;
         }
 
-       void Awake()
+        void Awake()
         {
             instance = this;
-            boardTable = new List<BoardStorageItem>[board.width + 1, board.height + 1];
-            for (int i = 1; i <= board.width; i++)
-            {
-                for (int j = 1; j <= board.height; j++)
-                {
-                    boardTable[i, j] = new List<BoardStorageItem>();
-                }
-            }
+            boardTable = new BoardStorageItem[board.width + 1, board.height + 1];
+        }
+
+        public BoardStorageItem GetItem(Vector2 position)
+        {
+            return boardTable[(int)position.x, (int)position.y];
+        }
+
+        public void SetItem(Vector2 position, BoardStorageItem item)
+        {
+            boardTable[(int)position.x, (int)position.y] = item;
+        }
+
+        public BoardButton GetBoardButton(Vector2 position)
+        {
+            return board.BoardButtons[(int)position.x, (int)position.y].GetComponent<BoardButton>();
         }
 
         public void InvertBoard()
@@ -43,18 +51,17 @@ namespace Assets.Scripts
                     int newCol = board.width - col + 1;
                     int newRow = board.height - row + 1;
                     BoardButton targetButton = board.BoardButtons[newCol, newRow].GetComponent<BoardButton>();
-                    foreach (BoardStorageItem item in boardTable[col, row])
-                    {
-                        item.BoardButton = targetButton;
-                        item.BoardButton.Initialize(newCol, newCol);
-                    }
-                    foreach (BoardStorageItem item in boardTable[newCol, newRow])
-                    {
-                        item.BoardButton = board.BoardButtons[col, row].GetComponent<BoardButton>();
-                        item.BoardButton.Initialize(col, row);
-                    }
+                    
+                    BoardStorageItem item = boardTable[col, row];
+                    item.BoardButton = targetButton;
+                    item.BoardButton.Initialize(newCol, newCol);
+                    
+                    item = boardTable[newCol, newRow];
+                    item.BoardButton = board.BoardButtons[col, row].GetComponent<BoardButton>();
+                    item.BoardButton.Initialize(col, row);
 
-                    List<BoardStorageItem> tmp = boardTable[col, row];
+
+                    var tmp = boardTable[col, row];
                     boardTable[col, row] = boardTable[newCol, newRow];
                     boardTable[newCol, newRow] = tmp;
                 }

@@ -21,58 +21,55 @@ namespace Assets.Scripts
 
         public Sprite NeutralFriendlySprite, NeutralAgressiveSprite, FirstUserSprite, SecondUserSprite;
         
+        public Army FirstArmy { get; }
+        public Army SecondArmy { get; }
+
         public void FillBoardStorage()
         {
             System.Random random = new System.Random();
             CheckeredBoard board = boardStorage.board;
-            List<BoardStorageItem>[,] storageItems = boardStorage.boardTable;
+            BoardStorageItem[,] storageItems = boardStorage.boardTable;
             for (int col = 1; col <= board.width; col++)
             {
                 for (int row = 1; row <= board.height; row++)
-                {
-                    storageItems[col, row] = new List<BoardStorageItem>();
-                    
+                {                    
                     Army currentArmy;
                     Sprite currentSprite;
                     if (new Vector2(col, row) == startFirstPosition)
                     {
-                        currentArmy = new Army(ArmyType.USER, PlayerType.FIRST);
+                        currentArmy = new UserArmy(PlayerType.FIRST);
                         currentSprite = FirstUserSprite;
                     }
                     else if (new Vector2(col, row) == startSecondPosition)
                     {
-                        currentArmy = new Army(ArmyType.USER, PlayerType.SECOND);
+                        currentArmy = new UserArmy(PlayerType.SECOND);
                         currentSprite = SecondUserSprite;
                     }
                     else
                     {
-                        int randomValue = random.Next() % 3; //0 -- Empty, 1 -- Friendly, 2 -- Agressive
-                        ArmyType currentArmyType;
-                        PlayerType currentPlayerType;
+                        int randomValue = random.Next() % 3 * 0; //0 -- Empty, 1 -- Friendly, 2 -- Agressive
                         if (randomValue == 0)
                         {
                             continue;
                         }
                         else
                         {
-                            currentPlayerType = PlayerType.NEUTRAL;
                             if (randomValue == 1)
                             {
-                                currentArmyType = ArmyType.NEUTRAL_FRIENDLY;
                                 currentSprite = NeutralFriendlySprite;
+                                currentArmy = new NeutralFriendlyArmy();
                             }
                             else
                             {
-                                currentArmyType = ArmyType.NEUTRAL_AGRESSIVE;
                                 currentSprite = NeutralAgressiveSprite;
+                                currentArmy = new NeutralAgressiveArmy();
                             }
                         }
-                        currentArmy = new Army(currentArmyType, currentPlayerType);
                     }
 
                     GameObject iconGO = InstantiateIcon(currentSprite, col, row);
-                    storageItems[col, row].Add(new ArmyStorageItem(board.BoardButtons[col, row].GetComponent<BoardButton>(),
-                        currentArmy, iconGO));
+                    storageItems[col, row] = new ArmyStorageItem(board.BoardButtons[col, row].GetComponent<BoardButton>(),
+                        currentArmy, iconGO);
                 }
             }
         }

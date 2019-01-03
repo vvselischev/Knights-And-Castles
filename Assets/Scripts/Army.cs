@@ -14,7 +14,7 @@ namespace Assets.Scripts
         NEUTRAL_AGRESSIVE
     }
 
-    public class Army
+    public abstract class Army
     {
         public readonly PlayerType playerType;
         public readonly ArmyType armyType;
@@ -37,6 +37,18 @@ namespace Assets.Scripts
                     (playerType == PlayerType.NEUTRAL)) || ((armyType == ArmyType.USER) &&
                                                             ((playerType == PlayerType.FIRST) ||
                                                              playerType == PlayerType.SECOND));
+        }
+
+        public abstract Army PerformAction(Army attackingArmy);
+
+        public static Army Merge(Army firstArmy, Army secondArmy)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static Army PerformBattle(Army firstArmy, Army secondArmy)
+        {
+            throw new NotImplementedException();
         }
     }
 }

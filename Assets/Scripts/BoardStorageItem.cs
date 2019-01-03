@@ -8,20 +8,20 @@ namespace Assets.Scripts
     public abstract class BoardStorageItem
     {
         private BoardButton boardButton;
-        public GameObject TestEssense { get; set; }
+        public GameObject StoredObject { get; set; }
         public BoardButton BoardButton
         {
             get { return boardButton; }
             set
             {
-                TestEssense.GetComponent<RectTransform>().localPosition = value.button.transform.localPosition;
+                StoredObject.GetComponent<RectTransform>().localPosition = value.button.transform.localPosition;
                 boardButton = value;
             }
         }
 
-        public BoardStorageItem(BoardButton boardButton, GameObject essense)
+        public BoardStorageItem(BoardButton boardButton, GameObject targetObject)
         {
-            TestEssense = essense;
+            StoredObject = targetObject;
             BoardButton = boardButton;
         }
     }

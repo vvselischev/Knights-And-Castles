@@ -8,35 +8,34 @@ using UnityEngine.UI;
 
 namespace Assets.Scripts
 {
-    public class MouseMover : MonoBehaviour
+    public class ObjectMover : MonoBehaviour
     {
         public Follower follower;
-        public GameObject mouseGO;
         public Transform parentTransform;
         public event VoidHandler ReachedTarget;
+        
+        private GameObject sourceObject;
 
         public void PrepareMovement(GameObject startPointObject)
         {
-            mouseGO.transform.SetParent(parentTransform);
-            mouseGO.transform.localPosition = startPointObject.transform.localPosition;
+            sourceObject.transform.SetParent(parentTransform);
+            sourceObject.transform.localPosition = startPointObject.transform.localPosition;
         }
 
-        void Awake()
+        void Start()
         {
             follower.ReachedTarget += FollowerReachedTarget;
+            sourceObject = gameObject;
         }
 
         private void FollowerReachedTarget()
         {
-            if (ReachedTarget != null)
-            {
-                ReachedTarget();
-            }
+            ReachedTarget?.Invoke();
         }
 
         public void MoveTo(GameObject wayPoint)
         {
-            StartCoroutine(follower.MoveTo(mouseGO.transform.localPosition, wayPoint.transform.localPosition));
+            StartCoroutine(follower.MoveTo(sourceObject.transform.localPosition, wayPoint.transform.localPosition));
         }
     }
 }

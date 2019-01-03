@@ -9,7 +9,7 @@ namespace Assets.Scripts
     public class Follower : MonoBehaviour
     {
         //public Transform transform;
-        public float velocity;
+        public float velocity = 120;
 
         public event VoidHandler ReachedTarget;
 
@@ -28,7 +28,6 @@ namespace Assets.Scripts
             while (fraction < 1)
             {
                 fraction += velocity / direction.magnitude * Time.deltaTime;
-                //gameObject.GetComponent<RectTransform>().localPosition += direction * Time.deltaTime;
                 gameObject.GetComponent<RectTransform>().localPosition =
                     Vector3.Lerp(startPosition, targetPosition, fraction);
                 yield return null;

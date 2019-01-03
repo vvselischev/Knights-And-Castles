@@ -14,7 +14,7 @@ namespace Assets.Scripts
         public TurnManager turnManager;
         public TimerManager timerManager;
         public RoundJudge roundJudge;
-        public ButtonListener bonusManager;
+        public ButtonListener buttonListener;
         public RoundScore roundScore;
         public RoundBoardCreator boardCreator;
         public ControllerManager controllerManager;
@@ -25,13 +25,15 @@ namespace Assets.Scripts
         public void InvokeState()
         {
             menuActivator.OpenMenu(playMenu);
-            roundJudge.OnFinishJudge += OnFinishRound;
+            //roundJudge.OnFinishJudge += OnFinishRound;
             
             storage.Reset();
             boardCreator.FillBoardStorage();
             
-            controllerManager.FirstController = new UserController(TurnType.FIRST, storage, this);
-            controllerManager.SecondController = new UserController(TurnType.SECOND, storage, this);
+            controllerManager.FirstController = new UserController(TurnType.FIRST, 
+                boardCreator.startFirstPosition, boardCreator.FirstArmy, storage, this);
+            controllerManager.SecondController = new UserController(TurnType.SECOND, 
+                boardCreator.startSecondPosition, boardCreator.SecondArmy, storage, this);
             InitNewGame();
         }
 
@@ -42,8 +44,7 @@ namespace Assets.Scripts
 
         public void InitNewRound()
         {
-           
-            bonusManager.Reset();
+            buttonListener.Reset();
             turnManager.InitRound();
             turnsLeft = 0;
             currentRound++;
@@ -72,7 +73,7 @@ namespace Assets.Scripts
         public void OnFinishTurn(TurnType finishedType)
         {
             Debug.Log("Finished turn");
-            bonusManager.Reset();
+            buttonListener.Reset();
             ChangeTurn();
         }
 
@@ -87,11 +88,11 @@ namespace Assets.Scripts
         {
             storage.InvertBoard();
             turnsLeft++;
-            if (turnsLeft == 2)
+            if (turnsLeft == 10)
             {
                 turnManager.SetTurn(TurnType.RESULT);
                 timerManager.StopTimer();
-                roundJudge.StartJudge();
+                //roundJudge.StartJudge();
             }
             else
             {

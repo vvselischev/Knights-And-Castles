@@ -14,7 +14,11 @@ namespace Assets.Scripts
 
         public ArmyStorageItem(BoardButton boardButton, Army army, GameObject iconGO) : base(boardButton, iconGO)
         {
-           Army = army;
+            Army = army;
+            ObjectMover mover = iconGO.AddComponent<ObjectMover>();
+            Follower follower = iconGO.AddComponent<Follower>();
+            mover.parentTransform = iconGO.GetComponentInParent<Transform>();
+            mover.follower = follower;
         }   
     }
 }
