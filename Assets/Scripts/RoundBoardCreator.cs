@@ -11,7 +11,9 @@ namespace Assets.Scripts
     {
         public BoardStorage boardStorage;
 
+        // TODO: ArmyComposition generation
         //Set in editor
+
         public Vector2 startFirstPosition = new Vector2(1, 1);
         public Vector2 startSecondPosition = new Vector2(6, 6);
 
@@ -37,12 +39,12 @@ namespace Assets.Scripts
                     Sprite currentSprite;
                     if (new Vector2(col, row) == startFirstPosition)
                     {
-                        currentArmy = new UserArmy(PlayerType.FIRST);
+                        currentArmy = new UserArmy(PlayerType.FIRST, GenerateArmyComposition());
                         currentSprite = FirstUserSprite;
                     }
                     else if (new Vector2(col, row) == startSecondPosition)
                     {
-                        currentArmy = new UserArmy(PlayerType.SECOND);
+                        currentArmy = new UserArmy(PlayerType.SECOND, GenerateArmyComposition());
                         currentSprite = SecondUserSprite;
                     }
                     else
@@ -57,12 +59,12 @@ namespace Assets.Scripts
                             if (randomValue == 1)
                             {
                                 currentSprite = NeutralFriendlySprite;
-                                currentArmy = new NeutralFriendlyArmy();
+                                currentArmy = new NeutralFriendlyArmy(GenerateArmyComposition());
                             }
                             else
                             {
                                 currentSprite = NeutralAgressiveSprite;
-                                currentArmy = new NeutralAgressiveArmy();
+                                currentArmy = new NeutralAgressiveArmy(GenerateArmyComposition());
                             }
                         }
                     }
@@ -86,6 +88,15 @@ namespace Assets.Scripts
             rectTransform.SetParent(parent.transform, false);
             newImage.GetComponent<Image>().sprite = sprite;
             return newImage.gameObject;
+        }
+
+        private ArmyComposition GenerateArmyComposition()
+        {
+            System.Random random = new System.Random();
+            int randomMice = random.Next() % 1000,
+                randomCats = random.Next() % 1000,
+                randomElephants = random.Next() % 1000;
+            return new ArmyComposition(randomMice, randomCats, randomMice);
         }
     }
 }
