@@ -7,7 +7,8 @@ namespace Assets.Scripts
 {
     public class NeutralAgressiveArmy : Army
     {
-        public NeutralAgressiveArmy() : base(ArmyType.NEUTRAL_AGRESSIVE, PlayerType.NEUTRAL)
+        public NeutralAgressiveArmy(ArmyComposition armyComposition) : 
+            base(ArmyType.NEUTRAL_AGRESSIVE, PlayerType.NEUTRAL, armyComposition)
         {
         }
 

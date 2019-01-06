@@ -7,7 +7,8 @@ namespace Assets.Scripts
 {
     public class UserArmy : Army
     {
-        public UserArmy(PlayerType playerType) : base(ArmyType.USER, playerType)
+        public UserArmy(PlayerType playerType, ArmyComposition armyComposition) : 
+            base(ArmyType.USER, playerType, armyComposition)
         {
         }
 
