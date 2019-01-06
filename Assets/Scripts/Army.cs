@@ -14,34 +14,6 @@ namespace Assets.Scripts
         NEUTRAL_AGRESSIVE
     }
 
-    public class ArmyComposition
-    {
-        public int mice;
-        public int cats;
-        public int elephants;
-
-        public ArmyComposition(int mice, int cats, int elephants)
-        {
-            this.mice = mice;
-            this.cats = cats;
-            this.elephants = elephants;
-        }
-
-        public static ArmyComposition Merge(ArmyComposition first, ArmyComposition second)
-        {
-            return new ArmyComposition(first.mice + second.mice,
-                                       first.cats + second.cats,
-                                       first.elephants + second.elephants);
-        }
-
-        public void Nullify()
-        {
-            this.mice = 0;
-            this.cats = 0;
-            this.elephants = 0;
-        }
-    }  
-
     public abstract class Army
     {
         public readonly PlayerType playerType;
@@ -116,7 +88,7 @@ namespace Assets.Scripts
 
         public static Army PerformBattle(Army firstArmy, Army secondArmy)
         {
-            if (IsFirstWinner(firstArmy.armyComposition, secondArmy.armyComposition))
+            if (ArmyComposition.IsFirstWinner(firstArmy.armyComposition, secondArmy.armyComposition))
             {
                 return CalcResultArmies(firstArmy, secondArmy);
             }
@@ -128,7 +100,7 @@ namespace Assets.Scripts
 
         private static Army CalcResultArmies(Army winnerArmy, Army loserArmy)
         {
-            ArmyComposition resultArmyComposition = CalcResultArmiesComposition(
+            ArmyComposition resultArmyComposition = ArmyComposition.CalcResultArmiesComposition(
                 winnerArmy.armyComposition, loserArmy.armyComposition);
             if (winnerArmy.armyType == ArmyType.USER)
             {
@@ -139,30 +111,6 @@ namespace Assets.Scripts
                 return new NeutralAgressiveArmy(resultArmyComposition);
             }
             throw new Exception("PerformBattle: Unappropriate army types");
-        }
-
-        private static ArmyComposition CalcResultArmiesComposition(
-            ArmyComposition winnerArmyComposition, ArmyComposition loserArmyComposition)
-        {
-            loserArmyComposition.Nullify();
-            return winnerArmyComposition;
-        }
-
-        private static bool IsFirstWinner(ArmyComposition firstArmyComposition, 
-                                          ArmyComposition secondArmyComposition)
-        {
-            int firstArmyPower = firstArmyComposition.mice + 
-                firstArmyComposition.cats + firstArmyComposition.elephants;
-            int secondArmyPower = secondArmyComposition.mice + 
-                secondArmyComposition.cats + secondArmyComposition.elephants;
-            if (firstArmyPower >= secondArmyPower)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
         }
     }
 }
