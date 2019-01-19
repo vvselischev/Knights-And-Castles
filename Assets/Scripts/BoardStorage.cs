@@ -8,7 +8,7 @@ namespace Assets.Scripts
     public class BoardStorage : MonoBehaviour
     {
         public BoardStorageItem[,] boardTable;
-        public CheckeredBoard board;
+        public CheckeredButtonBoard board;
         private static BoardStorage instance;
         public ControllerManager controllerManager;
 
@@ -23,19 +23,38 @@ namespace Assets.Scripts
             boardTable = new BoardStorageItem[board.width + 1, board.height + 1];
         }
 
+        public BoardStorageItem GetItem(int positionX, int positionY)
+        {
+            return boardTable[positionX, positionY];
+        }
+
+        public void SetItem(int positionX, int positionY, BoardStorageItem item)
+        {
+            boardTable[positionX, positionY] = item;
+            BoardButton targetButton = GetBoardButton(positionX, positionY);
+            if (item != null)
+            {
+                boardTable[positionX, positionY].StoredObject.transform.position = 
+                    targetButton.transform.position;
+            }
+        }
         public BoardStorageItem GetItem(Vector2 position)
         {
-            return boardTable[(int)position.x, (int)position.y];
+            return GetItem((int)position.x, (int)position.y);
         }
 
         public void SetItem(Vector2 position, BoardStorageItem item)
         {
-            boardTable[(int)position.x, (int)position.y] = item;
+            SetItem((int)position.x, (int)position.y, item);
         }
 
+        public BoardButton GetBoardButton(int positionX, int positionY)
+        {
+            return board.BoardButtons[positionX, positionY].GetComponent<BoardButton>();
+        }
         public BoardButton GetBoardButton(Vector2 position)
         {
-            return board.BoardButtons[(int)position.x, (int)position.y].GetComponent<BoardButton>();
+            return GetBoardButton((int)position.x, (int)position.y);
         }
 
         public void InvertBoard()
@@ -50,22 +69,17 @@ namespace Assets.Scripts
                     }
                     int newCol = board.width - col + 1;
                     int newRow = board.height - row + 1;
-                    BoardButton targetButton = board.BoardButtons[newCol, newRow].GetComponent<BoardButton>();
-                    
-                    BoardStorageItem item = boardTable[col, row];
-                    item.BoardButton = targetButton;
-                    item.BoardButton.Initialize(newCol, newCol);
-                    
-                    item = boardTable[newCol, newRow];
-                    item.BoardButton = board.BoardButtons[col, row].GetComponent<BoardButton>();
-                    item.BoardButton.Initialize(col, row);
 
-
-                    var tmp = boardTable[col, row];
-                    boardTable[col, row] = boardTable[newCol, newRow];
-                    boardTable[newCol, newRow] = tmp;
+                    SwapItems(col,row, newCol, newRow);
                 }
             }
+        }
+
+        private void SwapItems(int firstCol, int firstRow, int secondCol, int secondRow)
+        {
+            var tmp = GetItem(firstCol, firstRow);
+            SetItem(firstCol, firstRow, boardTable[secondCol, secondRow]);
+            SetItem(secondCol, secondRow, tmp);
         }
 
         public void RemoveBoardItem(BoardButton boardButton)

@@ -7,34 +7,30 @@ using UnityEngine.UI;
 namespace Assets.Scripts
 {
     //TODO: null -> empty object
+
+    //Performs game logic after button click
     public class UserController
     {
+        public event VoidHandler FinishedMove;
         private PlayGameState playGameState;
         private BoardStorage boardStorage;
-        private TurnType turnType;
-
+        private PlayerType playerType;
         private ArmyStorageItem chosenArmyItem;
         private Vector2 chosenArmyPosition;
-        private bool movement;
+        private bool movementInProgress;
 
-        private Dictionary<Vector2, Army> userArmies = new Dictionary<Vector2, Army>();
-
-        public UserController(TurnType turnType, Vector2 startPosition, Army startArmy,
+        public UserController(PlayerType playerType, Vector2 startPosition, Army startArmy,
             BoardStorage storage, PlayGameState playGameState)
         {
-            this.turnType = turnType;
+            this.playerType = playerType;
             boardStorage = storage;
-            userArmies.Add(startPosition, startArmy);
             this.playGameState = playGameState;
         }
 
         public void OnButtonClick(BoardButton boardButton)
         {
-            /*if (boardButton.boardX == 1)
-            {
-                FinishTurn();
-            }*/
-            if (!movement)
+            Debug.Log(String.Format("Clicked: ({0}, {1})", boardButton.boardX, boardButton.boardY));
+            if (!movementInProgress)
             { 
                 ProcessAction(new Vector2(boardButton.boardX, boardButton.boardY));
             }
@@ -43,35 +39,47 @@ namespace Assets.Scripts
         private void ProcessAction(Vector2 position)
         {
             GameObject buttonGO = boardStorage.board.BoardButtons[(int)position.x, (int)position.y].gameObject;
-            if (userArmies.ContainsKey(position))
+            //Turns off chosenArmyItem.Army activity if it was strange click.
+            bool chooseOrMoveClick = false; 
+            if (boardStorage.GetItem(position) is ArmyStorageItem)
             {
-                if (chosenArmyItem == null)
-                { 
-                    chosenArmyItem = boardStorage.GetItem(position) as ArmyStorageItem;
+                ArmyStorageItem clickedArmyItem = boardStorage.GetItem(position) as ArmyStorageItem;
+                playGameState.armyTextManager.ChangeText(clickedArmyItem.Army.armyComposition.ToString());
+                if ((chosenArmyItem == null) && (clickedArmyItem.Army.playerType == playerType))
+                {
+                    chosenArmyItem = clickedArmyItem;
                     chosenArmyPosition = position;
-                    //light on army icon
-                } //TODO: show army composition on click
-            }
-            else if (chosenArmyItem != null)
-            { 
-                
+                    chooseOrMoveClick = true;
+                    //TODO: light on army icon
+                }
             }
             else
             {
-                //turn off icon light
+                playGameState.armyTextManager.ChangeText("");
+                if (chosenArmyItem != null)
+                {
+
+                }
+                else
+                {
+                    //TODO: turn off icon light
+                }
             }
 
-            if ((chosenArmyItem != null) &&  ReachableFromChosen(position))
+            if ((chosenArmyItem != null) && ReachableFromChosen(position))
             { 
                 MoveChosen(position, buttonGO);
+            }
+            else if (!chooseOrMoveClick)
+            {
+                chosenArmyItem = null;
             }
         }
 
         private void MoveChosen(Vector2 targetPosition, GameObject targetObject)
         {
-            //TODO: Disable UI
-            movement = true;
-            userArmies.Remove(chosenArmyPosition);
+            //TODO: Disable UI normally (storage.board.Disable())
+            movementInProgress = true;
             boardStorage.SetItem(chosenArmyPosition, null);
             currentTargetPosition = targetPosition;
             GameObject armyObject = chosenArmyItem.StoredObject;
@@ -85,21 +93,37 @@ namespace Assets.Scripts
 
         private void FinishMovement()
         {
-            //TODO: Enable UI
-            //Perform action
-            if (movement)
-            { 
-                ArmyStorageItem resultItem = GetResultItem();
-                userArmies.Add(currentTargetPosition, resultItem.Army);
-                boardStorage.SetItem(currentTargetPosition, resultItem);
-                chosenArmyItem = null;
-                movement = false;
+            if (!movementInProgress)
+            {
+                return;
             }
+            //TODO: Enable UI
+
+            ArmyStorageItem resultItem = GetResultItem();
+            boardStorage.SetItem(currentTargetPosition, resultItem);
+            chosenArmyItem = null;
+            movementInProgress = false;
+            FinishedMove?.Invoke();
         }
 
         private ArmyStorageItem GetResultItem()
         {
-            chosenArmyItem.BoardButton = boardStorage.GetBoardButton(currentTargetPosition);
+            if (boardStorage.GetItem(currentTargetPosition) is ArmyStorageItem)
+            {
+                ArmyStorageItem clickedArmyItem = boardStorage.GetItem(currentTargetPosition) as ArmyStorageItem;
+                Army resultArmy = clickedArmyItem.Army.PerformAction(chosenArmyItem.Army);
+                if (resultArmy.playerType == playerType)
+                {
+                    clickedArmyItem.StoredObject.SetActive(false);
+                    chosenArmyItem.Army = resultArmy;
+                }
+                else
+                {
+                    chosenArmyItem.StoredObject.SetActive(false);
+                    clickedArmyItem.Army = resultArmy;
+                    return clickedArmyItem;
+                }
+            }
             return chosenArmyItem;
         }
 
@@ -109,10 +133,9 @@ namespace Assets.Scripts
             {
                 return true;
             }
-            return (Math.Abs(chosenArmyPosition.x - position.x) + 
-                Math.Abs(chosenArmyPosition.y - position.y) == 1);
+            return Math.Abs(chosenArmyPosition.x - position.x) + 
+                Math.Abs(chosenArmyPosition.y - position.y) == 1;
         }
-
 
         public void Disable()
         {
@@ -120,11 +143,13 @@ namespace Assets.Scripts
 
         public void Enable()
         {
+            //TODO: disable everything chosen in separate method
+            chosenArmyItem = null;
         }
 
         public void FinishTurn()
         {
-            playGameState.OnFinishTurn(turnType);
+            playGameState.OnFinishTurn(playerType);
         }
     }
 }

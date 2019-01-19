@@ -4,7 +4,7 @@ using UnityEngine.UI;
 using System;
 using Assets.Scripts;
 
-public class TimerManager : MonoBehaviour
+public class Timer : MonoBehaviour
 {
     public Text timeText;
     public int duration = 30;
@@ -12,8 +12,6 @@ public class TimerManager : MonoBehaviour
     private long secondsLeft;
     private bool started;
     private long timeInStart;
-
-    public IGameState NexState;
 
     public void StartTimer()
     {

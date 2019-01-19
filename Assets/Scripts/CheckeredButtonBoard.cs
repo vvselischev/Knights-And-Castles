@@ -7,14 +7,14 @@ using UnityEngine.UI;
 namespace Assets.Scripts
 {
     [ExecuteInEditMode]
-    public class CheckeredBoard : MonoBehaviour
+    public class CheckeredButtonBoard : MonoBehaviour
     {
         public Canvas ParentCanvas;
         public GameObject PatternButtonGO;
         public GameObject Parent;
 
-        public int width = 5;
-        public int height = 5;
+        public int width = 6;
+        public int height = 6;
         private float spaceBetweenButtons = -2.44f; //buttonWidth/20;
 
         private float buttonWidth;
@@ -38,33 +38,31 @@ namespace Assets.Scripts
             patternButton = PatternButtonGO.GetComponent<Button>();
             buttonWidth = patternButton.GetComponent<RectTransform>().rect.width;
             buttonHeight = patternButton.GetComponent<RectTransform>().rect.height;
-            //Debug.Log(PatternButtonGO.GetComponent<RectTransform>().position);
             CreateButtons();
         }
 
         public void EnableBoard()
         {
-            /*var buttons = FindObjectsOfType(typeof(Button));
+            var buttons = FindObjectsOfType(typeof(Button));
             foreach (Button button in buttons.Cast<Button>().Where(button => button.gameObject.name.Contains("Clone")))
             {
-                button.gameObject.GetComponent<IBonus>().Enable();
-            }*/
+                button.gameObject.GetComponent<BoardButton>().Enable();
+            }
         }
 
         public void DisableBoard()
         {
-            /*var buttons = FindObjectsOfType(typeof(Button));
+            var buttons = FindObjectsOfType(typeof(Button));
             foreach (Button button in buttons.Cast<Button>().Where(button => button.gameObject.name.Contains("Clone")))
             {
-                button.gameObject.GetComponent<IBonus>().Disable();
-            }*/
+                button.gameObject.GetComponent<BoardButton>().Disable();
+            }
         }
 
         public void DeleteButtons()
         {
             Debug.Log("Deleting buttons");
             var buttons = FindObjectsOfType(typeof(Button));
-            //Debug.Log(buttons.Length);
             foreach (Button button in buttons.Cast<Button>().Where(button => button.gameObject.name.Contains("Clone")))
             {
                 DestroyImmediate(button.gameObject);

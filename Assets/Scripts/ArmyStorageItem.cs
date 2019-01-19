@@ -12,13 +12,13 @@ namespace Assets.Scripts
         public Army Army
         { get; set; }
 
-        public ArmyStorageItem(BoardButton boardButton, Army army, GameObject iconGO) : base(boardButton, iconGO)
+        public ArmyStorageItem(Army army, GameObject iconGO) : base(iconGO)
         {
             Army = army;
             ObjectMover mover = iconGO.AddComponent<ObjectMover>();
             Follower follower = iconGO.AddComponent<Follower>();
             mover.parentTransform = iconGO.GetComponentInParent<Transform>();
             mover.follower = follower;
-        }   
+        }
     }
 }
