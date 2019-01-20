@@ -9,20 +9,23 @@ namespace Assets.Scripts
     {
         private readonly MenuActivator menuActivator = MenuActivator.GetInstance();
         public PlayMenu playMenu;
-        public CheckeredBoard board;
+        public CheckeredButtonBoard board;
         public BoardStorage storage;
         public TurnManager turnManager;
-        public TimerManager timerManager;
-        public RoundJudge roundJudge;
-        public ButtonListener buttonListener;
+        public Timer timer;
+        //public RoundJudge roundJudge;
+        public InputListener inputListener;
         public RoundScore roundScore;
         public RoundBoardCreator boardCreator;
         public ControllerManager controllerManager;
+        public ArmyTextManager armyTextManager;
+
+        public const int MAX_TURNS = 100;
 
         private int currentRound = 0;
-        private int turnsLeft = 0;
+        private int playedTurns = 0;
 
-        public void InvokeState()
+        public virtual void InvokeState()
         {
             menuActivator.OpenMenu(playMenu);
             //roundJudge.OnFinishJudge += OnFinishRound;
@@ -30,9 +33,9 @@ namespace Assets.Scripts
             storage.Reset();
             boardCreator.FillBoardStorage();
             
-            controllerManager.FirstController = new UserController(TurnType.FIRST, 
+            controllerManager.FirstController = new UserController(PlayerType.FIRST, 
                 boardCreator.startFirstPosition, boardCreator.FirstArmy, storage, this);
-            controllerManager.SecondController = new UserController(TurnType.SECOND, 
+            controllerManager.SecondController = new UserController(PlayerType.SECOND, 
                 boardCreator.startSecondPosition, boardCreator.SecondArmy, storage, this);
             InitNewGame();
         }
@@ -44,9 +47,9 @@ namespace Assets.Scripts
 
         public void InitNewRound()
         {
-            buttonListener.Reset();
+            //buttonListener.Reset();
             turnManager.InitRound();
-            turnsLeft = 0;
+            playedTurns = 0;
             currentRound++;
 
             playMenu.UpdateRoundText(currentRound);
@@ -67,13 +70,14 @@ namespace Assets.Scripts
                 turnManager.SetNextTurn();
             }
 
-            timerManager.StartTimer();
+            timer.StartTimer();
+            armyTextManager.Init();
         }
 
-        public void OnFinishTurn(TurnType finishedType)
+        public void OnFinishTurn(PlayerType finishedType)
         {
             Debug.Log("Finished turn");
-            buttonListener.Reset();
+            //buttonListener.Reset();
             ChangeTurn();
         }
 
@@ -83,26 +87,28 @@ namespace Assets.Scripts
             InitNewRound();
         }
 
-        //To single play and debug
-        public void ChangeTurn()
+        public virtual void ChangeTurn()
         {
-            storage.InvertBoard();
-            turnsLeft++;
-            if (turnsLeft == 10)
+            if (playedTurns == MAX_TURNS)
             {
                 turnManager.SetTurn(TurnType.RESULT);
-                timerManager.StopTimer();
+                timer.StopTimer();
                 //roundJudge.StartJudge();
             }
             else
             {
                 turnManager.SetNextTurn();
-                timerManager.StartTimer();
+                timer.StartTimer();
             }
+            playedTurns++; 
+
+            //Further behaviour should be specified in child classes.
         }
 
         public void InitNewGame()
         {
+            //These line was in legacy code. 
+            //Probably, it deletes buttons created for the editor mode since they're not initialized correctly.
             board.DeleteButtons();
             board.CreateButtons();
             InitNewRound();

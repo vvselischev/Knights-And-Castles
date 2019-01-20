@@ -10,11 +10,12 @@ namespace Assets.Scripts
     public class RoundBoardCreator : MonoBehaviour
     {
         public BoardStorage boardStorage;
+        private System.Random random = new System.Random();
 
         // TODO: ArmyComposition generation
         //Set in editor
 
-        public Vector2 startFirstPosition = new Vector2(1, 1);
+        public Vector2 startFirstPosition = new Vector2(5, 5);
         public Vector2 startSecondPosition = new Vector2(6, 6);
 
         public GameObject patternIcon;
@@ -28,8 +29,7 @@ namespace Assets.Scripts
 
         public void FillBoardStorage()
         {
-            System.Random random = new System.Random();
-            CheckeredBoard board = boardStorage.board;
+            CheckeredButtonBoard board = boardStorage.board;
             BoardStorageItem[,] storageItems = boardStorage.boardTable;
             for (int col = 1; col <= board.width; col++)
             {
@@ -49,7 +49,7 @@ namespace Assets.Scripts
                     }
                     else
                     {
-                        int randomValue = random.Next() % 3 * 0; //0 -- Empty, 1 -- Friendly, 2 -- Agressive
+                        int randomValue = random.Next() % 3; //0 -- Empty, 1 -- Friendly, 2 -- Agressive
                         if (randomValue == 0)
                         {
                             continue;
@@ -70,8 +70,7 @@ namespace Assets.Scripts
                     }
 
                     GameObject iconGO = InstantiateIcon(currentSprite, col, row);
-                    storageItems[col, row] = new ArmyStorageItem(board.BoardButtons[col, row].GetComponent<BoardButton>(),
-                        currentArmy, iconGO);
+                    storageItems[col, row] = new ArmyStorageItem(currentArmy, iconGO);
                 }
             }
         }
@@ -92,11 +91,10 @@ namespace Assets.Scripts
 
         private ArmyComposition GenerateArmyComposition()
         {
-            System.Random random = new System.Random();
             int randomMice = random.Next() % 1000,
                 randomCats = random.Next() % 1000,
                 randomElephants = random.Next() % 1000;
-            return new ArmyComposition(randomMice, randomCats, randomMice);
+            return new ArmyComposition(randomMice, randomCats, randomElephants);
         }
     }
 }

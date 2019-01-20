@@ -7,6 +7,7 @@ namespace Assets.Scripts
 {
     public class BoardButton : MonoBehaviour
     {
+        //TODO: make private
         [NonSerialized]
         public int boardX;
         [NonSerialized]
@@ -16,7 +17,7 @@ namespace Assets.Scripts
 
         public GameIcon icon;
 
-        public ButtonListener bonusManager;
+        public InputListener inputListener;
 
         public void Initialize(int x, int y)
         {
@@ -28,7 +29,7 @@ namespace Assets.Scripts
         public void OnClick()
         {
             Debug.Log("Board button clicked");
-            bonusManager.OnBoardClick(this);
+            inputListener.ProcessBoardClick(this);
         }
 
         public void Enable()

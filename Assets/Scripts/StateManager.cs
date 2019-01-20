@@ -15,6 +15,7 @@ namespace Assets.Scripts
 
         public StartGameState StartState;
         public PlayGameState PlayState;
+        
         private static Dictionary<StateType, IGameState> states;
 
         void Awake()

@@ -41,7 +41,7 @@ namespace Assets.Scripts
                                                              playerType == PlayerType.SECOND));
         }
 
-        public abstract Army PerformAction(Army attackingArmy); // What does this method have to do?
+        public abstract Army PerformAction(Army attackingArmy);
 
         public static Army Merge(Army firstArmy, Army secondArmy)
         {
@@ -100,7 +100,7 @@ namespace Assets.Scripts
 
         private static Army CalcResultArmies(Army winnerArmy, Army loserArmy)
         {
-            ArmyComposition resultArmyComposition = ArmyComposition.CalcResultArmiesComposition(
+            ArmyComposition resultArmyComposition = ArmyComposition.Fight(
                 winnerArmy.armyComposition, loserArmy.armyComposition);
             if (winnerArmy.armyType == ArmyType.USER)
             {
@@ -110,7 +110,7 @@ namespace Assets.Scripts
             {
                 return new NeutralAgressiveArmy(resultArmyComposition);
             }
-            throw new Exception("PerformBattle: Unappropriate army types");
+            throw new Exception("PerformBattle: Inappropriate army types");
         }
     }
 }

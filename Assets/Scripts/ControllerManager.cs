@@ -30,7 +30,7 @@ namespace Assets.Scripts
 
         public void InitRound()
         {
-            //FirstController.trajectory.Reset();
+            
         }
 
         public void EnableController(TurnType type)
