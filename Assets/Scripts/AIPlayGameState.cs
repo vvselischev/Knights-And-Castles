@@ -13,7 +13,7 @@ namespace Assets.Scripts
         {
             base.InvokeState();
             //Let AI be the Type.Second (however, it can be the first to move)
-            aiPlayer.Initialize(controllerManager.SecondController);
+            aiPlayer.Initialize(controllerManager.SecondController, PlayerType.SECOND);
         }
         public override void ChangeTurn()
         {

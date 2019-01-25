@@ -34,9 +34,9 @@ namespace Assets.Scripts
             boardCreator.FillBoardStorage();
             
             controllerManager.FirstController = new UserController(PlayerType.FIRST, 
-                boardCreator.startFirstPosition, boardCreator.FirstArmy, storage, this);
+                                boardCreator.FirstArmy, storage, this);
             controllerManager.SecondController = new UserController(PlayerType.SECOND, 
-                boardCreator.startSecondPosition, boardCreator.SecondArmy, storage, this);
+                                boardCreator.SecondArmy, storage, this);
             InitNewGame();
         }
 

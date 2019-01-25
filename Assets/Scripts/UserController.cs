@@ -19,7 +19,7 @@ namespace Assets.Scripts
         private Vector2 chosenArmyPosition;
         private bool movementInProgress;
 
-        public UserController(PlayerType playerType, Vector2 startPosition, Army startArmy,
+        public UserController(PlayerType playerType, Army startArmy,
             BoardStorage storage, PlayGameState playGameState)
         {
             this.playerType = playerType;
@@ -45,7 +45,8 @@ namespace Assets.Scripts
             {
                 ArmyStorageItem clickedArmyItem = boardStorage.GetItem(position) as ArmyStorageItem;
                 playGameState.armyTextManager.ChangeText(clickedArmyItem.Army.armyComposition.ToString());
-                if ((chosenArmyItem == null) && (clickedArmyItem.Army.playerType == playerType))
+                if ((chosenArmyItem == null) && (clickedArmyItem.Army.playerType == playerType) && 
+                    (clickedArmyItem.Army as UserArmy).IsActive())
                 {
                     chosenArmyItem = clickedArmyItem;
                     chosenArmyPosition = position;
@@ -66,8 +67,9 @@ namespace Assets.Scripts
                 }
             }
 
-            if ((chosenArmyItem != null) && ReachableFromChosen(position))
-            { 
+            if ((chosenArmyItem != null) && ReachableFromChosen(position) && (chosenArmyItem.Army as UserArmy).IsActive())
+            {
+                (chosenArmyItem.Army as UserArmy).setInactive();
                 MoveChosen(position, buttonGO);
             }
             else if (!chooseOrMoveClick)
@@ -139,17 +141,36 @@ namespace Assets.Scripts
 
         public void Disable()
         {
+            
         }
 
+        // Set all user armies active
         public void Enable()
         {
-            //TODO: disable everything chosen in separate method
-            chosenArmyItem = null;
+            for (int i = 1; i <= boardStorage.board.height; i++)
+            {
+                for (int j = 1; j <= boardStorage.board.width; j++)
+                {
+                    if (boardStorage.GetItem(i, j) is ArmyStorageItem)
+                    {
+                        Army army = (boardStorage.GetItem(i, j) as ArmyStorageItem).Army;
+                        if (army.playerType == playerType)
+                        {
+                            (army as UserArmy).setActive();
+                        }
+                    }
+                }
+            }
         }
 
         public void FinishTurn()
         {
             playGameState.OnFinishTurn(playerType);
+        }
+
+        public void OnSplitButtonClick()
+        {
+
         }
     }
 }

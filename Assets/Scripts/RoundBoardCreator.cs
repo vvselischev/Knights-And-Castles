@@ -15,8 +15,8 @@ namespace Assets.Scripts
         // TODO: ArmyComposition generation
         //Set in editor
 
-        public Vector2 startFirstPosition = new Vector2(5, 5);
-        public Vector2 startSecondPosition = new Vector2(6, 6);
+        public Vector2[] startFirstPositions = { new Vector2(1, 1), new Vector2(1, 2) };
+        public Vector2[] startSecondPositions = { new Vector2(6, 6), new Vector2(5, 6) };
 
         public GameObject patternIcon;
         public GameObject parent;
@@ -37,12 +37,12 @@ namespace Assets.Scripts
                 {                    
                     Army currentArmy;
                     Sprite currentSprite;
-                    if (new Vector2(col, row) == startFirstPosition)
+                    if (Array.Exists(startFirstPositions, position => position == new Vector2(col, row)))
                     {
                         currentArmy = new UserArmy(PlayerType.FIRST, GenerateArmyComposition());
                         currentSprite = FirstUserSprite;
                     }
-                    else if (new Vector2(col, row) == startSecondPosition)
+                    else if (Array.Exists(startSecondPositions, position => position == new Vector2(col, row)))
                     {
                         currentArmy = new UserArmy(PlayerType.SECOND, GenerateArmyComposition());
                         currentSprite = SecondUserSprite;

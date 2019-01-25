@@ -18,5 +18,10 @@ namespace Assets.Scripts
         {
             controllerManager.FinishTurn();
         }
+
+        public void ProcessSplitButtonClick()
+        {
+            controllerManager.currentController.OnSplitButtonClick();
+        }
     }
 }

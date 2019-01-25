@@ -80,5 +80,10 @@ namespace Assets.Scripts
         {
             return TotalUnitQuantity() * experience;
         }
+
+        public void DeleteArmyPart(int spearmen, int archers, int cavalrymen)
+        {
+            
+        }
     }
 }

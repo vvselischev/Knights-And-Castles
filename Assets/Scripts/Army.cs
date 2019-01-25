@@ -112,5 +112,20 @@ namespace Assets.Scripts
             }
             throw new Exception("PerformBattle: Inappropriate army types");
         }
+
+        public Army Split(int spearmen, int archers, int cavalrymen)
+        {
+            armyComposition.DeleteArmyPart(spearmen, archers, cavalrymen);
+
+            if (armyType == ArmyType.USER)
+            {
+                return new UserArmy(playerType, new ArmyComposition(spearmen,
+                    archers, cavalrymen, armyComposition.experience));
+            }
+            else
+            {
+                throw new NotImplementedException();
+            }
+        }
     }
 }
