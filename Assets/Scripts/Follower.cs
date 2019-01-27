@@ -32,7 +32,7 @@ namespace Assets.Scripts
                     Vector3.Lerp(startPosition, targetPosition, fraction);
                 yield return null;
             }
-            ReachedTarget();
+            ReachedTarget?.Invoke();
         }
     }
 }

@@ -29,7 +29,7 @@ namespace Assets.Scripts
 
         public void OnButtonClick(BoardButton boardButton)
         {
-            Debug.Log(String.Format("Clicked: ({0}, {1})", boardButton.boardX, boardButton.boardY));
+            Debug.Log($"Clicked: ({boardButton.boardX}, {boardButton.boardY})");
             if (!movementInProgress)
             { 
                 ProcessAction(new Vector2(boardButton.boardX, boardButton.boardY));
@@ -151,9 +151,9 @@ namespace Assets.Scripts
             {
                 for (int j = 1; j <= boardStorage.board.width; j++)
                 {
-                    if (boardStorage.GetItem(i, j) is ArmyStorageItem)
+                    if (boardStorage.GetItem(j, i) is ArmyStorageItem)
                     {
-                        Army army = (boardStorage.GetItem(i, j) as ArmyStorageItem).Army;
+                        Army army = (boardStorage.GetItem(j, i) as ArmyStorageItem).Army;
                         if (army.playerType == playerType)
                         {
                             (army as UserArmy).setActive();

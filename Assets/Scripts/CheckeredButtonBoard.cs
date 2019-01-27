@@ -15,7 +15,7 @@ namespace Assets.Scripts
 
         public int width = 6;
         public int height = 6;
-        private float spaceBetweenButtons = -2.44f; //buttonWidth/20;
+        public float spaceBetweenButtons = -2.44f; //buttonWidth/20;
 
         private float buttonWidth;
         private float buttonHeight;

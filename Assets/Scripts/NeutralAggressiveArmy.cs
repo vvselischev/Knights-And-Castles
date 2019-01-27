@@ -5,9 +5,9 @@ using System.Text;
 
 namespace Assets.Scripts
 {
-    public class NeutralAgressiveArmy : Army
+    public class NeutralAggressiveArmy : Army
     {
-        public NeutralAgressiveArmy(ArmyComposition armyComposition) : 
+        public NeutralAggressiveArmy(ArmyComposition armyComposition) : 
             base(ArmyType.NEUTRAL_AGRESSIVE, PlayerType.NEUTRAL, armyComposition)
         {
         }

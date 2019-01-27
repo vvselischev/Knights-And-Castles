@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using GooglePlayGames;
 using GooglePlayGames.BasicApi.Multiplayer;
@@ -30,32 +31,16 @@ namespace Assets.Scripts
         
         public void SignInAndStartMPGame()
         {
-            /*if (!PlayGamesPlatform.Instance.localUser.authenticated) 
-            {
-                PlayGamesPlatform.Instance.localUser.Authenticate((bool success) => 
-                {
-                    if (success) 
-                    {
-                        ShowMPStatus("We're signed in! Welcome " + PlayGamesPlatform.Instance.localUser.userName);
-                        StartMatchMaking();
-                    } 
-                    else 
-                    {
-                        ShowMPStatus("We're not signed in.");
-                    }
-                });
-            } 
-            else 
-            {
-                ShowMPStatus("You're already signed in.");
-                StartMatchMaking();
-            }*/
             Social.localUser.Authenticate((bool success) =>
             {
                 ShowMPStatus(success.ToString());
                 if (!success)
                 {
                     SignInAndStartMPGame();
+                }
+                else
+                {
+                    StartMatchMaking();
                 }
             });
         }
@@ -92,11 +77,13 @@ namespace Assets.Scripts
             ShowMPStatus("We are " + percent + "% done with setup");
         }
 
+        public event VoidHandler OnRoomSetupCompleted;
         public void OnRoomConnected(bool success)
         {
             if (success) 
             {
                 ShowMPStatus("We are connected to the room! Start our game now.");
+                OnRoomSetupCompleted?.Invoke();
             } 
             else
             {
@@ -126,13 +113,31 @@ namespace Assets.Scripts
         {
             foreach (string participantID in participantIds)
             {
-                ShowMPStatus ("Player " + participantID + " has left.");
+                ShowMPStatus("Player " + participantID + " has left.");
             }
         }
 
+        //TODO: rewrite with custom handler (now it is awful)
+        public event VoidHandler OnMessageReceived;
+        public byte[] lastMessage;
         public void OnRealTimeMessageReceived(bool isReliable, string senderId, byte[] data)
         {
             ShowMPStatus("Received some gameplay messages from participant ID: " + senderId);
+            lastMessage = data;
+            OnMessageReceived?.Invoke();
+        }
+
+        public List<Participant> GetAllPlayers() {
+            return PlayGamesPlatform.Instance.RealTime.GetConnectedParticipants();
+        }
+        
+        public string GetMyParticipantId() {
+            return PlayGamesPlatform.Instance.RealTime.GetSelf().ParticipantId;
+        }
+        
+        public void SendMessage(byte[] message) {
+            Debug.Log ("Sending my update message  " + message + " to all players in the room");
+            PlayGamesPlatform.Instance.RealTime.SendMessageToAll (true, message);
         }
 
 

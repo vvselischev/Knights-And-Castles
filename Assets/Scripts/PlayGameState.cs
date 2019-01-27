@@ -7,20 +7,18 @@ namespace Assets.Scripts
 {
     public class PlayGameState : MonoBehaviour, IGameState
     {
-        private readonly MenuActivator menuActivator = MenuActivator.GetInstance();
+        protected readonly MenuActivator menuActivator = MenuActivator.GetInstance();
         public PlayMenu playMenu;
         public CheckeredButtonBoard board;
         public BoardStorage storage;
         public TurnManager turnManager;
         public Timer timer;
-        //public RoundJudge roundJudge;
-        public InputListener inputListener;
         public RoundScore roundScore;
         public RoundBoardCreator boardCreator;
         public ControllerManager controllerManager;
         public ArmyTextManager armyTextManager;
 
-        public const int MAX_TURNS = 100;
+        public const int MAX_TURNS = 1000;
 
         private int currentRound = 0;
         private int playedTurns = 0;
@@ -28,10 +26,9 @@ namespace Assets.Scripts
         public virtual void InvokeState()
         {
             menuActivator.OpenMenu(playMenu);
-            //roundJudge.OnFinishJudge += OnFinishRound;
             
             storage.Reset();
-            boardCreator.FillBoardStorage();
+            boardCreator.FillBoardStorageRandomly();
             
             controllerManager.FirstController = new UserController(PlayerType.FIRST, 
                                 boardCreator.FirstArmy, storage, this);
@@ -105,16 +102,16 @@ namespace Assets.Scripts
             //Further behaviour should be specified in child classes.
         }
 
-        public void InitNewGame()
+        protected virtual void InitNewGame()
         {
             //These line was in legacy code. 
-            //Probably, it deletes buttons created for the editor mode since they're not initialized correctly.
+            //Perhaps, it deletes buttons created for the editor mode since they're not initialized correctly.
             board.DeleteButtons();
             board.CreateButtons();
             InitNewRound();
         }
 
-        private TurnType GetFirstTurn()
+        protected virtual TurnType GetFirstTurn()
         {
             return TurnType.FIRST;
         }

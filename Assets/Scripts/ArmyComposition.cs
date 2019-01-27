@@ -24,8 +24,8 @@ namespace Assets.Scripts
 
         public override string ToString()
         {
-            return "s:" + spearmen.ToString() + " a:" + archers.ToString() + " c:" + cavalrymen.ToString() +
-                   " e:" + Math.Round(experience, 2).ToString();
+            return "s:" + spearmen + " a:" + archers + " c:" + cavalrymen +
+                   " e:" + Math.Round(experience, 2);
         }
 
         public static ArmyComposition Merge(ArmyComposition first, ArmyComposition second)
@@ -42,9 +42,9 @@ namespace Assets.Scripts
 
         public void Nullify()
         {
-            this.spearmen = 0;
-            this.archers = 0;
-            this.cavalrymen = 0;
+            spearmen = 0;
+            archers = 0;
+            cavalrymen = 0;
         }
 
         public static ArmyComposition Fight(ArmyComposition winnerArmyComposition, 

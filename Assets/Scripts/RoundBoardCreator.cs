@@ -16,7 +16,7 @@ namespace Assets.Scripts
         //Set in editor
 
         public Vector2[] startFirstPositions = { new Vector2(1, 1), new Vector2(1, 2) };
-        public Vector2[] startSecondPositions = { new Vector2(6, 6), new Vector2(5, 6) };
+        public Vector2[] startSecondPositions = { new Vector2(8, 10), new Vector2(8, 9) };
 
         public GameObject patternIcon;
         public GameObject parent;
@@ -27,7 +27,7 @@ namespace Assets.Scripts
         public Army FirstArmy { get; }
         public Army SecondArmy { get; }
 
-        public void FillBoardStorage()
+        public void FillBoardStorageRandomly()
         {
             CheckeredButtonBoard board = boardStorage.board;
             BoardStorageItem[,] storageItems = boardStorage.boardTable;
@@ -54,18 +54,16 @@ namespace Assets.Scripts
                         {
                             continue;
                         }
+
+                        if (randomValue == 1)
+                        {
+                            currentSprite = NeutralFriendlySprite;
+                            currentArmy = new NeutralFriendlyArmy(GenerateArmyComposition());
+                        }
                         else
                         {
-                            if (randomValue == 1)
-                            {
-                                currentSprite = NeutralFriendlySprite;
-                                currentArmy = new NeutralFriendlyArmy(GenerateArmyComposition());
-                            }
-                            else
-                            {
-                                currentSprite = NeutralAgressiveSprite;
-                                currentArmy = new NeutralAgressiveArmy(GenerateArmyComposition());
-                            }
+                            currentSprite = NeutralAgressiveSprite;
+                            currentArmy = new NeutralAggressiveArmy(GenerateArmyComposition());
                         }
                     }
 
@@ -73,6 +71,119 @@ namespace Assets.Scripts
                     storageItems[col, row] = new ArmyStorageItem(currentArmy, iconGO);
                 }
             }
+        }
+
+        //From left to right, from bottom to up.
+        //x == 0 => Empty
+        //x == 1 => NeutralFriendly
+        //x == 2 => NeutralAggressive
+        //x == 11 => FirstPlayer
+        //x == 12 => SecondPlayer
+        //x > 10 => after x go (v1, v2, v3) -- spearmen, archers, cavalrymen
+        public void FillBoardStorageFromArray(byte[] array)
+        {
+            CheckeredButtonBoard board = boardStorage.board;
+            BoardStorageItem[,] storageItems = boardStorage.boardTable;
+            int currentInd = 0;
+            for (int row = 1; row <= board.height; row++)
+            {
+                for (int col = 1; col <= board.width; col++)
+                {
+                    byte currentType = array[currentInd];
+                    currentInd++;
+
+                    if (currentType == 0)
+                    {
+                        continue;
+                    }
+
+                    Army currentArmy = null;
+                    Sprite currentSprite = null;
+                    ArmyComposition armyComposition = null;
+                    if (currentType > 10)
+                    {
+                        byte spearmen = array[currentInd];
+                        currentInd++;
+                        byte archers = array[currentInd];
+                        currentInd++;
+                        byte cavalrymen = array[currentInd];
+                        currentInd++;
+                        armyComposition = new ArmyComposition(spearmen, archers, cavalrymen);
+                    }
+                    
+                    if (currentType == 11)
+                    {
+                        currentArmy = new UserArmy(PlayerType.FIRST, armyComposition);
+                        currentSprite = FirstUserSprite;
+                    }
+                    else if (currentType == 12)
+                    {
+                        currentArmy = new UserArmy(PlayerType.SECOND, armyComposition);
+                        currentSprite = SecondUserSprite;
+                    }
+                    else if (currentType == 1)
+                    {
+                        currentArmy = new NeutralFriendlyArmy(armyComposition);
+                        currentSprite = NeutralFriendlySprite;
+                    }
+                    else if (currentType == 2)
+                    {
+                        currentArmy = new NeutralAggressiveArmy(armyComposition);
+                        currentSprite = NeutralAgressiveSprite;
+                    }
+                    GameObject iconGO = InstantiateIcon(currentSprite, col, row);
+                    storageItems[col, row] = new ArmyStorageItem(currentArmy, iconGO);
+                }
+            }
+        }
+        
+        public List<byte> ConvertBoardStorageToBytes()
+        {
+            CheckeredButtonBoard board = boardStorage.board;
+            BoardStorageItem[,] storageItems = boardStorage.boardTable;
+            List<byte> byteList = new List<byte>();
+            for (int row = 1; row <= board.height; row++)
+            {
+                for (int col = 1; col <= board.width; col++)
+                {
+                    byte currentType = 0;
+                    Army army = null;
+                    if (storageItems[col, row] is ArmyStorageItem)
+                    {
+                        army = (storageItems[col, row] as ArmyStorageItem).Army;
+                        if (army.playerType == PlayerType.FIRST)
+                        {
+                            currentType = 11;
+                        }
+                        else if (army.playerType == PlayerType.SECOND)
+                        {
+                            currentType = 12;
+                        }
+                        else if (army.playerType == PlayerType.NEUTRAL)
+                        {
+                            if (army is NeutralFriendlyArmy)
+                            {
+                                currentType = 1;
+                            }
+                            else if (army is NeutralAggressiveArmy)
+                            {
+                                currentType = 2;
+                            }
+                        }
+                    }
+                    byteList.Add(currentType);
+                    
+                    if (currentType != 0)
+                    {
+                        ArmyComposition armyComposition = army.armyComposition;
+                        byteList.Add((byte)armyComposition.spearmen);
+                        byteList.Add((byte)armyComposition.archers);
+                        byteList.Add((byte)armyComposition.cavalrymen);
+                    }
+                }
+            }
+
+            return byteList;
         }
 
         private GameObject InstantiateIcon(Sprite sprite, int col, int row)
@@ -91,9 +202,9 @@ namespace Assets.Scripts
 
         private ArmyComposition GenerateArmyComposition()
         {
-            int randomMice = random.Next() % 1000,
-                randomCats = random.Next() % 1000,
-                randomElephants = random.Next() % 1000;
+            int randomMice = random.Next() % 100,
+                randomCats = random.Next() % 100,
+                randomElephants = random.Next() % 100;
             return new ArmyComposition(randomMice, randomCats, randomElephants);
         }
     }
