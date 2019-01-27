@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,15 +10,15 @@ namespace Assets.Scripts
     {
         private class MoveInformation
         {
-            public Vector2 targetPosition;
-            public Vector2 sourcePosition;
-            public int benefit;
+            public Vector2 TargetPosition { get; }
+            public Vector2 SourcePosition { get; }
+            public int Benefit { get; }
 
             public MoveInformation(Vector2 targetPosition, Vector2 sourcePosition, int benefit)
             {
-                this.targetPosition = targetPosition;
-                this.sourcePosition = sourcePosition;
-                this.benefit = benefit;
+                TargetPosition = targetPosition;
+                SourcePosition = sourcePosition;
+                Benefit = benefit;
             }
         }
 
@@ -27,7 +28,8 @@ namespace Assets.Scripts
 
         //Move -- move of one of your armies.
         private static int moveNumber;   
-        private static int turnNumber;   
+        private static int turnNumber;
+        private int armyQuantity;
 
         public void Initialize(UserController controller, PlayerType playerType)
         {
@@ -40,32 +42,17 @@ namespace Assets.Scripts
         {
             moveNumber = 0;
             turnNumber++;
+            armyQuantity = FindActiveArmies().Count;
             MakeMove();
         }
 
         private void MakeMove()
         {
-            //Analyze board storage...
-            //Remember that the board is not inverted, so you start from (6, 6).
-
             moveNumber++;
-            /*            if ((turnNumber == 1) && (moveNumber == 1))
-                        {
-                            MakeMove(new Vector2(6, 6), new Vector2(6, 5));
-                            return;
-                            //MakeMove will be called again automatically when icon reaches the target.     
-                            //But write return after every call of MakeMove(int, int, int, int) to ensure that it is called only once!
-                        } 
-                        else if ((turnNumber == 2) && (moveNumber == 1))
-                        {
-                            MakeMove(new Vector2(6, 5), new Vector2(5, 5));
-                            return;
-                        }
-            */
-            if (moveNumber == 1)
+            if (moveNumber <= armyQuantity)
             {
                 MoveInformation moveInformation = AnalyzeBoard();
-                MakeMove(moveInformation.sourcePosition, moveInformation.targetPosition);
+                MakeMove(moveInformation.SourcePosition, moveInformation.TargetPosition);
                 return;
             }
 
@@ -82,9 +69,11 @@ namespace Assets.Scripts
             inputListener.ProcessBoardClick(boardStorage.GetBoardButton((int)to.x, (int)to.y));
         }
 
+        //TODO: rename so to know something about the returning value
         private MoveInformation AnalyzeBoard() {
             int maxBenefit = -1; // If it is allowed to skip turn, however to stay is worse than to move
-            List<Vector2> aiArmies = FindArmies();
+            List<Vector2> aiArmies = FindActiveArmies();
+            //TODO: throw explicit exception
             Vector2 targetPosition = aiArmies[0]; // Exception, when AI armies are killed
             Vector2 movingArmyPosition = aiArmies[0]; // Exception, when AI armies are killed
 
@@ -92,10 +81,10 @@ namespace Assets.Scripts
             {
                 MoveInformation moveInformation = AnalyzeBoard(position);
 
-                if (moveInformation.benefit > maxBenefit)
+                if (moveInformation.Benefit > maxBenefit)
                 {
-                    maxBenefit = moveInformation.benefit;
-                    targetPosition = moveInformation.targetPosition;
+                    maxBenefit = moveInformation.Benefit;
+                    targetPosition = moveInformation.TargetPosition;
                     movingArmyPosition = position;
                 }
             }
@@ -112,13 +101,13 @@ namespace Assets.Scripts
             foreach (Vector2 position in possibleTargetPositions)
             {
                 double armyPower = (boardStorage.GetItem(armyPosition) as ArmyStorageItem).Army.armyComposition.ArmyPower();
-                possibleResults.Add(new MoveInformation(position, armyPosition, CalcBenefit(position, armyPower)));
+                possibleResults.Add(new MoveInformation(position, armyPosition, CalculateBenefit(position, armyPower)));
             }
 
             return ChooseBestResult(possibleResults);
         }
 
-        private int CalcBenefit(Vector2 position, double armyPower)
+        private int CalculateBenefit(Vector2 position, double armyPower)
         {
             if (boardStorage.GetItem(position) is ArmyStorageItem)
             {
@@ -127,20 +116,13 @@ namespace Assets.Scripts
                 {
                     return army.armyComposition.TotalUnitQuantity();
                 }
-                else if (army.playerType == PlayerType.FIRST &&
-                    army.armyComposition.ArmyPower() < armyPower) // works only for AI as a second player
+                if (army.playerType == PlayerType.FIRST && army.armyComposition.ArmyPower() < armyPower) // works only for AI as a second player
                 {
                     return int.MaxValue;
                 }
-                else
-                {
-                    return -army.armyComposition.TotalUnitQuantity();
-                }
+                return -army.armyComposition.TotalUnitQuantity();
             }
-            else
-            {
-                return 0;
-            }
+            return 0;
         }
 
         private MoveInformation ChooseBestResult(List<MoveInformation> possibleResults)
@@ -148,12 +130,11 @@ namespace Assets.Scripts
             MoveInformation bestResult = possibleResults[0]; // List is not empty
             foreach (MoveInformation result in possibleResults)
             {
-                if (result.benefit > bestResult.benefit)
+                if (result.Benefit > bestResult.Benefit)
                 {
                     bestResult = result;
                 }
             }
-
             return bestResult;
         }
 
@@ -186,19 +167,23 @@ namespace Assets.Scripts
             return possibleTargetPositions;
         }
 
-        private List<Vector2> FindArmies() {
+        private List<Vector2> FindActiveArmies() {
             List<Vector2> aiArmyPositions = new List<Vector2>();
 
             for (int i = 1; i <= boardStorage.board.height; i++)
             {
                 for (int j = 1; j <= boardStorage.board.width; j++)
                 {
-                    Vector2 position = new Vector2(i, j);
+                    Vector2 position = new Vector2(j, i);
                     if (boardStorage.GetItem(position) is ArmyStorageItem)
                     {
-                        if ((boardStorage.GetItem(position) as ArmyStorageItem).Army.playerType == playerType)
+                        Army army = (boardStorage.GetItem(position) as ArmyStorageItem).Army;
+                        if (army.playerType == playerType)
                         {
-                            aiArmyPositions.Add(position);
+                            if (army is UserArmy && (army as UserArmy).IsActive())
+                            {
+                                aiArmyPositions.Add(position);
+                            }
                         }
                     }
                 }
@@ -209,7 +194,8 @@ namespace Assets.Scripts
 
         private void OnFinishMove()
         {
-            MakeMove();
+            //FinishTurn();
+           MakeMove();
         }
 
         private void FinishTurn()

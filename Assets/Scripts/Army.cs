@@ -80,10 +80,7 @@ namespace Assets.Scripts
                 return new UserArmy(userArmy.playerType,
                     ArmyComposition.Merge(userArmy.armyComposition, neutralArmy.armyComposition));
             }
-            else
-            {
-                throw new Exception("MergeUserAndNeutralArmies: neutral army type is not NEUTRAL_FRIENDLY");
-            }
+            throw new Exception("MergeUserAndNeutralArmies: neutral army type is not NEUTRAL_FRIENDLY");
         }
 
         public static Army PerformBattle(Army firstArmy, Army secondArmy)
@@ -92,10 +89,7 @@ namespace Assets.Scripts
             {
                 return CalcResultArmies(firstArmy, secondArmy);
             }
-            else
-            {
-                return CalcResultArmies(secondArmy, firstArmy);
-            }
+            return CalcResultArmies(secondArmy, firstArmy);
         }
 
         private static Army CalcResultArmies(Army winnerArmy, Army loserArmy)
@@ -108,9 +102,34 @@ namespace Assets.Scripts
             }
             if (winnerArmy.armyType == ArmyType.NEUTRAL_AGRESSIVE)
             {
-                return new NeutralAgressiveArmy(resultArmyComposition);
+                return new NeutralAggressiveArmy(resultArmyComposition);
             }
             throw new Exception("PerformBattle: Inappropriate army types");
+        }
+
+        public Army Split(int spearmen, int archers, int cavalrymen)
+        {
+            armyComposition.DeleteArmyPart(spearmen, archers, cavalrymen);
+            
+
+            if (armyType == ArmyType.USER)
+            {
+                (this as UserArmy).setInactive();
+                return new UserArmy(playerType, new ArmyComposition(spearmen,
+                    archers, cavalrymen, armyComposition.experience));
+            }
+            else
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public Army SplitIntoEqualParts() {
+            int spearmen = armyComposition.spearmen / 2;
+            int archers = armyComposition.archers / 2;
+            int cavalrymen = armyComposition.cavalrymen / 2;
+
+            return Split(spearmen, archers, cavalrymen);
         }
     }
 }

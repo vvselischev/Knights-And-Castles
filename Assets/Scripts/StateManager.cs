@@ -6,7 +6,10 @@ namespace Assets.Scripts
     public enum StateType
     {
         START_GAME_STATE,
-        PLAY_GAME_STATE
+        LOBBY_GAME_STATE,
+        NETWORK_GAME_STATE,
+        AI_GAME_STATE,
+        ONE_DEVICE_MULTIPLAYER_STATE
     }
 
     public class StateManager : MonoBehaviour
@@ -14,7 +17,10 @@ namespace Assets.Scripts
         private IGameState currentState;
 
         public StartGameState StartState;
-        public PlayGameState PlayState;
+        public NetworkPlayGameState networkPlayGameState;
+        public AIPlayGameState aiPlayGameState;
+        public OneDeviceMultiplayerGameState oneDeviceMultiplayerGameState;
+        public LobbyGameState LobbyGameState;
         
         private static Dictionary<StateType, IGameState> states;
 
@@ -30,7 +36,10 @@ namespace Assets.Scripts
         {
             states = new Dictionary<StateType, IGameState>();
             states.Add(StateType.START_GAME_STATE, StartState);
-            states.Add(StateType.PLAY_GAME_STATE, PlayState);
+            states.Add(StateType.LOBBY_GAME_STATE, LobbyGameState);
+            states.Add(StateType.NETWORK_GAME_STATE, networkPlayGameState);
+            states.Add(StateType.AI_GAME_STATE, aiPlayGameState);
+            states.Add(StateType.ONE_DEVICE_MULTIPLAYER_STATE, oneDeviceMultiplayerGameState);
         }
 
         public void ChangeState(StateType newStateType)

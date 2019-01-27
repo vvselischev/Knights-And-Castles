@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class StartGameState : MonoBehaviour, IGameState
 {
-    private readonly MenuActivator menuActivator = MenuActivator.GetInstance();
+    private MenuActivator menuActivator = MenuActivator.GetInstance();
     public StartMenu startMenu;
 
     public void InvokeState()
