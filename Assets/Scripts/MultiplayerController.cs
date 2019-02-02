@@ -66,7 +66,7 @@ namespace Assets.Scripts
                 Debug.Log("We're already signed in");
             }
         }
-        
+       
         private void StartMatchMaking() 
         {
             PlayGamesPlatform.Instance.RealTime.CreateQuickGame(minimumOpponents, maximumOpponents, gameVariation, this);
@@ -127,12 +127,12 @@ namespace Assets.Scripts
             OnMessageReceived?.Invoke();
         }
 
-        public List<Participant> GetAllPlayers() {
-            return PlayGamesPlatform.Instance.RealTime.GetConnectedParticipants();
-        }
+       public List<Participant> GetAllPlayers() {
+           return PlayGamesPlatform.Instance.RealTime.GetConnectedParticipants();
+       }
         
         public string GetMyParticipantId() {
-            return PlayGamesPlatform.Instance.RealTime.GetSelf().ParticipantId;
+           return PlayGamesPlatform.Instance.RealTime.GetSelf().ParticipantId;
         }
         
         public void SendMessage(byte[] message) {
@@ -145,7 +145,7 @@ namespace Assets.Scripts
         private void ShowMPStatus(string message)
         {
             Debug.Log(message);
-            logText.text += "\n" + message;
+            //logText.text += "\n" + message;
         }
 
     }

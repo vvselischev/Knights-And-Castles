@@ -7,36 +7,49 @@ namespace Assets.Scripts
 {
     public class NetworkPlayGameState : PlayGameState
     {
+        public NetworkInputListener inputListener;
         private MultiplayerController multiplayerController;
         private List<Participant> allPlayers;
         private bool isHost;
+        private TurnType myTurnType;
 
         public Text logText;
+
         public override void InvokeState()
         {
             menuActivator.OpenMenu(playMenu);
-            
+
+            SetupListener();
+
             multiplayerController = MultiplayerController.GetInstance();
             allPlayers = multiplayerController.GetAllPlayers();
             string hostID = ChooseHost();
             string myId = multiplayerController.GetMyParticipantId();
 
             multiplayerController.logText = logText;
-            
+
             //Let the host set up the round.
             if (hostID == myId)
             {
                 isHost = true;
                 SetupRoundHost();
+                myTurnType = TurnType.FIRST;
                 InitNewGame();
             }
             else
             {
-                logText.text += "Waiting for round data..." + "\n";
+                myTurnType = TurnType.SECOND;
                 multiplayerController.OnMessageReceived += SetupRoundFromNetwork;
             }
         }
 
+        private void SetupListener()
+        {
+            inputListener.Init(board.width, board.height);
+            boardCreator.patternButton.GetComponent<BoardButton>().inputListener = inputListener;
+            playMenu.startButton.GetComponent<StartButton>().inputListener = inputListener;
+        }
+        
         private string ChooseHost()
         {
             return allPlayers.Min(participant => participant.ParticipantId);
@@ -60,12 +73,6 @@ namespace Assets.Scripts
             bytes.Add(2);
 
             logText.text += "Sending setup info...\n";
-            foreach (byte b in bytes)
-            {
-                logText.text += b + " ";
-            }
-
-            logText.text += "\n";
             
             multiplayerController.SendMessage(bytes.ToArray());
         }
@@ -82,32 +89,36 @@ namespace Assets.Scripts
             multiplayerController.OnMessageReceived -= SetupRoundFromNetwork;
             storage.Reset();
             
-            foreach (byte b in message)
-            {
-                logText.text += b + " ";
-            }
-
-            logText.text += "\n";
-            
             boardCreator.FillBoardStorageFromArray(message.Skip(1).ToArray());
             
-            //Because we are not host and our type is Second
-            storage.InvertBoard();
             controllerManager.FirstController = new UserController(PlayerType.FIRST, 
                 boardCreator.FirstArmy, storage, this);
             controllerManager.SecondController = new UserController(PlayerType.SECOND, 
                 boardCreator.SecondArmy, storage, this);
             InitNewGame();
+            
+            //Because host is the first to move
+            storage.InvertBoard();
+            playMenu.DisableUI();
         }
-        
+
+        protected override void ChangeTurn()
+        {
+            base.ChangeTurn();
+            if (turnManager.CurrentTurn != myTurnType)
+            {
+                playMenu.DisableUI();
+            }
+            else
+            {
+                playMenu.EnableUI();
+            }
+        }
+
         protected override TurnType GetFirstTurn()
         {
             //Host makes first turn (as PlayerType.First).
-            if (isHost)
-            {
-                return TurnType.FIRST;
-            }
-            return TurnType.SECOND;
+            return TurnType.FIRST;
         }
     }
 }

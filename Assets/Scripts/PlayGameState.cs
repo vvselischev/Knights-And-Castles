@@ -42,7 +42,7 @@ namespace Assets.Scripts
             menuActivator.CloseMenu();
         }
 
-        public void InitNewRound()
+        private void InitNewRound()
         {
             //buttonListener.Reset();
             turnManager.InitRound();
@@ -84,7 +84,7 @@ namespace Assets.Scripts
             InitNewRound();
         }
 
-        public virtual void ChangeTurn()
+        protected virtual void ChangeTurn()
         {
             if (playedTurns == MAX_TURNS)
             {
@@ -113,6 +113,7 @@ namespace Assets.Scripts
 
         protected virtual TurnType GetFirstTurn()
         {
+            //TODO: make random
             return TurnType.FIRST;
         }
     }

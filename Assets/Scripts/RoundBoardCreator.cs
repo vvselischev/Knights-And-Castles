@@ -22,6 +22,10 @@ namespace Assets.Scripts
         public GameObject parent;
         public GameObject patternButton;
 
+        private int imbalance = 1000; // first is always in better position
+        private const int randomNumberOfUnitsFrom = 500;
+        private const int randomNumberOfUnitsTo = 1000;
+
         public Sprite NeutralFriendlySprite, NeutralAgressiveSprite, FirstUserSprite, SecondUserSprite;
         
         public Army FirstArmy { get; }
@@ -39,12 +43,12 @@ namespace Assets.Scripts
                     Sprite currentSprite;
                     if (Array.Exists(startFirstPositions, position => position == new Vector2(col, row)))
                     {
-                        currentArmy = new UserArmy(PlayerType.FIRST, GenerateArmyComposition());
+                        currentArmy = new UserArmy(PlayerType.FIRST, GenerateArmyComposition(randomNumberOfUnitsFrom, randomNumberOfUnitsTo));
                         currentSprite = FirstUserSprite;
                     }
                     else if (Array.Exists(startSecondPositions, position => position == new Vector2(col, row)))
                     {
-                        currentArmy = new UserArmy(PlayerType.SECOND, GenerateArmyComposition());
+                        currentArmy = new UserArmy(PlayerType.SECOND, GenerateArmyComposition(randomNumberOfUnitsFrom, randomNumberOfUnitsTo));
                         currentSprite = SecondUserSprite;
                     }
                     else
@@ -58,12 +62,14 @@ namespace Assets.Scripts
                         if (randomValue == 1)
                         {
                             currentSprite = NeutralFriendlySprite;
-                            currentArmy = new NeutralFriendlyArmy(GenerateArmyComposition());
+                            currentArmy = new NeutralFriendlyArmy(
+                                GenerateBalancedArmyComposition(true, new Vector2(col, row)));
                         }
                         else
                         {
                             currentSprite = NeutralAgressiveSprite;
-                            currentArmy = new NeutralAggressiveArmy(GenerateArmyComposition());
+                            currentArmy = new NeutralAggressiveArmy(
+                                GenerateBalancedArmyComposition(false, new Vector2(col, row)));
                         }
                     }
 
@@ -71,6 +77,7 @@ namespace Assets.Scripts
                     storageItems[col, row] = new ArmyStorageItem(currentArmy, iconGO);
                 }
             }
+            Debug.Log("current imbalance:" + imbalance);
         }
 
         //From left to right, from bottom to up.
@@ -99,27 +106,24 @@ namespace Assets.Scripts
 
                     Army currentArmy = null;
                     Sprite currentSprite = null;
-                    ArmyComposition armyComposition = null;
-                    if (currentType > 10)
-                    {
-                        byte spearmen = array[currentInd];
-                        currentInd++;
-                        byte archers = array[currentInd];
-                        currentInd++;
-                        byte cavalrymen = array[currentInd];
-                        currentInd++;
-                        armyComposition = new ArmyComposition(spearmen, archers, cavalrymen);
-                    }
                     
+                    byte spearmen = array[currentInd];
+                    currentInd++;
+                    byte archers = array[currentInd];
+                    currentInd++;
+                    byte cavalrymen = array[currentInd];
+                    currentInd++;
+                    ArmyComposition armyComposition = new ArmyComposition(spearmen, archers, cavalrymen);
+
                     if (currentType == 11)
                     {
                         currentArmy = new UserArmy(PlayerType.FIRST, armyComposition);
-                        currentSprite = FirstUserSprite;
+                        currentSprite = SecondUserSprite;
                     }
                     else if (currentType == 12)
                     {
                         currentArmy = new UserArmy(PlayerType.SECOND, armyComposition);
-                        currentSprite = SecondUserSprite;
+                        currentSprite = FirstUserSprite;
                     }
                     else if (currentType == 1)
                     {
@@ -131,12 +135,13 @@ namespace Assets.Scripts
                         currentArmy = new NeutralAggressiveArmy(armyComposition);
                         currentSprite = NeutralAgressiveSprite;
                     }
+
                     GameObject iconGO = InstantiateIcon(currentSprite, col, row);
                     storageItems[col, row] = new ArmyStorageItem(currentArmy, iconGO);
                 }
             }
         }
-        
+
         public List<byte> ConvertBoardStorageToBytes()
         {
             CheckeredButtonBoard board = boardStorage.board;
@@ -200,12 +205,60 @@ namespace Assets.Scripts
             return newImage.gameObject;
         }
 
-        private ArmyComposition GenerateArmyComposition()
+        private ArmyComposition GenerateArmyComposition(int from, int to)
         {
-            int randomMice = random.Next() % 100,
-                randomCats = random.Next() % 100,
-                randomElephants = random.Next() % 100;
+            int randomMice = (from + random.Next() % (to - from)) % 100,
+                randomCats = (from + random.Next() % (to - from)) % 100,
+                randomElephants = (from + random.Next() % (to - from)) % 100;
             return new ArmyComposition(randomMice, randomCats, randomElephants);
+        }
+
+        /*
+         Field imbalance stores current imbalance of current game state.
+         Analyzing this information it can be added more or less units to the generated army.
+         For these purposes in this function calculates multiplier on which generated army composition multiplies.
+         */
+        private ArmyComposition GenerateBalancedArmyComposition(bool isFriendly, Vector2 position)
+        {
+            int boardWidthPlusHeight = boardStorage.board.width + boardStorage.board.height;
+            int balancePositionMultiplier = boardWidthPlusHeight - 2 * (int)(position.x + position.y);
+            if (!isFriendly)
+            {
+                balancePositionMultiplier *= -1;
+            }
+
+            double additional = Math.Abs(balancePositionMultiplier / (double)boardWidthPlusHeight);
+
+            double multiplier = 0;
+            if (HasSameSign(imbalance, balancePositionMultiplier))
+            {
+                multiplier = 1 - additional + 0.05; // to avoid zero division
+            }
+            else
+            {
+                multiplier = 1 + additional + 0.05; // to avoid zero division
+            }
+
+            Debug.Log("GenerateBalancedArmyComposition");
+
+            ArmyComposition resultArmyComposition = GenerateArmyComposition(
+                (int)(randomNumberOfUnitsFrom * multiplier), (int)(randomNumberOfUnitsTo * multiplier));
+
+            if (imbalance < 0)
+            {
+                imbalance += resultArmyComposition.TotalUnitQuantity();
+            }
+            else
+            {
+                imbalance -= resultArmyComposition.TotalUnitQuantity();
+            }
+
+            return resultArmyComposition;
+        }
+
+        private bool HasSameSign(int a, int b)
+        {
+            return Math.Sign(a) == Math.Sign(b);
         }
     }
 }

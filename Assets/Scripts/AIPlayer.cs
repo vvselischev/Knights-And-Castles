@@ -48,23 +48,7 @@ namespace Assets.Scripts
 
         private void MakeMove()
         {
-            //Analyze board storage...
-            //Remember that the board is not inverted, so you start from (6, 6).
-
             moveNumber++;
-            /*            if ((turnNumber == 1) && (moveNumber == 1))
-                        {
-                            MakeMove(new Vector2(6, 6), new Vector2(6, 5));
-                            return;
-                            //MakeMove will be called again automatically when icon reaches the target.     
-                            //But write return after every call of MakeMove(int, int, int, int) to ensure that it is called only once!
-                        } 
-                        else if ((turnNumber == 2) && (moveNumber == 1))
-                        {
-                            MakeMove(new Vector2(6, 5), new Vector2(5, 5));
-                            return;
-                        }
-            */
             if (moveNumber <= armyQuantity)
             {
                 MoveInformation moveInformation = AnalyzeBoard();
@@ -81,8 +65,8 @@ namespace Assets.Scripts
         {
             //Don't forget, that you must control the correctness of moves!
             //TODO: check the correctness.
-            inputListener.ProcessBoardClick(boardStorage.GetBoardButton((int)from.x, (int)from.y));
-            inputListener.ProcessBoardClick(boardStorage.GetBoardButton((int)to.x, (int)to.y));
+            inputListener.ProcessBoardClick((int)from.x, (int)from.y);
+            inputListener.ProcessBoardClick((int)to.x, (int)to.y);
         }
 
         //TODO: rename so to know something about the returning value
@@ -157,8 +141,8 @@ namespace Assets.Scripts
         private List<Vector2> PossibleTargetPositions(Vector2 position)
         {
             List<Vector2> possibleTargetPositions = new List<Vector2>();
-            int boardHeight = boardStorage.board.height + 1;
-            int boardWidth = boardStorage.board.width + 1;
+            int boardHeight = boardStorage.board.height;
+            int boardWidth = boardStorage.board.width;
 
             if (position.y > 1)
             {
@@ -170,12 +154,12 @@ namespace Assets.Scripts
                 possibleTargetPositions.Add(new Vector2(position.x - 1, position.y));
             }
 
-            if (position.y < boardWidth - 1)
+            if (position.y < boardHeight - 1)
             {
                 possibleTargetPositions.Add(new Vector2(position.x, position.y + 1));
             }
 
-            if (position.x < boardHeight - 1)
+            if (position.x < boardWidth - 1)
             {
                 possibleTargetPositions.Add(new Vector2(position.x + 1, position.y));
             }
@@ -183,7 +167,8 @@ namespace Assets.Scripts
             return possibleTargetPositions;
         }
 
-        private List<Vector2> FindActiveArmies() {
+        private List<Vector2> FindActiveArmies() 
+        {
             List<Vector2> aiArmyPositions = new List<Vector2>();
 
             for (int i = 1; i <= boardStorage.board.height; i++)
@@ -210,7 +195,8 @@ namespace Assets.Scripts
 
         private void OnFinishMove()
         {
-            MakeMove();
+            //FinishTurn();
+           MakeMove();
         }
 
         private void FinishTurn()

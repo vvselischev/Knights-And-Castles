@@ -12,7 +12,10 @@ namespace Assets.Scripts
         public Canvas canvas;
         public Text scoreText;
         public Text roundText;
-
+        public StartButton startButton;
+        public SplitButton splitButton;
+        public CheckeredButtonBoard board;
+        
         public void Activate()
         {
             gameObject.SetActive(true);
@@ -34,6 +37,20 @@ namespace Assets.Scripts
         public void UpdateRoundText(int currentRound)
         {
             roundText.text = "Round: " + currentRound;
+        }
+
+        public void DisableUI()
+        {
+            board.DisableBoard();
+            startButton.Lock();
+            splitButton.Lock();
+        }
+
+        public void EnableUI()
+        {
+            board.EnableBoard();
+            startButton.Unlock();
+            splitButton.Unlock();
         }
     }
 }

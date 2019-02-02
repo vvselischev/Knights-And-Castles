@@ -10,7 +10,6 @@ namespace Assets.Scripts
         public BoardStorageItem[,] boardTable;
         public CheckeredButtonBoard board;
         private static BoardStorage instance;
-        public ControllerManager controllerManager;
 
         public static BoardStorage GetInstance()
         {
@@ -59,18 +58,15 @@ namespace Assets.Scripts
 
         public void InvertBoard()
         {
-            for (int row = 1; row <= board.height; row++)
+            for (int col = 1; col <= board.width / 2 + Math.Sign(board.width % 2); col++)
             {
-                for (int col = 1; col <= board.width - row + 1; col++)
+                for (int row = 1; row <= board.height; row++)
+
                 {
-                    if ((row + col == board.height + 1) && (row > board.height / 2))
-                    {
-                        continue;
-                    }
                     int newCol = board.width - col + 1;
                     int newRow = board.height - row + 1;
 
-                    SwapItems(col,row, newCol, newRow);
+                    SwapItems(col, row, newCol, newRow);
                 }
             }
         }
@@ -89,6 +85,13 @@ namespace Assets.Scripts
 
         public void Reset()
         {
+            for (int row = 1; row <= board.height; row++)
+            {
+                for (int col = 1; col <= board.width - row + 1; col++)
+                {
+                    SetItem(col, row, null);
+                }
+            }
         }
     }
 }

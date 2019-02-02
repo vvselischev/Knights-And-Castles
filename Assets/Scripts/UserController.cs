@@ -18,6 +18,7 @@ namespace Assets.Scripts
         private ArmyStorageItem chosenArmyItem;
         private Vector2 chosenArmyPosition;
         private bool movementInProgress;
+        private bool splitButtonClicked;
 
         public UserController(PlayerType playerType, Army startArmy,
             BoardStorage storage, PlayGameState playGameState)
@@ -27,12 +28,12 @@ namespace Assets.Scripts
             this.playGameState = playGameState;
         }
 
-        public void OnButtonClick(BoardButton boardButton)
+        public void OnButtonClick(int x, int y)
         {
-            Debug.Log($"Clicked: ({boardButton.boardX}, {boardButton.boardY})");
+            Debug.Log($"Clicked: ({x}, {y})");
             if (!movementInProgress)
             { 
-                ProcessAction(new Vector2(boardButton.boardX, boardButton.boardY));
+                ProcessAction(new Vector2(x, y));
             }
         }
 
@@ -59,7 +60,15 @@ namespace Assets.Scripts
                 playGameState.armyTextManager.ChangeText("");
                 if (chosenArmyItem != null)
                 {
-
+                    if (ReachableFromChosen(position) && splitButtonClicked)
+                    {
+                        Army splittedArmyPart = chosenArmyItem.Army.SplitIntoEqualParts();
+                        ArmyStorageItem splittedArmyStorageItem = 
+                            new ArmyStorageItem(splittedArmyPart, 
+                                InstantiateIcon(chosenArmyItem.StoredObject, position, chosenArmyPosition));
+                        MoveChosen(position, buttonGO);
+                        boardStorage.boardTable[(int)chosenArmyPosition.x, (int)chosenArmyPosition.y] = splittedArmyStorageItem;
+                    }
                 }
                 else
                 {
@@ -141,7 +150,7 @@ namespace Assets.Scripts
 
         public void Disable()
         {
-            
+        
         }
 
         // Set all user armies active
@@ -170,7 +179,19 @@ namespace Assets.Scripts
 
         public void OnSplitButtonClick()
         {
+            if (chosenArmyItem != null)
+            {
+                splitButtonClicked = true;
+            }
+        }
 
+        private GameObject InstantiateIcon(GameObject gameObject, Vector2 to, Vector2 from)
+        {
+            GameObject newObject = UnityEngine.GameObject.Instantiate(gameObject);
+          //  RectTransform rectTransform = newObject.GetComponent<RectTransform>();
+         //   rectTransform.position += boardStorage.board.GetOffsetFromPattern((int)to.x, (int)to.y) - 
+           //                           boardStorage.board.GetOffsetFromPattern((int)from.x, (int)from.y);
+            return newObject;
         }
     }
 }

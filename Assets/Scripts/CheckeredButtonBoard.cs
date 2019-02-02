@@ -113,7 +113,7 @@ namespace Assets.Scripts
         {
             BoardButton boardButton = newButton.GetComponent<BoardButton>();
             boardButton.Initialize(x, y);
-            return boardButton.button;
+            return boardButton.GetComponent<Button>();
         }
     }
 }

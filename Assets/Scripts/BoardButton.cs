@@ -12,8 +12,6 @@ namespace Assets.Scripts
         public int boardX;
         [NonSerialized]
         public int boardY;
-        [NonSerialized]
-        public Button button;
 
         public GameIcon icon;
 
@@ -23,13 +21,15 @@ namespace Assets.Scripts
         {
             boardX = x;
             boardY = y;
-            button = GetComponent<Button>();
         }
 
         public void OnClick()
         {
-            Debug.Log("Board button clicked");
-            inputListener.ProcessBoardClick(this);
+            if (enabled)
+            {
+                Debug.Log("Board button clicked");
+                inputListener.ProcessBoardClick(boardX, boardY);
+            }
         }
 
         public void Enable()

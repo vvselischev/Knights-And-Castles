@@ -29,44 +29,12 @@ namespace Assets.Scripts
 
         private TurnType currentTurn;
 
-        public TurnType CurrentTurn
-        {
-            get
-            {
-                return currentTurn;
-            }
-        }
+        public TurnType CurrentTurn => currentTurn;
 
         public void InitRound()
         {
             controllerManager.InitRound();
         }
-
-       /* private void DisableMouse()
-        {
-           controllerManager.DisableMouseController();
-            MouseUI.SetActive(false);
-        }
-
-        private void EnableMouse()
-        {
-            controllerManager.EnableMouseController();
-            MouseUI.SetActive(true);
-        }
-
-        private void DisableCat()
-        {
-            CatUI.SetActive(false);
-            CatIcon.SetActive(false);
-            controllerManager.DisableCatController();
-        }
-
-        private void EnableCat()
-        {
-            CatUI.SetActive(true);
-            CatIcon.SetActive(true);
-            controllerManager.EnableCatController();
-        }*/
 
         private void EnableRound()
         {

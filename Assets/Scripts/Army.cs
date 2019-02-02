@@ -110,9 +110,11 @@ namespace Assets.Scripts
         public Army Split(int spearmen, int archers, int cavalrymen)
         {
             armyComposition.DeleteArmyPart(spearmen, archers, cavalrymen);
+            
 
             if (armyType == ArmyType.USER)
             {
+                (this as UserArmy).setInactive();
                 return new UserArmy(playerType, new ArmyComposition(spearmen,
                     archers, cavalrymen, armyComposition.experience));
             }
@@ -120,6 +122,14 @@ namespace Assets.Scripts
             {
                 throw new NotImplementedException();
             }
+        }
+
+        public Army SplitIntoEqualParts() {
+            int spearmen = armyComposition.spearmen / 2;
+            int archers = armyComposition.archers / 2;
+            int cavalrymen = armyComposition.cavalrymen / 2;
+
+            return Split(spearmen, archers, cavalrymen);
         }
     }
 }

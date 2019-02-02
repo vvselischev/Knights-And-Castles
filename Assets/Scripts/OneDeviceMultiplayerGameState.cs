@@ -13,7 +13,7 @@ namespace Assets.Scripts
             board.EnableBoard();
         }
 
-        public override void ChangeTurn()
+        protected override void ChangeTurn()
         {
             base.ChangeTurn();
             storage.InvertBoard();

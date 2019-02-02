@@ -9,19 +9,31 @@ namespace Assets.Scripts
     {
         public ControllerManager controllerManager;
 
-        public void ProcessBoardClick(BoardButton boardButton)
+        public virtual void ProcessBoardClick(int x, int y)
         {
-            controllerManager.currentController.OnButtonClick(boardButton);
+            if (controllerManager.HasActiveController())
+            {
+                UserController currentController = controllerManager.currentController;
+                currentController.OnButtonClick(x, y);
+            }
         }
 
-        public void ProcessFinishTurnClick()
+        public virtual void ProcessFinishTurnClick()
         {
-            controllerManager.FinishTurn();
+            if (controllerManager.HasActiveController())
+            {
+                UserController currentController = controllerManager.currentController;
+                currentController.FinishTurn();
+            }
         }
 
-        public void ProcessSplitButtonClick()
+        public virtual void ProcessSplitButtonClick()
         {
-            controllerManager.currentController.OnSplitButtonClick();
+            if (controllerManager.HasActiveController())
+            {
+                UserController currentController = controllerManager.currentController;
+                currentController.OnSplitButtonClick();
+            }
         }
     }
 }

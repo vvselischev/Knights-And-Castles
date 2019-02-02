@@ -17,17 +17,11 @@ namespace Assets.Scripts
             {
                 currentController = SecondController;
             }
-            else
+            else if (type == TurnType.FIRST)
             {
                 currentController = FirstController;
             }
         }
-
-        public void FinishTurn()
-        {
-            currentController.FinishTurn();
-        }
-
         public void InitRound()
         {
             
@@ -55,6 +49,18 @@ namespace Assets.Scripts
             {
                 SecondController.Disable();
             }
+        }
+
+        public bool HasActiveController()
+        {
+            return currentController != null;
+        }
+
+        public void DeactivateAll()
+        {
+            currentController = null;
+            FirstController.Disable();
+            SecondController.Disable();
         }
     }
 }

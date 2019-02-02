@@ -83,7 +83,9 @@ namespace Assets.Scripts
 
         public void DeleteArmyPart(int spearmen, int archers, int cavalrymen)
         {
-            
+            this.spearmen = Math.Min(0, this.spearmen - spearmen);
+            this.archers = Math.Min(0, this.archers - archers);
+            this.cavalrymen = Math.Min(0, this.cavalrymen - cavalrymen);
         }
     }
 }
