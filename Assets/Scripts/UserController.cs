@@ -12,6 +12,7 @@ namespace Assets.Scripts
     public class UserController
     {
         public event VoidHandler FinishedMove;
+        private BoardFactory boardFactory;
         private PlayGameState playGameState;
         private BoardStorage boardStorage;
         private PlayerType playerType;
@@ -20,11 +21,11 @@ namespace Assets.Scripts
         private bool movementInProgress;
         private bool splitButtonClicked;
 
-        public UserController(PlayerType playerType, Army startArmy,
-            BoardStorage storage, PlayGameState playGameState)
+        public UserController(PlayerType playerType, BoardStorage storage, BoardFactory boardFactory, PlayGameState playGameState)
         {
             this.playerType = playerType;
             boardStorage = storage;
+            this.boardFactory = boardFactory;
             this.playGameState = playGameState;
         }
 
@@ -39,7 +40,12 @@ namespace Assets.Scripts
 
         private void ProcessAction(Vector2 position)
         {
-            GameObject buttonGO = boardStorage.board.BoardButtons[(int)position.x, (int)position.y].gameObject;
+            int positionX = (int) position.x;
+            int positionY = (int) position.y;
+            int chosenPositionX = (int) chosenArmyPosition.x;
+            int chosenPositionY = (int) chosenArmyPosition.y;
+            
+            GameObject buttonGO = boardStorage.board.BoardButtons[positionX, positionY].gameObject;
             //Turns off chosenArmyItem.Army activity if it was strange click.
             bool chooseOrMoveClick = false; 
             if (boardStorage.GetItem(position) is ArmyStorageItem)
@@ -62,12 +68,7 @@ namespace Assets.Scripts
                 {
                     if (ReachableFromChosen(position) && splitButtonClicked)
                     {
-                        Army splittedArmyPart = chosenArmyItem.Army.SplitIntoEqualParts();
-                        ArmyStorageItem splittedArmyStorageItem = 
-                            new ArmyStorageItem(splittedArmyPart, 
-                                InstantiateIcon(chosenArmyItem.StoredObject, position, chosenArmyPosition));
-                        MoveChosen(position, buttonGO);
-                        boardStorage.boardTable[(int)chosenArmyPosition.x, (int)chosenArmyPosition.y] = splittedArmyStorageItem;
+                        ProcessSplit(chosenPositionX, chosenPositionY, positionX, positionY);
                     }
                 }
                 else
@@ -87,9 +88,19 @@ namespace Assets.Scripts
             }
         }
 
+        private void ProcessSplit(int chosenPositionX, int chosenPositionY, int positionX, int positionY)
+        {
+            Army splittedArmyPart = chosenArmyItem.Army.SplitIntoEqualParts();
+            GameObject clonedIcon = boardFactory.CloneBoardIcon(chosenPositionX, chosenPositionY,
+                positionX, positionY);
+            boardStorage.SetItem(positionX, positionY, new ArmyStorageItem(splittedArmyPart, clonedIcon));
+
+            splitButtonClicked = false;
+        }
+
         private void MoveChosen(Vector2 targetPosition, GameObject targetObject)
         {
-            //TODO: Disable UI normally (storage.board.Disable())
+            boardStorage.board.DisableBoard();
             movementInProgress = true;
             boardStorage.SetItem(chosenArmyPosition, null);
             currentTargetPosition = targetPosition;
@@ -108,7 +119,7 @@ namespace Assets.Scripts
             {
                 return;
             }
-            //TODO: Enable UI
+            boardStorage.board.EnableBoard();
 
             ArmyStorageItem resultItem = GetResultItem();
             boardStorage.SetItem(currentTargetPosition, resultItem);
@@ -181,17 +192,8 @@ namespace Assets.Scripts
         {
             if (chosenArmyItem != null)
             {
-                splitButtonClicked = true;
+                splitButtonClicked = !splitButtonClicked;
             }
-        }
-
-        private GameObject InstantiateIcon(GameObject gameObject, Vector2 to, Vector2 from)
-        {
-            GameObject newObject = UnityEngine.GameObject.Instantiate(gameObject);
-          //  RectTransform rectTransform = newObject.GetComponent<RectTransform>();
-         //   rectTransform.position += boardStorage.board.GetOffsetFromPattern((int)to.x, (int)to.y) - 
-           //                           boardStorage.board.GetOffsetFromPattern((int)from.x, (int)from.y);
-            return newObject;
         }
     }
 }

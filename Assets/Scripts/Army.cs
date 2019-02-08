@@ -111,7 +111,7 @@ namespace Assets.Scripts
         {
             armyComposition.DeleteArmyPart(spearmen, archers, cavalrymen);
             
-
+            //TODO: move it to child class!!!
             if (armyType == ArmyType.USER)
             {
                 (this as UserArmy).setInactive();

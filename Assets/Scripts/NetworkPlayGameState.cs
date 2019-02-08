@@ -46,7 +46,7 @@ namespace Assets.Scripts
         private void SetupListener()
         {
             inputListener.Init(board.width, board.height);
-            boardCreator.patternButton.GetComponent<BoardButton>().inputListener = inputListener;
+            boardFactory.patternButton.GetComponent<BoardButton>().inputListener = inputListener;
             playMenu.startButton.GetComponent<StartButton>().inputListener = inputListener;
         }
         
@@ -58,14 +58,12 @@ namespace Assets.Scripts
         private void SetupRoundHost()
         {
             storage.Reset();
-            boardCreator.FillBoardStorageRandomly();
+            boardFactory.FillBoardStorageRandomly();
             
-            controllerManager.FirstController = new UserController(PlayerType.FIRST, 
-                boardCreator.FirstArmy, storage, this);
-            controllerManager.SecondController = new UserController(PlayerType.SECOND, 
-                boardCreator.SecondArmy, storage, this);
+            controllerManager.FirstController = new UserController(PlayerType.FIRST, storage, boardFactory,this);
+            controllerManager.SecondController = new UserController(PlayerType.SECOND, storage, boardFactory,this);
 
-            List<byte> bytes = boardCreator.ConvertBoardStorageToBytes();
+            List<byte> bytes = boardFactory.ConvertBoardStorageToBytes();
             
             //Insert 'S' -- Setup message.
             bytes.Insert(0, (byte) 'S');
@@ -89,12 +87,10 @@ namespace Assets.Scripts
             multiplayerController.OnMessageReceived -= SetupRoundFromNetwork;
             storage.Reset();
             
-            boardCreator.FillBoardStorageFromArray(message.Skip(1).ToArray());
+            boardFactory.FillBoardStorageFromArray(message.Skip(1).ToArray());
             
-            controllerManager.FirstController = new UserController(PlayerType.FIRST, 
-                boardCreator.FirstArmy, storage, this);
-            controllerManager.SecondController = new UserController(PlayerType.SECOND, 
-                boardCreator.SecondArmy, storage, this);
+            controllerManager.FirstController = new UserController(PlayerType.FIRST, storage, boardFactory,this);
+            controllerManager.SecondController = new UserController(PlayerType.SECOND, storage, boardFactory,this);
             InitNewGame();
             
             //Because host is the first to move

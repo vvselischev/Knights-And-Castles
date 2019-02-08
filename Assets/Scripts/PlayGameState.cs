@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using Assets.Scripts;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace Assets.Scripts
@@ -14,7 +15,7 @@ namespace Assets.Scripts
         public TurnManager turnManager;
         public Timer timer;
         public RoundScore roundScore;
-        public RoundBoardCreator boardCreator;
+        [FormerlySerializedAs("boardCreator")] public BoardFactory boardFactory;
         public ControllerManager controllerManager;
         public ArmyTextManager armyTextManager;
 
@@ -28,12 +29,10 @@ namespace Assets.Scripts
             menuActivator.OpenMenu(playMenu);
             
             storage.Reset();
-            boardCreator.FillBoardStorageRandomly();
+            boardFactory.FillBoardStorageRandomly();
             
-            controllerManager.FirstController = new UserController(PlayerType.FIRST, 
-                                boardCreator.FirstArmy, storage, this);
-            controllerManager.SecondController = new UserController(PlayerType.SECOND, 
-                                boardCreator.SecondArmy, storage, this);
+            controllerManager.FirstController = new UserController(PlayerType.FIRST,  storage, boardFactory, this);
+            controllerManager.SecondController = new UserController(PlayerType.SECOND, storage, boardFactory,this);
             InitNewGame();
         }
 
@@ -104,10 +103,6 @@ namespace Assets.Scripts
 
         protected virtual void InitNewGame()
         {
-            //These line was in legacy code. 
-            //Perhaps, it deletes buttons created for the editor mode since they're not initialized correctly.
-            board.DeleteButtons();
-            board.CreateButtons();
             InitNewRound();
         }
 
