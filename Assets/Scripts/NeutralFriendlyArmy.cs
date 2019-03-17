@@ -16,5 +16,10 @@ namespace Assets.Scripts
         {
             return Merge(this, attackingArmy);
         }
+
+        public override object Clone()
+        {
+            return new NeutralFriendlyArmy(armyComposition);
+        }
     }
 }

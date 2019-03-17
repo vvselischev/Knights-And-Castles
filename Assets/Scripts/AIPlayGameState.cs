@@ -37,5 +37,22 @@ namespace Assets.Scripts
                 playMenu.EnableUI();
             }
         }
+
+        public override void OnFinishGame(ResultType resultType)
+        {
+            base.OnFinishGame(resultType);
+            if (resultType == ResultType.FIRST_WIN)
+            {
+                uiManager.PerformLerpString("You win!", Color.green);
+            }
+            else if (resultType == ResultType.SECOND_WIN)
+            {
+                uiManager.PerformLerpString("You lose...", Color.red);
+            }
+            else if (resultType == ResultType.DRAW)
+            {
+                uiManager.PerformLerpString("Draw", Color.blue);
+            }
+        }
     }
 }

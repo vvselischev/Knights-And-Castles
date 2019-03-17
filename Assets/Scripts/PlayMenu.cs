@@ -11,7 +11,7 @@ namespace Assets.Scripts
     {
         public Canvas canvas;
         public Text scoreText;
-        public Text roundText;
+        //public Text roundText;
         public StartButton startButton;
         public SplitButton splitButton;
         public CheckeredButtonBoard board;
@@ -36,7 +36,7 @@ namespace Assets.Scripts
 
         public void UpdateRoundText(int currentRound)
         {
-            roundText.text = "Round: " + currentRound;
+            //roundText.text = "Round: " + currentRound;
         }
 
         public void DisableUI()

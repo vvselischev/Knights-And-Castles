@@ -49,7 +49,7 @@ namespace Assets.Scripts
         {
             byte[] message = {(byte)'M', (byte)'B', (byte) x, (byte) y};
             logText.text += "Send:" + x + " " + y + "\n";
-            multiplayerController.SendMessage(message);
+ //           multiplayerController.SendMessage(message);
             base.ProcessBoardClick(x, y);
         }
 
@@ -57,7 +57,7 @@ namespace Assets.Scripts
         {
             byte[] message = {(byte) 'M', (byte) 'F'};
             logText.text += "Send finish turn" + "\n";
-            multiplayerController.SendMessage(message);
+//            multiplayerController.SendMessage(message);
             base.ProcessFinishTurnClick();
         }
     }

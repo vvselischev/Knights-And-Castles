@@ -33,6 +33,11 @@ namespace Assets.Scripts
 
         void Awake()
         {
+            Reset();
+        }
+
+        public void Reset()
+        {
             DeleteButtons();
             boardButtons = new Button[width + 1, height + 1];
             patternButton = PatternButtonGO.GetComponent<Button>();

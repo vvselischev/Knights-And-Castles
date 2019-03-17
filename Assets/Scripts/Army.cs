@@ -11,10 +11,10 @@ namespace Assets.Scripts
     {
         USER,
         NEUTRAL_FRIENDLY,
-        NEUTRAL_AGRESSIVE
+        NEUTRAL_AGGRESSIVE
     }
 
-    public abstract class Army
+    public abstract class Army : ICloneable
     {
         public readonly PlayerType playerType;
         public readonly ArmyType armyType;
@@ -33,9 +33,11 @@ namespace Assets.Scripts
             }
         }
 
+        public virtual void SetActive() {}
+
         private bool CheckValidTypes()
         {
-            return (((armyType == ArmyType.NEUTRAL_AGRESSIVE) || (armyType == ArmyType.NEUTRAL_FRIENDLY)) &&
+            return (((armyType == ArmyType.NEUTRAL_AGGRESSIVE) || (armyType == ArmyType.NEUTRAL_FRIENDLY)) &&
                     (playerType == PlayerType.NEUTRAL)) || ((armyType == ArmyType.USER) &&
                                                             ((playerType == PlayerType.FIRST) ||
                                                              playerType == PlayerType.SECOND));
@@ -100,7 +102,7 @@ namespace Assets.Scripts
             {
                 return new UserArmy(winnerArmy.playerType, resultArmyComposition);
             }
-            if (winnerArmy.armyType == ArmyType.NEUTRAL_AGRESSIVE)
+            if (winnerArmy.armyType == ArmyType.NEUTRAL_AGGRESSIVE)
             {
                 return new NeutralAggressiveArmy(resultArmyComposition);
             }
@@ -114,7 +116,7 @@ namespace Assets.Scripts
             //TODO: move it to child class!!!
             if (armyType == ArmyType.USER)
             {
-                (this as UserArmy).setInactive();
+                (this as UserArmy).SetInactive();
                 return new UserArmy(playerType, new ArmyComposition(spearmen,
                     archers, cavalrymen, armyComposition.experience));
             }
@@ -124,6 +126,11 @@ namespace Assets.Scripts
             }
         }
 
+        public double ArmyPower()
+        {
+            return armyComposition.ArmyPower();
+        }
+
         public Army SplitIntoEqualParts() {
             int spearmen = armyComposition.spearmen / 2;
             int archers = armyComposition.archers / 2;
@@ -131,5 +138,7 @@ namespace Assets.Scripts
 
             return Split(spearmen, archers, cavalrymen);
         }
+
+        public abstract object Clone();
     }
 }

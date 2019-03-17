@@ -41,7 +41,8 @@ namespace Assets.Scripts
                 yield return null;
             }
             Debug.Log("Lerp finished");
-            FinishedLerp();
+            textClone.enabled = false;
+            FinishedLerp?.Invoke();
         }
 
         public void DisableText()

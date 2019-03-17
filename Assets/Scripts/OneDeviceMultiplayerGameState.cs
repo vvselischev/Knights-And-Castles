@@ -18,5 +18,24 @@ namespace Assets.Scripts
             base.ChangeTurn();
             storage.InvertBoard();
         }
+        
+        public override void OnFinishGame(ResultType resultType)
+        {
+            base.OnFinishGame(resultType);
+            if (resultType == ResultType.FIRST_WIN)
+            {
+                uiManager.PerformLerpString("First player wins!", Color.green);
+            }
+            else if (resultType == ResultType.SECOND_WIN)
+            {
+                uiManager.PerformLerpString("Second player wins!", Color.green);
+            }
+            else if (resultType == ResultType.DRAW)
+            {
+                uiManager.PerformLerpString("Draw", Color.blue);
+            }
+        }
+        
+        
     }
 }

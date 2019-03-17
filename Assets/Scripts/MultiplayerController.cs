@@ -28,7 +28,7 @@ namespace Assets.Scripts
 
             return instance;
         }
-        
+       
         public void SignInAndStartMPGame()
         {
             Social.localUser.Authenticate((bool success) =>

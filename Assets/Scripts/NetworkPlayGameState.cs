@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using GooglePlayGames.BasicApi.Multiplayer;
+using UnityEngine;
 using UnityEngine.UI;
 
 namespace Assets.Scripts
@@ -27,7 +28,8 @@ namespace Assets.Scripts
             string myId = multiplayerController.GetMyParticipantId();
 
             multiplayerController.logText = logText;
-
+            isHost = false;
+            
             //Let the host set up the round.
             if (hostID == myId)
             {
@@ -115,6 +117,37 @@ namespace Assets.Scripts
         {
             //Host makes first turn (as PlayerType.First).
             return TurnType.FIRST;
+        }
+        
+        public override void OnFinishGame(ResultType resultType)
+        {
+            base.OnFinishGame(resultType);
+            if (resultType == ResultType.FIRST_WIN)
+            {
+                if (isHost)
+                {
+                    uiManager.PerformLerpString("You win!", Color.green);
+                }
+                else
+                {
+                    uiManager.PerformLerpString("You lose...", Color.red);
+                }
+            }
+            else if (resultType == ResultType.SECOND_WIN)
+            {
+                if (!isHost)
+                {
+                    uiManager.PerformLerpString("You win!", Color.green);
+                }
+                else
+                {
+                    uiManager.PerformLerpString("You lose...", Color.red);
+                }
+            }
+            else if (resultType == ResultType.DRAW)
+            {
+                uiManager.PerformLerpString("Draw", Color.blue);
+            }
         }
     }
 }

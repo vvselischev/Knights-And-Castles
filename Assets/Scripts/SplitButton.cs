@@ -9,7 +9,7 @@ namespace Assets.Scripts
     public class SplitButton : MonoBehaviour
     {
         public GameIcon icon;
-        public Color defaultColor = Color.green;
+        public Color defaultColor = Color.white;
         public Color lockColor = Color.red;
 
         public void OnClick()

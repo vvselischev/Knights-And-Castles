@@ -17,20 +17,25 @@ namespace Assets.Scripts
 
         public override Army PerformAction(Army attackingArmy)
         {
-            setInactive();
+            SetInactive();
             if (attackingArmy is UserArmy)
             {
-                (attackingArmy as UserArmy).setInactive();
+                (attackingArmy as UserArmy).SetInactive();
             }
 
             if (attackingArmy.playerType == playerType)
             {
                 return Merge(attackingArmy, this);
             }
-            else
-            {
-                return PerformBattle(attackingArmy, this);
-            }
+            return PerformBattle(attackingArmy, this);
+        }
+
+        public override object Clone()
+        {
+            var army = new UserArmy(playerType, armyComposition);
+
+            army.SetActive();
+            return army;
         }
 
         public bool IsActive()
@@ -38,12 +43,12 @@ namespace Assets.Scripts
             return isActive;
         }
 
-        public void setActive()
+        public override void SetActive()
         {
             isActive = true;
         }
 
-        public void setInactive()
+        public void SetInactive()
         {
             isActive = false;
         }

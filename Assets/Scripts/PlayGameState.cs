@@ -6,7 +6,15 @@ using UnityEngine.UI;
 
 namespace Assets.Scripts
 {
-    public class PlayGameState : MonoBehaviour, IGameState
+    public enum ResultType
+    {
+        FIRST_WIN,
+        SECOND_WIN,
+        DRAW,
+        NONE
+    }
+    
+    public abstract class PlayGameState : MonoBehaviour, IGameState
     {
         protected readonly MenuActivator menuActivator = MenuActivator.GetInstance();
         public PlayMenu playMenu;
@@ -15,24 +23,31 @@ namespace Assets.Scripts
         public TurnManager turnManager;
         public Timer timer;
         public RoundScore roundScore;
-        [FormerlySerializedAs("boardCreator")] public BoardFactory boardFactory;
+        public BoardFactory boardFactory;
         public ControllerManager controllerManager;
         public ArmyTextManager armyTextManager;
+        public UIManager uiManager;
+        public StateManager stateManager;
 
         public const int MAX_TURNS = 1000;
 
-        private int currentRound = 0;
-        private int playedTurns = 0;
+        private int currentRound;
+        private int playedTurns;
 
         public virtual void InvokeState()
         {
             menuActivator.OpenMenu(playMenu);
             
             storage.Reset();
+            boardFactory.Initialize(this);
             boardFactory.FillBoardStorageRandomly();
             
             controllerManager.FirstController = new UserController(PlayerType.FIRST,  storage, boardFactory, this);
             controllerManager.SecondController = new UserController(PlayerType.SECOND, storage, boardFactory,this);
+
+            currentRound = 0;
+            playedTurns = 0;
+            
             InitNewGame();
         }
 
@@ -43,13 +58,14 @@ namespace Assets.Scripts
 
         private void InitNewRound()
         {
+            //TODO: if we restart the game, board sometimes is inverted??!!
+            
             //buttonListener.Reset();
             turnManager.InitRound();
             playedTurns = 0;
             currentRound++;
 
             playMenu.UpdateRoundText(currentRound);
-            
 
             if (currentRound > 5)
             {
@@ -81,6 +97,16 @@ namespace Assets.Scripts
         {
             playMenu.UpdateScoreText(roundScore);
             InitNewRound();
+        }
+
+        public virtual void OnFinishGame(ResultType resultType)
+        {
+            uiManager.FinishedLerp += () =>
+            {
+                //Here move to the result state
+                //Now by default we go to the start menu
+                stateManager.ChangeState(StateType.START_GAME_STATE);
+            };
         }
 
         protected virtual void ChangeTurn()
