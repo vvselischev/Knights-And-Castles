@@ -19,6 +19,7 @@ namespace Assets.Scripts
         private PlayerType playerType;
         private ArmyStorageItem chosenArmyItem;
         private IntVector2 chosenArmyPosition;
+        private IntVector2 activeFramePosition;
         private bool movementInProgress;
         private bool splitButtonClicked;
         private int aliveArmies;
@@ -54,6 +55,8 @@ namespace Assets.Scripts
         {
             int positionX = position.x;
             int positionY = position.y;
+
+            SetActiveFrame(position);
             
             GameObject buttonGO = boardStorage.board.BoardButtons[positionX, positionY].gameObject;
             //Turns off chosenArmyItem.Army activity if it was strange click.
@@ -68,7 +71,6 @@ namespace Assets.Scripts
                     chosenArmyItem = clickedArmyItem;
                     chosenArmyPosition = position;
                     chooseOrMoveClick = true;
-                    //TODO: light on army icon
                 }
             }
             else
@@ -80,10 +82,6 @@ namespace Assets.Scripts
                     {
                         ProcessSplit(chosenArmyPosition.x, chosenArmyPosition.y, positionX, positionY);
                     }
-                }
-                else
-                {
-                    //TODO: turn off icon light
                 }
             }
 
@@ -97,6 +95,22 @@ namespace Assets.Scripts
                 chosenArmyItem = null;
             }
         }
+
+        private void SetActiveFrame(IntVector2 position)
+        {
+            if (activeFramePosition != null)
+            {
+                boardStorage.DisableFrame(activeFramePosition);
+            }
+
+            if (position != null)
+            {
+                boardStorage.EnableFrame(position);
+            }
+
+            activeFramePosition = position;
+        }
+ 
 
         private void ProcessSplit(int chosenPositionX, int chosenPositionY, int positionX, int positionY)
         {
@@ -167,6 +181,7 @@ namespace Assets.Scripts
 
         private void ClearMoveState()
         {
+            SetActiveFrame(null);
             chosenArmyItem = null;
             movementInProgress = false;  
         }
@@ -244,6 +259,7 @@ namespace Assets.Scripts
 
         public void FinishTurn()
         {
+            ClearMoveState();
             playGameState.OnFinishTurn(playerType);
         }
 

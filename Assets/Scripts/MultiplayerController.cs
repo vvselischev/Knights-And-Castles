@@ -6,13 +6,15 @@ using UnityEngine.UI;
 
 namespace Assets.Scripts
 {
+    public delegate void ByteArrayHandler(byte[] data);
     public class MultiplayerController : RealTimeMultiplayerListener
     {
-        private static MultiplayerController instance = null;
+        private static MultiplayerController instance;
 
         private uint minimumOpponents = 1;
         private uint maximumOpponents = 1;
         private uint gameVariation = 0;
+        
         private MultiplayerController()
         {
             PlayGamesPlatform.DebugLogEnabled = true;
@@ -117,14 +119,11 @@ namespace Assets.Scripts
             }
         }
 
-        //TODO: rewrite with custom handler (now it is awful)
-        public event VoidHandler OnMessageReceived;
-        public byte[] lastMessage;
+        public event ByteArrayHandler OnMessageReceived;
         public void OnRealTimeMessageReceived(bool isReliable, string senderId, byte[] data)
         {
-            ShowMPStatus("Received some gameplay messages from participant ID: " + senderId);
-            lastMessage = data;
-            OnMessageReceived?.Invoke();
+            //ShowMPStatus("Received some gameplay messages from participant ID: " + senderId);
+            OnMessageReceived?.Invoke(data);
         }
 
        public List<Participant> GetAllPlayers() {
@@ -136,7 +135,7 @@ namespace Assets.Scripts
         }
         
         public void SendMessage(byte[] message) {
-            Debug.Log ("Sending my update message  " + message + " to all players in the room");
+            //Debug.Log ("Sending my update message  " + message + " to all players in the room");
             PlayGamesPlatform.Instance.RealTime.SendMessageToAll (true, message);
         }
 
@@ -145,8 +144,12 @@ namespace Assets.Scripts
         private void ShowMPStatus(string message)
         {
             Debug.Log(message);
-            //logText.text += "\n" + message;
+            logText.text += "\n" + message;
         }
 
+        public void LeaveRoom()
+        {
+            PlayGamesPlatform.Instance.RealTime.LeaveRoom();
+        }
     }
 }

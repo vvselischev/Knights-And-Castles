@@ -19,7 +19,7 @@ namespace Assets.Scripts
             {
                 stateManager.ChangeState(StateType.NETWORK_GAME_STATE);
             };
-//            MultiplayerController.SignInAndStartMPGame();
+            MultiplayerController.SignInAndStartMPGame();
         }
 
         public void CloseState()

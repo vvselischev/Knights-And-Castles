@@ -10,6 +10,8 @@ namespace Assets.Scripts
         private Sprite defaultSprite;
         private Image currentImage;
 
+        public bool enabledByDefault = true;
+
         public void SetImage(Image image)
         {
             currentImage.enabled = true;
@@ -23,23 +25,33 @@ namespace Assets.Scripts
 
         public void Reset()
         {
+            currentImage.enabled = enabledByDefault;
             currentImage.sprite = defaultSprite;
         }
 
         public void ChangeColor(Color color)
         {
+            currentImage.enabled = true;
             currentImage.color = color;
         }
 
-        /*public void Enable(Image image)
+        public void Disable()
         {
-            SetImage(image);
-        }*/
+            Reset();
+            currentImage.enabled = false;
+        }
+        
+        public void Enable()
+        {
+            currentImage.enabled = true;
+            currentImage.color = Color.yellow;
+        }
 
         public void Awake()
         {
             defaultSprite = GetComponent<Image>().sprite;
             currentImage = GetComponent<Image>();
+            enabledByDefault = currentImage.enabled;
         }
     }
 }

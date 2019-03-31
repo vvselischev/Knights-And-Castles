@@ -8,7 +8,6 @@ namespace Assets.Scripts
     public abstract class BoardStorageItem
     {
         public GameObject StoredObject { get; set; }
-
         public BoardStorageItem(GameObject targetObject)
         {
             StoredObject = targetObject;

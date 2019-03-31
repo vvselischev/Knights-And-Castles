@@ -8,19 +8,19 @@ namespace Assets.Scripts
     {
         private class ItemAndPosition
         {
-            public readonly ArmyStorageItemEmulation Item;
-            public readonly int X;
-            public readonly int Y;
+            public ArmyStorageItemEmulation item;
+            public int x;
+            public int y;
 
             public ItemAndPosition(ArmyStorageItemEmulation item, IntVector2 position)
             {
-                Item = item;
-                X = position.x;
-                Y = position.y;
+                this.item = item;
+                x = position.x;
+                y = position.y;
             }
         }
         
-        private readonly BoardStorageEmulation boardStorageEmulation;
+        private BoardStorageEmulation boardStorageEmulation;
 
         public GameSimulation(BoardStorage boardStorage)
         {
@@ -153,7 +153,6 @@ namespace Assets.Scripts
         public MoveInformation FindBestMove(PlayerType playerType, int depth)
         {
             //TODO: do it simultaneously.
-            //TODO: do it simultaneously.
             var currentPlayerArmyPosition = FindPlayerArmies()[playerType];
             var otherPlayerArmyPosition = FindPlayerArmies()[ChangePlayerType(playerType)];
             
@@ -185,7 +184,14 @@ namespace Assets.Scripts
             {
                 var intermediateResult = MakeAnalyzingMoves(moveInformation, depth, playerType, 
                     currentPlayerArmyPositions, otherPlayerArmyPositions);
-
+                //Enemy will lose
+                if (double.IsNegativeInfinity(intermediateResult.Item1))
+                {
+                    resultBenefit = intermediateResult.Item1;
+                    bestMoveInformation = moveInformation;
+                    break;
+                }
+                
                 if (intermediateResult.Item1 < resultBenefit)
                 {
                     resultBenefit = intermediateResult.Item1;
@@ -232,27 +238,27 @@ namespace Assets.Scripts
             CancelMove(memorizedFrom, memorizedTo);
             currentPlayerArmyPositions.Remove(moveInformation.To);
             otherPlayerArmyPositions.Remove(moveInformation.To);
-            if (memorizedFrom.Item?.Army != null)
+            if (memorizedFrom.item?.Army != null)
             {
-                if (memorizedFrom.Item.Army.playerType == playerType)
+                if (memorizedFrom.item.Army.playerType == playerType)
                 {
                     currentPlayerArmyPositions.Add(moveInformation.From);
                 }
 
-                 if (memorizedFrom.Item.Army.playerType == ChangePlayerType(playerType))
+                 if (memorizedFrom.item.Army.playerType == ChangePlayerType(playerType))
                  {
                     otherPlayerArmyPositions.Add(moveInformation.From);
                  }
             }
 
-            if (memorizedTo.Item?.Army != null)
+            if (memorizedTo.item?.Army != null)
             {
-                if (memorizedTo.Item.Army.playerType == playerType)
+                if (memorizedTo.item.Army.playerType == playerType)
                 {
                     currentPlayerArmyPositions.Add(moveInformation.To);
                 }
 
-                if (memorizedTo.Item.Army.playerType == ChangePlayerType(playerType))
+                if (memorizedTo.item.Army.playerType == ChangePlayerType(playerType))
                 {
                     otherPlayerArmyPositions.Add(moveInformation.To);
                 }
@@ -263,9 +269,9 @@ namespace Assets.Scripts
 
         private void CancelMove(ItemAndPosition from, ItemAndPosition to)
         {
-            from.Item.Army.SetActive();
-            boardStorageEmulation.SetItem(from.X, from.Y, from.Item);
-            boardStorageEmulation.SetItem(to.X, to.Y, to.Item);
+            from.item.Army.SetActive();
+            boardStorageEmulation.SetItem(from.x, from.y, from.item);
+            boardStorageEmulation.SetItem(to.x, to.y, to.item);
         }
 
         private ArmyStorageItemEmulation GetItemByPosition(IntVector2 position)

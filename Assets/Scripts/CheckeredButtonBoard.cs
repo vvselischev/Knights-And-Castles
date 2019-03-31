@@ -46,6 +46,11 @@ namespace Assets.Scripts
             CreateButtons();
         }
 
+        public BoardButton GetBoardButton(IntVector2 position)
+        {
+            return boardButtons[position.x, position.y].gameObject.GetComponent<BoardButton>();
+        }
+
         public void EnableBoard()
         {
             var buttons = FindObjectsOfType(typeof(Button));

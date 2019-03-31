@@ -23,6 +23,7 @@ namespace Assets.Scripts
             SetupListener();
 
             multiplayerController = MultiplayerController.GetInstance();
+            
             allPlayers = multiplayerController.GetAllPlayers();
             string hostID = ChooseHost();
             string myId = multiplayerController.GetMyParticipantId();
@@ -43,6 +44,8 @@ namespace Assets.Scripts
                 myTurnType = TurnType.SECOND;
                 multiplayerController.OnMessageReceived += SetupRoundFromNetwork;
             }
+
+            playedTurns = 0;
         }
 
         private void SetupListener()
@@ -60,6 +63,7 @@ namespace Assets.Scripts
         private void SetupRoundHost()
         {
             storage.Reset();
+            boardFactory.Initialize(this);
             boardFactory.FillBoardStorageRandomly();
             
             controllerManager.FirstController = new UserController(PlayerType.FIRST, storage, boardFactory,this);
@@ -77,9 +81,8 @@ namespace Assets.Scripts
             multiplayerController.SendMessage(bytes.ToArray());
         }
         
-        private void SetupRoundFromNetwork()
+        private void SetupRoundFromNetwork(byte[] message)
         {
-            byte[] message = multiplayerController.lastMessage;
             if (message[0] != 'S')
             {
                 return;
@@ -88,7 +91,8 @@ namespace Assets.Scripts
             logText.text += "Create board from network..." + "\n";
             multiplayerController.OnMessageReceived -= SetupRoundFromNetwork;
             storage.Reset();
-            
+
+            boardFactory.Initialize(this);
             boardFactory.FillBoardStorageFromArray(message.Skip(1).ToArray());
             
             controllerManager.FirstController = new UserController(PlayerType.FIRST, storage, boardFactory,this);
@@ -122,6 +126,10 @@ namespace Assets.Scripts
         public override void OnFinishGame(ResultType resultType)
         {
             base.OnFinishGame(resultType);
+
+            multiplayerController.LeaveRoom();
+            
+            logText.text = "Result: " + resultType + '\n';
             if (resultType == ResultType.FIRST_WIN)
             {
                 if (isHost)
@@ -147,6 +155,20 @@ namespace Assets.Scripts
             else if (resultType == ResultType.DRAW)
             {
                 uiManager.PerformLerpString("Draw", Color.blue);
+            }
+        }
+        
+        protected override void InitNewRound()
+        {
+            base.InitNewRound();
+            
+            if ((turnManager.CurrentTurn == TurnType.FIRST) == isHost)
+            {
+                playMenu.EnableUI();
+            }
+            else
+            {
+                playMenu.DisableUI();
             }
         }
     }

@@ -31,8 +31,7 @@ namespace Assets.Scripts
 
         public const int MAX_TURNS = 1000;
 
-        private int currentRound;
-        private int playedTurns;
+        protected int playedTurns;
 
         public virtual void InvokeState()
         {
@@ -44,8 +43,7 @@ namespace Assets.Scripts
             
             controllerManager.FirstController = new UserController(PlayerType.FIRST,  storage, boardFactory, this);
             controllerManager.SecondController = new UserController(PlayerType.SECOND, storage, boardFactory,this);
-
-            currentRound = 0;
+            
             playedTurns = 0;
             
             InitNewGame();
@@ -56,34 +54,18 @@ namespace Assets.Scripts
             menuActivator.CloseMenu();
         }
 
-        private void InitNewRound()
+        protected virtual void InitNewRound()
         {
-            //TODO: if we restart the game, board sometimes is inverted??!!
-            
             //buttonListener.Reset();
             turnManager.InitRound();
             playedTurns = 0;
-            currentRound++;
-
-            playMenu.UpdateRoundText(currentRound);
-
-            if (currentRound > 5)
-            {
-                //end game
-                return;
-            }
-
-            if (currentRound == 1)
-            {
-                turnManager.SetTurn(GetFirstTurn());
-            }
-            else if (currentRound > 1)
-            {
-                turnManager.SetNextTurn();
-            }
-
-            timer.StartTimer();
+            
             armyTextManager.Init();
+            
+            turnManager.SetTurn(GetFirstTurn());
+            timer.StartTimer();
+            
+            //Disable or enable UI in child classes!
         }
 
         public void OnFinishTurn(PlayerType finishedType)
@@ -91,12 +73,6 @@ namespace Assets.Scripts
             Debug.Log("Finished turn");
             //buttonListener.Reset();
             ChangeTurn();
-        }
-
-        public void OnFinishRound()
-        {
-            playMenu.UpdateScoreText(roundScore);
-            InitNewRound();
         }
 
         public virtual void OnFinishGame(ResultType resultType)
@@ -115,7 +91,6 @@ namespace Assets.Scripts
             {
                 turnManager.SetTurn(TurnType.RESULT);
                 timer.StopTimer();
-                //roundJudge.StartJudge();
             }
             else
             {
@@ -127,7 +102,7 @@ namespace Assets.Scripts
             //Further behaviour should be specified in child classes.
         }
 
-        protected virtual void InitNewGame()
+        protected void InitNewGame()
         {
             InitNewRound();
         }

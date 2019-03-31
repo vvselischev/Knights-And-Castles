@@ -88,6 +88,16 @@ namespace Assets.Scripts
             return bonusTable[position.x, position.y] is Castle;
         }
         
+        public void DisableFrame(IntVector2 position)
+        {
+            board.GetBoardButton(position).DisableFrame();
+        }
+        
+        public void EnableFrame(IntVector2 position)
+        {
+            board.GetBoardButton(position).EnableFrame();
+        }
+        
         public void InvertBoard()
         {
             for (int col = 1; col <= board.width / 2 + Math.Sign(board.width % 2); col++)
@@ -114,18 +124,10 @@ namespace Assets.Scripts
             SetBonusItem(secondCol, secondRow, tmp2);
         }
 
-        public void RemoveBoardItem(BoardButton boardButton)
-        {
-            
-        }
-
         public void Reset()
         {
             for (int row = 1; row <= board.height; row++)
             {
-                //Why board.width - row + 1 ??
-                //for (int col = 1; col <= board.width - row + 1; col++)
-                //I'd better change it to this:
                 for (int col = 1; col <= board.width; col++)
                 {
                     var oldItem = GetItem(col, row);

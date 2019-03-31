@@ -35,7 +35,11 @@ namespace Assets.Scripts
                 uiManager.PerformLerpString("Draw", Color.blue);
             }
         }
-        
-        
+
+        protected override void InitNewRound()
+        {
+            base.InitNewRound();
+            playMenu.EnableUI();
+        }
     }
 }

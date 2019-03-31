@@ -28,17 +28,6 @@ namespace Assets.Scripts
             canvas.enabled = false;
         }
 
-        public void UpdateScoreText(RoundScore score)
-        {
-            scoreText.text = score.GetScore(PlayerType.FIRST) + " : " +
-                score.GetScore(PlayerType.SECOND);
-        }
-
-        public void UpdateRoundText(int currentRound)
-        {
-            //roundText.text = "Round: " + currentRound;
-        }
-
         public void DisableUI()
         {
             board.DisableBoard();

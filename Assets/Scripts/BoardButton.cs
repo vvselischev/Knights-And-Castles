@@ -13,7 +13,7 @@ namespace Assets.Scripts
         [NonSerialized]
         public int boardY;
 
-        public GameIcon icon;
+        public GameIcon frame;
 
         public InputListener inputListener;
 
@@ -39,7 +39,18 @@ namespace Assets.Scripts
 
         public void Disable()
         {
+            DisableFrame();
             enabled = false;
+        }
+        
+        public void DisableFrame()
+        {
+            frame.Disable();
+        }
+
+        public void EnableFrame()
+        {
+            frame.Enable();
         }
     }
 }

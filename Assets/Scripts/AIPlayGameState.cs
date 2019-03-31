@@ -54,5 +54,18 @@ namespace Assets.Scripts
                 uiManager.PerformLerpString("Draw", Color.blue);
             }
         }
+
+        protected override void InitNewRound()
+        {
+            base.InitNewRound();
+            if (turnManager.CurrentTurn == TurnType.FIRST)
+            {
+                playMenu.EnableUI();
+            }
+            else
+            {
+                playMenu.DisableUI();
+            }
+        }
     }
 }
