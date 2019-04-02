@@ -7,24 +7,29 @@ namespace Assets.Scripts
         private MenuActivator menuActivator = MenuActivator.GetInstance();
         public LobbyMenu lobbyMenu;
         public StateManager stateManager;
-        public NetworkPlayGameState networkPlayGameState;
         private MultiplayerController MultiplayerController;
 
         public void InvokeState()
         {
             menuActivator.OpenMenu(lobbyMenu);
             MultiplayerController = MultiplayerController.GetInstance();
+            
             MultiplayerController.logText = lobbyMenu.logText;
-            MultiplayerController.OnRoomSetupCompleted += () =>
-            {
-                stateManager.ChangeState(StateType.NETWORK_GAME_STATE);
-            };
+            MultiplayerController.logText.text = "";
+            
+            MultiplayerController.OnRoomSetupCompleted += ChangeStateToNetworkGameState;
             MultiplayerController.SignInAndStartMPGame();
         }
 
+        private void ChangeStateToNetworkGameState()
+        {
+            stateManager.ChangeState(StateType.NETWORK_GAME_STATE);
+        }
+        
         public void CloseState()
         {
             menuActivator.CloseMenu();
+            MultiplayerController.OnRoomSetupCompleted -= ChangeStateToNetworkGameState;
         }
     }
 }

@@ -29,6 +29,8 @@ namespace Assets.Scripts
             string myId = multiplayerController.GetMyParticipantId();
 
             multiplayerController.logText = logText;
+            logText.text = "";
+            
             isHost = false;
             
             //Let the host set up the round.
@@ -44,8 +46,6 @@ namespace Assets.Scripts
                 myTurnType = TurnType.SECOND;
                 multiplayerController.OnMessageReceived += SetupRoundFromNetwork;
             }
-
-            playedTurns = 0;
         }
 
         private void SetupListener()
@@ -66,8 +66,8 @@ namespace Assets.Scripts
             boardFactory.Initialize(this);
             boardFactory.FillBoardStorageRandomly();
             
-            controllerManager.FirstController = new UserController(PlayerType.FIRST, storage, boardFactory,this);
-            controllerManager.SecondController = new UserController(PlayerType.SECOND, storage, boardFactory,this);
+            controllerManager.FirstController = new UserController(PlayerType.FIRST, storage, boardFactory,this, armyText);
+            controllerManager.SecondController = new UserController(PlayerType.SECOND, storage, boardFactory,this, armyText);
 
             List<byte> bytes = boardFactory.ConvertBoardStorageToBytes();
             
@@ -95,8 +95,8 @@ namespace Assets.Scripts
             boardFactory.Initialize(this);
             boardFactory.FillBoardStorageFromArray(message.Skip(1).ToArray());
             
-            controllerManager.FirstController = new UserController(PlayerType.FIRST, storage, boardFactory,this);
-            controllerManager.SecondController = new UserController(PlayerType.SECOND, storage, boardFactory,this);
+            controllerManager.FirstController = new UserController(PlayerType.FIRST, storage, boardFactory,this, armyText);
+            controllerManager.SecondController = new UserController(PlayerType.SECOND, storage, boardFactory,this, armyText);
             InitNewGame();
             
             //Because host is the first to move
@@ -157,7 +157,19 @@ namespace Assets.Scripts
                 uiManager.PerformLerpString("Draw", Color.blue);
             }
         }
-        
+
+        protected override void ExitGame()
+        {
+            multiplayerController.LeaveRoom();
+            base.ExitGame();
+        }
+
+        public override void CloseState()
+        {
+            inputListener.Stop();
+            base.CloseState();
+        }
+
         protected override void InitNewRound()
         {
             base.InitNewRound();

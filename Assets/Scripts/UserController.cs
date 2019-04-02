@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
 using UnityEngine;
-using UnityEngine.UI;
+using Debug = UnityEngine.Debug;
 
 namespace Assets.Scripts
 {
@@ -18,37 +15,27 @@ namespace Assets.Scripts
         private BoardStorage boardStorage;
         private PlayerType playerType;
         private ArmyStorageItem chosenArmyItem;
+        private ArmyText armyText;
+        
         private IntVector2 chosenArmyPosition;
         private IntVector2 activeFramePosition;
-        private bool movementInProgress;
+        private ObjectMover currentMover;
+        private IntVector2 currentTargetPosition;
         private bool splitButtonClicked;
-        private int aliveArmies;
-        
-        public UserController(PlayerType playerType, BoardStorage storage, BoardFactory boardFactory, PlayGameState playGameState)
+
+        public UserController(PlayerType playerType, BoardStorage storage, BoardFactory boardFactory, PlayGameState playGameState, ArmyText armyText)
         {
             this.playerType = playerType;
             boardStorage = storage;
             this.boardFactory = boardFactory;
             this.playGameState = playGameState;
-            var armies = boardStorage.FindPlayerArmies();
-            if (armies.ContainsKey(playerType))
-            {
-                aliveArmies = armies[playerType].Count;
-            }
-            else
-            {
-                aliveArmies = 0;
-            }
-            Debug.Log("Alive " + playerType + ": " + aliveArmies);
+            this.armyText = armyText;
         }
 
         public void OnButtonClick(int x, int y)
         {
             Debug.Log($"Clicked: ({x}, {y})");
-            if (!movementInProgress)
-            { 
-                ProcessAction(new IntVector2(x, y));
-            }
+            ProcessAction(new IntVector2(x, y));
         }
 
         private void ProcessAction(IntVector2 position)
@@ -64,7 +51,9 @@ namespace Assets.Scripts
             if (boardStorage.GetItem(position) is ArmyStorageItem)
             {
                 ArmyStorageItem clickedArmyItem = boardStorage.GetItem(position) as ArmyStorageItem;
-                playGameState.armyTextManager.ChangeText(clickedArmyItem.Army.armyComposition.ToString());
+                
+                armyText.ChangeText(clickedArmyItem.Army.armyComposition.ToString());
+                
                 if ((chosenArmyItem == null) && (clickedArmyItem.Army.playerType == playerType) && 
                     ((UserArmy) clickedArmyItem.Army).IsActive())
                 {
@@ -75,7 +64,7 @@ namespace Assets.Scripts
             }
             else
             {
-                playGameState.armyTextManager.ChangeText("");
+                playGameState.armyText.ChangeText("");
                 if (chosenArmyItem != null)
                 {
                     if (ReachableFromChosen(position) && splitButtonClicked)
@@ -118,53 +107,36 @@ namespace Assets.Scripts
             GameObject clonedIcon = boardFactory.CloneBoardIcon(chosenPositionX, chosenPositionY,
                 positionX, positionY);
             boardStorage.SetItem(positionX, positionY, new ArmyStorageItem(splittedArmyPart, clonedIcon));
-            aliveArmies++;
             splitButtonClicked = false;
+            armyText.ChangeText(splittedArmyPart.armyComposition.ToString());
         }
 
         private void MoveChosen(IntVector2 targetPosition, GameObject targetObject)
         {
+            //TODO: maybe we should disable the whole menu here
             boardStorage.board.DisableBoard();
-            movementInProgress = true;
+            
             boardStorage.SetItem(chosenArmyPosition, null);
             currentTargetPosition = targetPosition;
             GameObject armyObject = chosenArmyItem.StoredObject;
-            ObjectMover mover = armyObject.GetComponent<ObjectMover>();
+            currentMover = armyObject.GetComponent<ObjectMover>();
             
-            mover.PrepareMovement(armyObject);
-            mover.ReachedTarget += FinishMovement;
-            mover.MoveTo(targetObject);
+            currentMover.PrepareMovement(armyObject);
+            currentMover.ReachedTarget += FinishMovement;
+            currentMover.MoveTo(targetObject);
         }
-
-        private IntVector2 currentTargetPosition;
 
         private void FinishMovement()
         {
-            if (!movementInProgress)
-            {
-                return;
-            }
+            currentMover.ReachedTarget -= FinishMovement;   
+
             boardStorage.board.EnableBoard();
 
             ArmyStorageItem resultItem = GetResultItem();
             boardStorage.SetItem(currentTargetPosition, resultItem);
-
-            if (resultItem.Army.playerType != playerType)
+            
+            if (ProcessAliveArmies())
             {
-                aliveArmies--;
-            }
-
-            Debug.Log("Alive " + playerType + ": " + aliveArmies);
-            if (aliveArmies == 0)
-            {
-                if (playerType == PlayerType.FIRST)
-                {
-                    playGameState.OnFinishGame(ResultType.SECOND_WIN);
-                }
-                else if (playerType == PlayerType.SECOND)
-                {
-                    playGameState.OnFinishGame(ResultType.FIRST_WIN);
-                }
                 ClearMoveState();
                 return;
             }
@@ -179,13 +151,33 @@ namespace Assets.Scripts
             FinishedMove?.Invoke();
         }
 
+        private bool ProcessAliveArmies()
+        {
+            var aliveArmies = boardStorage.FindPlayerArmies();
+            if (!aliveArmies.ContainsKey(PlayerType.FIRST))
+            {
+                playGameState.OnFinishGame(ResultType.SECOND_WIN);
+                return true;
+            }
+   
+            if (!aliveArmies.ContainsKey(PlayerType.SECOND))
+            {
+                playGameState.OnFinishGame(ResultType.FIRST_WIN);
+                return true;
+            }
+
+            return false;
+        }
+
         private void ClearMoveState()
         {
             SetActiveFrame(null);
+            armyText.ChangeText("");
             chosenArmyItem = null;
-            movementInProgress = false;  
+            currentTargetPosition = null;
+            currentMover = null;
         }
-
+        
         private bool ProcessCastle(Army enteredArmy)
         {
             if (boardStorage.IsCastle(currentTargetPosition))
@@ -202,11 +194,6 @@ namespace Assets.Scripts
             {
                 ArmyStorageItem clickedArmyItem = boardStorage.GetItem(currentTargetPosition) as ArmyStorageItem;
                 Army resultArmy = clickedArmyItem.Army.PerformAction(chosenArmyItem.Army);
-                if (clickedArmyItem.Army.playerType == chosenArmyItem.Army.playerType)
-                {
-                    //They merge
-                    aliveArmies--;
-                }
                 if (resultArmy.playerType == playerType)
                 {
                     clickedArmyItem.StoredObject.SetActive(false);
@@ -234,7 +221,7 @@ namespace Assets.Scripts
 
         public void Disable()
         {
-        
+            ClearMoveState();
         }
 
         // Set all user armies active

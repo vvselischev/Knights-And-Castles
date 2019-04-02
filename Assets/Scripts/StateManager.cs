@@ -26,6 +26,7 @@ namespace Assets.Scripts
 
         void Awake()
         {
+            Screen.sleepTimeout = SleepTimeout.NeverSleep;
             Debug.Log("Start");
 
             Initialize();

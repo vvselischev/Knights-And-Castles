@@ -24,8 +24,8 @@ namespace Assets.Scripts
 
         public override string ToString()
         {
-            return "s:" + spearmen + " a:" + archers + " c:" + cavalrymen +
-                   " e:" + Math.Round(experience, 2);
+            return "Spearmen: " + spearmen + "\n" + "Archers:    " + archers + "\n" + "Cavalry:    " + cavalrymen + "\n" +
+                   "Experience: " + Math.Round(experience, 2);
         }
 
         public static ArmyComposition Merge(ArmyComposition first, ArmyComposition second)

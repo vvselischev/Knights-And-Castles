@@ -22,10 +22,6 @@ namespace Assets.Scripts
                 currentController = FirstController;
             }
         }
-        public void InitRound()
-        {
-            
-        }
 
         public void EnableController(TurnType type)
         {

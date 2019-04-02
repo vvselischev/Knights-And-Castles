@@ -7,6 +7,7 @@ using UnityEngine.UI;
 namespace Assets.Scripts
 {
     public delegate void ByteArrayHandler(byte[] data);
+    public delegate void StringHandler(string data);
     public class MultiplayerController : RealTimeMultiplayerListener
     {
         private static MultiplayerController instance;
@@ -98,9 +99,10 @@ namespace Assets.Scripts
             ShowMPStatus("We have left the room.");
         }
 
+        public event StringHandler OnPlayerLeft;
         public void OnParticipantLeft(Participant participant)
         {
-            throw new System.NotImplementedException();
+            OnPlayerLeft?.Invoke(participant.ParticipantId);   
         }
 
         public void OnPeersConnected(string[] participantIds)
@@ -110,7 +112,7 @@ namespace Assets.Scripts
                 ShowMPStatus("Player " + participantID + " has joined.");
             }
         }
-
+        
         public void OnPeersDisconnected(string[] participantIds)
         {
             foreach (string participantID in participantIds)

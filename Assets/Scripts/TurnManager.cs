@@ -18,33 +18,12 @@ namespace Assets.Scripts
     public class TurnManager : MonoBehaviour
     {
         public ControllerManager controllerManager;
-
-        public GameObject MouseUI;
-        public GameObject CatUI;
-        public GameObject RoundUI;
-
-        public GameObject mouseMover;
-        public GameObject MouseIcon;
-        public GameObject CatIcon;
+        public GameObject FirstIcon;
+        public GameObject SecondIcon;
 
         private TurnType currentTurn;
 
         public TurnType CurrentTurn => currentTurn;
-
-        public void InitRound()
-        {
-            controllerManager.InitRound();
-        }
-
-        private void EnableRound()
-        {
-            RoundUI.SetActive(true);
-        }
-
-        private void DisableRound()
-        {
-            RoundUI.SetActive(false);
-        }
 
         public void SetTurn(TurnType turn)
         {
@@ -52,21 +31,24 @@ namespace Assets.Scripts
             controllerManager.SetCurrentController(turn);
             if (turn == TurnType.FIRST)
             {
-                EnableRound();
                 controllerManager.DisableController(TurnType.SECOND);
                 controllerManager.EnableController(TurnType.FIRST);
+                SecondIcon.SetActive(false);
+                FirstIcon.SetActive(true);
             }
             else if (turn == TurnType.SECOND)
             {
-                EnableRound();
                 controllerManager.EnableController(TurnType.SECOND);
                 controllerManager.DisableController(TurnType.FIRST);
+                SecondIcon.SetActive(true);
+                FirstIcon.SetActive(false);
             }
             else if (turn == TurnType.RESULT)
             {
                 controllerManager.DisableController(TurnType.SECOND);
                 controllerManager.DisableController(TurnType.FIRST);
-                DisableRound();
+                SecondIcon.SetActive(false);
+                FirstIcon.SetActive(false);
             }
         }
 

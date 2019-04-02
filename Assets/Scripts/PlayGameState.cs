@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 using Assets.Scripts;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
@@ -22,16 +23,15 @@ namespace Assets.Scripts
         public BoardStorage storage;
         public TurnManager turnManager;
         public Timer timer;
-        public RoundScore roundScore;
         public BoardFactory boardFactory;
         public ControllerManager controllerManager;
-        public ArmyTextManager armyTextManager;
+        public ArmyText armyText;
         public UIManager uiManager;
         public StateManager stateManager;
 
         public const int MAX_TURNS = 1000;
 
-        protected int playedTurns;
+        private int playedTurns;
 
         public virtual void InvokeState()
         {
@@ -41,26 +41,29 @@ namespace Assets.Scripts
             boardFactory.Initialize(this);
             boardFactory.FillBoardStorageRandomly();
             
-            controllerManager.FirstController = new UserController(PlayerType.FIRST,  storage, boardFactory, this);
-            controllerManager.SecondController = new UserController(PlayerType.SECOND, storage, boardFactory,this);
+            controllerManager.FirstController = new UserController(PlayerType.FIRST,  storage, boardFactory, this, armyText);
+            controllerManager.SecondController = new UserController(PlayerType.SECOND, storage, boardFactory,this, armyText);
             
             playedTurns = 0;
             
+            timer.OnFinish += ChangeTurn;
+
+            StartCoroutine(BackButtonListener());
             InitNewGame();
         }
 
-        public void CloseState()
+        public virtual void CloseState()
         {
             menuActivator.CloseMenu();
+            timer.OnFinish -= ChangeTurn;
+            StopCoroutine(BackButtonListener());
         }
 
         protected virtual void InitNewRound()
         {
-            //buttonListener.Reset();
-            turnManager.InitRound();
             playedTurns = 0;
             
-            armyTextManager.Init();
+            armyText.Init();
             
             turnManager.SetTurn(GetFirstTurn());
             timer.StartTimer();
@@ -71,12 +74,14 @@ namespace Assets.Scripts
         public void OnFinishTurn(PlayerType finishedType)
         {
             Debug.Log("Finished turn");
-            //buttonListener.Reset();
+            timer.StopTimer();
             ChangeTurn();
         }
 
         public virtual void OnFinishGame(ResultType resultType)
         {
+            timer.StopTimer();
+            turnManager.SetTurn(TurnType.RESULT);
             uiManager.FinishedLerp += () =>
             {
                 //Here move to the result state
@@ -85,6 +90,12 @@ namespace Assets.Scripts
             };
         }
 
+        protected virtual void ExitGame()
+        {
+            turnManager.SetTurn(TurnType.RESULT);
+            stateManager.ChangeState(StateType.START_GAME_STATE);
+        }
+        
         protected virtual void ChangeTurn()
         {
             if (playedTurns == MAX_TURNS)
@@ -111,6 +122,19 @@ namespace Assets.Scripts
         {
             //TODO: make random
             return TurnType.FIRST;
+        }
+
+        private IEnumerator BackButtonListener()
+        {
+            while (true)
+            {
+                if (Input.GetKeyDown(KeyCode.Escape))
+                {
+                    ExitGame();
+                }
+
+                yield return null;
+            }
         }
     }
 }

@@ -10,11 +10,10 @@ namespace Assets.Scripts
     public class PlayMenu : MonoBehaviour, IMenu
     {
         public Canvas canvas;
-        public Text scoreText;
-        //public Text roundText;
         public StartButton startButton;
         public SplitButton splitButton;
         public CheckeredButtonBoard board;
+        public ArmyText armyText;
         
         public void Activate()
         {
@@ -33,6 +32,7 @@ namespace Assets.Scripts
             board.DisableBoard();
             startButton.Lock();
             splitButton.Lock();
+            armyText.Disable();
         }
 
         public void EnableUI()
@@ -40,6 +40,7 @@ namespace Assets.Scripts
             board.EnableBoard();
             startButton.Unlock();
             splitButton.Unlock();
+            armyText.Enable();
         }
     }
 }

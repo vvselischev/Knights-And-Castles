@@ -12,21 +12,18 @@ namespace Assets.Scripts
         public InputListener inputListener;
         public UserController controller;
         public PlayerType playerType;
-        private int turnNumber;
         
         //Depth of tree for analyze. Should be odd!!!
         private const int DEPTH = 5;
 
         public void Initialize(UserController controller, PlayerType playerType)
         {
-            turnNumber = 0;
             this.playerType = playerType;
             this.controller = controller;
         }
 
         public void Activate()
         {
-            turnNumber++;
             MakeTurn();
         }
 
@@ -41,8 +38,9 @@ namespace Assets.Scripts
             }
 
             MoveInformation bestMove = gameSimulation.FindBestMove(playerType, DEPTH);
-
-            if (bestMove == null) // if it's better not to move for all armies
+            
+            // if it's better not to move for all armies
+            if (bestMove == null) 
             {
                 FinishTurn();
                 return;
@@ -50,6 +48,8 @@ namespace Assets.Scripts
 
             gameSimulation = new GameSimulation(boardStorage);
             gameSimulation.MakeMove(bestMove.From, bestMove.To, true);
+            
+            //Add callback to this method when move will be performed
             controller.FinishedMove += MakeTurn;
             MakeMove(bestMove.From, bestMove.To);    
         }

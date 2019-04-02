@@ -9,6 +9,8 @@ public class Timer : MonoBehaviour
     public Text timeText;
     public int duration = 30;
 
+    public event VoidHandler OnFinish;
+
     private long secondsLeft;
     private bool started;
     private long timeInStart;
@@ -29,6 +31,7 @@ public class Timer : MonoBehaviour
             if (secondsLeft + timeInStart - DateTime.Now.ToBinary() / 10000000 <= 0)
             {
                 StopTimer();
+                OnFinish?.Invoke();
                 yield break;
             }
             yield return null;
@@ -39,7 +42,7 @@ public class Timer : MonoBehaviour
     {
         Reset();
         started = false;
-        StopCoroutine(UpdateTimer());
+        StopCoroutine(UpdateTimer());       
     }
 
     public void Reset()
