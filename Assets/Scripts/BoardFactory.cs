@@ -32,9 +32,6 @@ namespace Assets.Scripts
 
         public Sprite NeutralFriendlySprite, NeutralAgressiveSprite, FirstUserSprite, SecondUserSprite, CastleSprite;
         
-        public Army FirstArmy { get; }
-        public Army SecondArmy { get; }
-
         //TODO: remove dependency (make PlayGameState singleton?)
         public PlayGameState playGameState;
 
@@ -127,6 +124,9 @@ namespace Assets.Scripts
         {
             CheckeredButtonBoard board = boardStorage.board;
             BoardStorageItem[,] storageItems = boardStorage.boardTable;
+            
+            InstantiateCastles();
+            
             int currentInd = 0;
             for (int row = 1; row <= board.height; row++)
             {
@@ -154,12 +154,12 @@ namespace Assets.Scripts
                     if (currentType == 11)
                     {
                         currentArmy = new UserArmy(PlayerType.FIRST, armyComposition);
-                        currentSprite = SecondUserSprite;
+                        currentSprite = FirstUserSprite;
                     }
                     else if (currentType == 12)
                     {
                         currentArmy = new UserArmy(PlayerType.SECOND, armyComposition);
-                        currentSprite = FirstUserSprite;
+                        currentSprite = SecondUserSprite;
                     }
                     else if (currentType == 1)
                     {

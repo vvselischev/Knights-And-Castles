@@ -6,6 +6,7 @@ using UnityEngine.UI;
 
 namespace Assets.Scripts
 {
+    //TODO: should we disable exit listener on setup?
     public class NetworkPlayGameState : PlayGameState
     {
         public NetworkInputListener inputListener;
@@ -20,8 +21,10 @@ namespace Assets.Scripts
         {
             menuActivator.OpenMenu(playMenu);
 
-            SetupListener();
+            SetupListeners();
 
+            timer.OnFinish += ChangeTurn;
+            
             multiplayerController = MultiplayerController.GetInstance();
             
             allPlayers = multiplayerController.GetAllPlayers();
@@ -48,11 +51,13 @@ namespace Assets.Scripts
             }
         }
 
-        private void SetupListener()
+        private void SetupListeners()
         {
             inputListener.Init(board.width, board.height);
             boardFactory.patternButton.GetComponent<BoardButton>().inputListener = inputListener;
             playMenu.startButton.GetComponent<StartButton>().inputListener = inputListener;
+            exitListener.Enable();
+            exitListener.OnExitClicked += ExitGame;
         }
         
         private string ChooseHost()

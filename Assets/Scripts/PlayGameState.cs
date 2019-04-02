@@ -28,6 +28,7 @@ namespace Assets.Scripts
         public ArmyText armyText;
         public UIManager uiManager;
         public StateManager stateManager;
+        public ExitListener exitListener;
 
         public const int MAX_TURNS = 1000;
 
@@ -48,7 +49,8 @@ namespace Assets.Scripts
             
             timer.OnFinish += ChangeTurn;
 
-            StartCoroutine(BackButtonListener());
+            exitListener.Enable();
+            exitListener.OnExitClicked += ExitGame;
             InitNewGame();
         }
 
@@ -56,7 +58,8 @@ namespace Assets.Scripts
         {
             menuActivator.CloseMenu();
             timer.OnFinish -= ChangeTurn;
-            StopCoroutine(BackButtonListener());
+            exitListener.OnExitClicked -= ExitGame;
+            exitListener.Disable();
         }
 
         protected virtual void InitNewRound()
@@ -122,19 +125,6 @@ namespace Assets.Scripts
         {
             //TODO: make random
             return TurnType.FIRST;
-        }
-
-        private IEnumerator BackButtonListener()
-        {
-            while (true)
-            {
-                if (Input.GetKeyDown(KeyCode.Escape))
-                {
-                    ExitGame();
-                }
-
-                yield return null;
-            }
         }
     }
 }

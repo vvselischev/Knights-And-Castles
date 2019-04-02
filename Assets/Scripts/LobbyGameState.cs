@@ -7,6 +7,7 @@ namespace Assets.Scripts
         private MenuActivator menuActivator = MenuActivator.GetInstance();
         public LobbyMenu lobbyMenu;
         public StateManager stateManager;
+        public ExitListener exitListener;
         private MultiplayerController MultiplayerController;
 
         public void InvokeState()
@@ -18,6 +19,10 @@ namespace Assets.Scripts
             MultiplayerController.logText.text = "";
             
             MultiplayerController.OnRoomSetupCompleted += ChangeStateToNetworkGameState;
+            
+            exitListener.Enable();
+            exitListener.OnExitClicked += OnExit;
+                
             MultiplayerController.SignInAndStartMPGame();
         }
 
@@ -25,9 +30,16 @@ namespace Assets.Scripts
         {
             stateManager.ChangeState(StateType.NETWORK_GAME_STATE);
         }
+
+        private void OnExit()
+        {
+            stateManager.ChangeState(StateType.START_GAME_STATE);
+        }
         
         public void CloseState()
         {
+            exitListener.OnExitClicked -= OnExit;
+            exitListener.Disable();
             menuActivator.CloseMenu();
             MultiplayerController.OnRoomSetupCompleted -= ChangeStateToNetworkGameState;
         }

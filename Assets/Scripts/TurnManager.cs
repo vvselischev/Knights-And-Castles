@@ -47,8 +47,8 @@ namespace Assets.Scripts
             {
                 controllerManager.DisableController(TurnType.SECOND);
                 controllerManager.DisableController(TurnType.FIRST);
-                SecondIcon.SetActive(false);
-                FirstIcon.SetActive(false);
+                //SecondIcon.SetActive(false);
+                //FirstIcon.SetActive(false);
             }
         }
 
