@@ -19,15 +19,13 @@ namespace Assets.Scripts
 
         public override void InvokeState()
         {
-            menuActivator.OpenMenu(playMenu);
-
+            SetupGame();
             SetupListeners();
-
-            timer.OnFinish += ChangeTurn;
             
             multiplayerController = MultiplayerController.GetInstance();
             
             allPlayers = multiplayerController.GetAllPlayers();
+            
             string hostID = ChooseHost();
             string myId = multiplayerController.GetMyParticipantId();
 
@@ -53,11 +51,9 @@ namespace Assets.Scripts
 
         private void SetupListeners()
         {
-            inputListener.Init(board.width, board.height);
+            inputListener.Init(storage.GetBoardWidth(), storage.GetBoardHeight());
             boardFactory.patternButton.GetComponent<BoardButton>().inputListener = inputListener;
             playMenu.startButton.GetComponent<StartButton>().inputListener = inputListener;
-            exitListener.Enable();
-            exitListener.OnExitClicked += ExitGame;
         }
         
         private string ChooseHost()
@@ -67,8 +63,6 @@ namespace Assets.Scripts
 
         private void SetupRoundHost()
         {
-            storage.Reset();
-            boardFactory.Initialize(this);
             boardFactory.FillBoardStorageRandomly();
             
             controllerManager.FirstController = new UserController(PlayerType.FIRST, storage, boardFactory,this, armyText);
@@ -95,9 +89,7 @@ namespace Assets.Scripts
 
             logText.text += "Create board from network..." + "\n";
             multiplayerController.OnMessageReceived -= SetupRoundFromNetwork;
-            storage.Reset();
 
-            boardFactory.Initialize(this);
             boardFactory.FillBoardStorageFromArray(message.Skip(1).ToArray());
             
             controllerManager.FirstController = new UserController(PlayerType.FIRST, storage, boardFactory,this, armyText);

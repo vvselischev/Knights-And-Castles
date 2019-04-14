@@ -141,7 +141,6 @@ namespace Assets.Scripts
             PlayGamesPlatform.Instance.RealTime.SendMessageToAll (true, message);
         }
 
-
         public Text logText;
         private void ShowMPStatus(string message)
         {

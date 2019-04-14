@@ -22,7 +22,7 @@ namespace Assets.Scripts
         
         private BoardStorageEmulation boardStorageEmulation;
 
-        public GameSimulation(BoardStorage boardStorage)
+        public GameSimulation(IBoardStorage boardStorage)
         {
             boardStorageEmulation = new BoardStorageEmulation(boardStorage); 
         }

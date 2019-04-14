@@ -14,7 +14,9 @@ namespace Assets.Scripts
 
     public class StateManager : MonoBehaviour
     {
-        private IGameState currentState;
+        public IGameState CurrentState { get; private set; }
+
+        public static StateManager Instance { get; private set; }
 
         public StartGameState StartState;
         public NetworkPlayGameState networkPlayGameState;
@@ -29,32 +31,35 @@ namespace Assets.Scripts
             Screen.sleepTimeout = SleepTimeout.NeverSleep;
             Debug.Log("Start");
 
+            Instance = this;
             Initialize();
             ChangeState(StateType.START_GAME_STATE);
         }
 
         private void Initialize()
         {
-            states = new Dictionary<StateType, IGameState>();
-            states.Add(StateType.START_GAME_STATE, StartState);
-            states.Add(StateType.LOBBY_GAME_STATE, LobbyGameState);
-            states.Add(StateType.NETWORK_GAME_STATE, networkPlayGameState);
-            states.Add(StateType.AI_GAME_STATE, aiPlayGameState);
-            states.Add(StateType.ONE_DEVICE_MULTIPLAYER_STATE, oneDeviceMultiplayerGameState);
+            states = new Dictionary<StateType, IGameState>
+            {
+                {StateType.START_GAME_STATE, StartState},
+                {StateType.LOBBY_GAME_STATE, LobbyGameState},
+                {StateType.NETWORK_GAME_STATE, networkPlayGameState},
+                {StateType.AI_GAME_STATE, aiPlayGameState},
+                {StateType.ONE_DEVICE_MULTIPLAYER_STATE, oneDeviceMultiplayerGameState}
+            };
         }
 
         public void ChangeState(StateType newStateType)
         {
-            Debug.Log("Current State: " + currentState);
-            if (currentState != null)
+            Debug.Log("Current State: " + CurrentState);
+            if (CurrentState != null)
             {
-                Debug.Log("Closing " + currentState);
-                currentState.CloseState();
+                Debug.Log("Closing " + CurrentState);
+                CurrentState.CloseState();
             }
 
             IGameState newState = states[newStateType];
-            currentState = newState;
-            Debug.Log("New state: " + currentState);
+            CurrentState = newState;
+            Debug.Log("New state: " + CurrentState);
             newState.InvokeState();
         }
     }

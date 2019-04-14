@@ -12,7 +12,7 @@ namespace Assets.Scripts
         public event VoidHandler FinishedMove;
         private BoardFactory boardFactory;
         private PlayGameState playGameState;
-        private BoardStorage boardStorage;
+        private IBoardStorage boardStorage;
         private PlayerType playerType;
         private ArmyStorageItem chosenArmyItem;
         private ArmyText armyText;
@@ -23,7 +23,7 @@ namespace Assets.Scripts
         private IntVector2 currentTargetPosition;
         private bool splitButtonClicked;
 
-        public UserController(PlayerType playerType, BoardStorage storage, BoardFactory boardFactory, PlayGameState playGameState, ArmyText armyText)
+        public UserController(PlayerType playerType, IBoardStorage storage, BoardFactory boardFactory, PlayGameState playGameState, ArmyText armyText)
         {
             this.playerType = playerType;
             boardStorage = storage;
@@ -38,6 +38,8 @@ namespace Assets.Scripts
             ProcessAction(new IntVector2(x, y));
         }
 
+        
+        //TODO: refactor and simplify checks
         private void ProcessAction(IntVector2 position)
         {
             int positionX = position.x;
@@ -45,9 +47,11 @@ namespace Assets.Scripts
 
             SetActiveFrame(position);
             
-            GameObject buttonGO = boardStorage.board.BoardButtons[positionX, positionY].gameObject;
+            GameObject buttonGO = boardStorage.GetBoardButton(position).gameObject;
+            
             //Turns off chosenArmyItem.Army activity if it was strange click.
             bool chooseOrMoveClick = false; 
+            
             if (boardStorage.GetItem(position) is ArmyStorageItem)
             {
                 ArmyStorageItem clickedArmyItem = boardStorage.GetItem(position) as ArmyStorageItem;
@@ -65,7 +69,7 @@ namespace Assets.Scripts
             else
             {
                 playGameState.armyText.ChangeText("");
-                if (chosenArmyItem != null)
+                if (chosenArmyItem != null && !(boardStorage.GetBonusItem(position) is Pass))
                 {
                     if (ReachableFromChosen(position) && splitButtonClicked)
                     {
@@ -82,6 +86,12 @@ namespace Assets.Scripts
             else if (!chooseOrMoveClick)
             {
                 chosenArmyItem = null;
+                if (boardStorage.GetBonusItem(position) is Pass)
+                {
+                    var pass = boardStorage.GetBonusItem(position) as Pass;
+                    pass.ChangeBlock();
+                    SetActiveFrame(null);
+                }
             }
         }
 
@@ -104,8 +114,7 @@ namespace Assets.Scripts
         private void ProcessSplit(int chosenPositionX, int chosenPositionY, int positionX, int positionY)
         {
             Army splittedArmyPart = chosenArmyItem.Army.SplitIntoEqualParts();
-            GameObject clonedIcon = boardFactory.CloneBoardIcon(chosenPositionX, chosenPositionY,
-                positionX, positionY);
+            GameObject clonedIcon = boardFactory.CloneBoardIcon(chosenPositionX, chosenPositionY);
             boardStorage.SetItem(positionX, positionY, new ArmyStorageItem(splittedArmyPart, clonedIcon));
             splitButtonClicked = false;
             armyText.ChangeText(splittedArmyPart.armyComposition.ToString());
@@ -114,7 +123,7 @@ namespace Assets.Scripts
         private void MoveChosen(IntVector2 targetPosition, GameObject targetObject)
         {
             //TODO: maybe we should disable the whole menu here
-            boardStorage.board.DisableBoard();
+            boardStorage.DisableBoardButtons();
             
             boardStorage.SetItem(chosenArmyPosition, null);
             currentTargetPosition = targetPosition;
@@ -130,7 +139,7 @@ namespace Assets.Scripts
         {
             currentMover.ReachedTarget -= FinishMovement;   
 
-            boardStorage.board.EnableBoard();
+            boardStorage.EnableBoardButtons();
 
             ArmyStorageItem resultItem = GetResultItem();
             boardStorage.SetItem(currentTargetPosition, resultItem);
@@ -146,6 +155,12 @@ namespace Assets.Scripts
                 ClearMoveState(); 
                 return;
             }
+            
+            //TODO: make castle, pass etc. implement interface IBonusItem so to process them in a common way
+            if (boardStorage.GetBonusItem(currentTargetPosition) is Pass)
+            {
+                (boardStorage.GetBonusItem(currentTargetPosition) as Pass).PassArmy(chosenArmyItem);
+            }
 
             ClearMoveState();        
             FinishedMove?.Invoke();
@@ -153,14 +168,13 @@ namespace Assets.Scripts
 
         private bool ProcessAliveArmies()
         {
-            var aliveArmies = boardStorage.FindPlayerArmies();
-            if (!aliveArmies.ContainsKey(PlayerType.FIRST))
+            if (!boardStorage.ContainsPlayerArmies(PlayerType.FIRST))
             {
                 playGameState.OnFinishGame(ResultType.SECOND_WIN);
                 return true;
             }
    
-            if (!aliveArmies.ContainsKey(PlayerType.SECOND))
+            if (!boardStorage.ContainsPlayerArmies(PlayerType.SECOND))
             {
                 playGameState.OnFinishGame(ResultType.FIRST_WIN);
                 return true;
@@ -224,24 +238,10 @@ namespace Assets.Scripts
             ClearMoveState();
         }
 
-        // Set all user armies active
         public void Enable()
         {
             Debug.Log("enable controller run");
-            for (int i = 1; i <= boardStorage.board.height; i++)
-            {
-                for (int j = 1; j <= boardStorage.board.width; j++)
-                {
-                    if (boardStorage.GetItem(j, i) is ArmyStorageItem)
-                    {
-                        Army army = ((ArmyStorageItem) boardStorage.GetItem(j, i)).Army;
-                        if (army.playerType == playerType)
-                        {
-                            (army as UserArmy).SetActive();
-                        }
-                    }
-                }
-            }
+            boardStorage.EnableArmies(playerType);
         }
 
         public void FinishTurn()

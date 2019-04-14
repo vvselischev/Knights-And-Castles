@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using UnityEditor;
+using UnityEngine;
 
 namespace Assets.Scripts
 {
@@ -22,6 +24,11 @@ namespace Assets.Scripts
             }
 
             return x == other.x && y == other.y;
+        }
+
+        public override string ToString()
+        {
+            return "(" + x + ", " + y + ")";
         }
 
         public int Compare(IntVector2 x, IntVector2 y)

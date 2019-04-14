@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Assets.Scripts;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
@@ -14,13 +15,10 @@ namespace Assets.Scripts
         DRAW,
         NONE
     }
-    
+
     public abstract class PlayGameState : MonoBehaviour, IGameState
     {
-        protected readonly MenuActivator menuActivator = MenuActivator.GetInstance();
         public PlayMenu playMenu;
-        public CheckeredButtonBoard board;
-        public BoardStorage storage;
         public TurnManager turnManager;
         public Timer timer;
         public BoardFactory boardFactory;
@@ -30,28 +28,43 @@ namespace Assets.Scripts
         public StateManager stateManager;
         public ExitListener exitListener;
 
-        public const int MAX_TURNS = 1000;
+        protected BlockBoardStorage storage;
+        protected DataService dataService;
+        private MenuActivator menuActivator = MenuActivator.GetInstance();
+
+        public const int MAX_TURNS = 10000;
 
         private int playedTurns;
 
         public virtual void InvokeState()
         {
-            menuActivator.OpenMenu(playMenu);
-            
-            storage.Reset();
-            boardFactory.Initialize(this);
+            SetupGame();
             boardFactory.FillBoardStorageRandomly();
+
+            controllerManager.FirstController =
+                new UserController(PlayerType.FIRST, storage, boardFactory, this, armyText);
+            controllerManager.SecondController =
+                new UserController(PlayerType.SECOND, storage, boardFactory, this, armyText);
+
+            InitNewGame();
+        }
+
+        protected void SetupGame()
+        {
+            menuActivator.OpenMenu(playMenu);
+            dataService = new DataService("record_database.db");
+
+            uiManager.FinishedLerp += SetupFinishGame;
             
-            controllerManager.FirstController = new UserController(PlayerType.FIRST,  storage, boardFactory, this, armyText);
-            controllerManager.SecondController = new UserController(PlayerType.SECOND, storage, boardFactory,this, armyText);
-            
+            storage = boardFactory.Initialize();
+
+            turnManager.Initialize(storage);
             playedTurns = 0;
-            
+
             timer.OnFinish += ChangeTurn;
 
             exitListener.Enable();
             exitListener.OnExitClicked += ExitGame;
-            InitNewGame();
         }
 
         public virtual void CloseState()
@@ -59,18 +72,20 @@ namespace Assets.Scripts
             menuActivator.CloseMenu();
             timer.OnFinish -= ChangeTurn;
             exitListener.OnExitClicked -= ExitGame;
+            uiManager.FinishedLerp -= SetupFinishGame;
             exitListener.Disable();
+            storage.Reset();
         }
 
         protected virtual void InitNewRound()
         {
             playedTurns = 0;
-            
+
             armyText.Init();
-            
+
             turnManager.SetTurn(GetFirstTurn());
             timer.StartTimer();
-            
+
             //Disable or enable UI in child classes!
         }
 
@@ -85,12 +100,30 @@ namespace Assets.Scripts
         {
             timer.StopTimer();
             turnManager.SetTurn(TurnType.RESULT);
-            uiManager.FinishedLerp += () =>
+        }
+
+        private void SetupFinishGame()
+        {
+            //Here move to the result state
+            //Now by default we go to the start menu
+            //stateManager.ChangeState(StateType.START_GAME_STATE);
+
+            var records = dataService.GetUserRecords("Vlad");
+            int total = 0;
+
+            foreach (var value in records)
             {
-                //Here move to the result state
-                //Now by default we go to the start menu
-                stateManager.ChangeState(StateType.START_GAME_STATE);
-            };
+                playMenu.playDebugText.text += value + "\n";
+                total++;
+            }
+
+            playMenu.playDebugText.text += "Total: " + total + '\n';
+
+            dataService.AddRecord(new Record
+            {
+                Login = "Vlad",
+                WinsBot = total + 10,
+            });
         }
 
         protected virtual void ExitGame()

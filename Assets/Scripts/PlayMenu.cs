@@ -12,8 +12,10 @@ namespace Assets.Scripts
         public Canvas canvas;
         public StartButton startButton;
         public SplitButton splitButton;
-        public CheckeredButtonBoard board;
+        public BoardManager boardManager;
         public ArmyText armyText;
+
+        public Text playDebugText;
         
         public void Activate()
         {
@@ -29,7 +31,7 @@ namespace Assets.Scripts
 
         public void DisableUI()
         {
-            board.DisableBoard();
+            boardManager.GetCurrentBlock().DisableBoardButtons();
             startButton.Lock();
             splitButton.Lock();
             armyText.Disable();
@@ -37,7 +39,7 @@ namespace Assets.Scripts
 
         public void EnableUI()
         {
-            board.EnableBoard();
+            boardManager.GetCurrentBlock().EnableBoardButtons();
             startButton.Unlock();
             splitButton.Unlock();
             armyText.Enable();

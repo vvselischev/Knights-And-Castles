@@ -7,7 +7,7 @@ using UnityEngine.UI;
 
 namespace Assets.Scripts
 {
-    //TODO: change name
+    //TODO: change name?
     public enum TurnType
     {
         FIRST,
@@ -18,28 +18,42 @@ namespace Assets.Scripts
     public class TurnManager : MonoBehaviour
     {
         public ControllerManager controllerManager;
+        public BoardManager boardManager;
         public GameObject FirstIcon;
         public GameObject SecondIcon;
 
         private TurnType currentTurn;
-
+        
         public TurnType CurrentTurn => currentTurn;
 
+        public void Initialize(BlockBoardStorage storage)
+        {
+            boardManager.Initialize(storage);
+        }
+        
         public void SetTurn(TurnType turn)
         {
             currentTurn = turn;
             controllerManager.SetCurrentController(turn);
             if (turn == TurnType.FIRST)
             {
+                boardManager.SavePlayerBlock(TurnType.SECOND);
                 controllerManager.DisableController(TurnType.SECOND);
+                
+                boardManager.SetPlayerBlockActive(TurnType.FIRST);
                 controllerManager.EnableController(TurnType.FIRST);
+                
                 SecondIcon.SetActive(false);
                 FirstIcon.SetActive(true);
             }
             else if (turn == TurnType.SECOND)
             {
+                boardManager.SavePlayerBlock(TurnType.FIRST);
                 controllerManager.EnableController(TurnType.SECOND);
+                
+                boardManager.SetPlayerBlockActive(TurnType.SECOND);
                 controllerManager.DisableController(TurnType.FIRST);
+                
                 SecondIcon.SetActive(true);
                 FirstIcon.SetActive(false);
             }
@@ -47,8 +61,6 @@ namespace Assets.Scripts
             {
                 controllerManager.DisableController(TurnType.SECOND);
                 controllerManager.DisableController(TurnType.FIRST);
-                //SecondIcon.SetActive(false);
-                //FirstIcon.SetActive(false);
             }
         }
 

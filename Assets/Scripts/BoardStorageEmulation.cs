@@ -10,10 +10,10 @@ namespace Assets.Scripts
 
         public int Width { get; }
 
-        public BoardStorageEmulation(BoardStorage boardStorage)
+        public BoardStorageEmulation(IBoardStorage boardStorage)
         {
-            Height = boardStorage.board.height;
-            Width = boardStorage.board.width; 
+            Height = boardStorage.GetBoardHeight();
+            Width = boardStorage.GetBoardWidth(); 
             boardStorageEmulation = new  ArmyStorageItemEmulation[Width + 1, Height + 1];
             
             for (var i = 1; i <= Width; i++)

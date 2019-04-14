@@ -1,28 +1,71 @@
 ﻿using System;
-using UnityEngine;
-using UnityEngine.UI;
 using System.Collections.Generic;
-using System.Linq;
+using Object = UnityEngine.Object;
 
 namespace Assets.Scripts
 {
-    public class BoardStorage : MonoBehaviour
+    public class BoardStorage : IBoardStorage //: MonoBehaviour
     {
-        public BoardStorageItem[,] boardTable;
-        public CheckeredButtonBoard board;
-        public BoardStorageItem[,] bonusTable;
+        private BoardStorageItem[,] boardTable;
+        private BoardStorageItem[,] bonusTable;
         
-        void Awake()
+        //TODO: remove this dependency?
+        private CheckeredButtonBoard board;
+        
+        public BoardStorage(int width, int height, CheckeredButtonBoard board)
         {
-            Initialize();  
+            this.board = board;
+            Initialize(width, height);  
         }
 
-        public void Initialize()
+        private void Initialize(int width, int height)
         {
-            boardTable = new BoardStorageItem[board.width + 1, board.height + 1];
-            bonusTable = new BoardStorageItem[board.width + 1, board.height + 1];
+            boardTable = new BoardStorageItem[width + 1, height + 1];
+            bonusTable = new BoardStorageItem[width + 1, height + 1];
+        }
+        
+        public void Activate()
+        {
+            SetAllItemsActive(true);
         }
 
+        public void Deactivate()
+        {
+            SetAllItemsActive(false);
+        }
+
+        private void SetAllItemsActive(bool active)
+        {
+            for (int col = 1; col <= board.Width; col++)
+            {
+                for (int row = 1; row <= board.Height; row++)
+                {
+                    boardTable[col, row]?.StoredObject.SetActive(active);
+                    bonusTable[col, row]?.StoredObject.SetActive(active);
+                }
+            }
+        }
+
+        public int GetBoardHeight()
+        {
+            return board.Height;
+        }
+        
+        public int GetBoardWidth()
+        {
+            return board.Width;
+        }
+        
+        public void EnableBoardButtons()
+        {
+            board.EnableBoard();
+        }
+
+        public void DisableBoardButtons()
+        {
+            board.DisableBoard();
+        }
+        
         public BoardStorageItem GetItem(int positionX, int positionY)
         {
             return boardTable[positionX, positionY];
@@ -32,8 +75,8 @@ namespace Assets.Scripts
         {
             SetItem(positionX, positionY, item, boardTable);
         }
-        
-        public BoardStorageItem GetBonusItem(int positionX, int positionY)
+
+        private BoardStorageItem GetBonusItem(int positionX, int positionY)
         {
             return bonusTable[positionX, positionY];
         }
@@ -66,11 +109,11 @@ namespace Assets.Scripts
 
         public BoardButton GetBoardButton(int positionX, int positionY)
         {
-            return board.BoardButtons[positionX, positionY].GetComponent<BoardButton>();
+            return GetBoardButton(new IntVector2(positionX, positionY));
         }
         public BoardButton GetBoardButton(IntVector2 position)
         {
-            return GetBoardButton(position.x, position.y);
+            return board.GetBoardButton(position);
         }
 
         public void AddCastle(IntVector2 position, Castle castle)
@@ -82,7 +125,35 @@ namespace Assets.Scripts
         {
             return bonusTable[position.x, position.y] as Castle;
         }
-        
+
+        public BoardStorageItem GetBonusItem(IntVector2 position)
+        {
+            return bonusTable[position.x, position.y];
+        }
+
+        public bool ContainsPlayerArmies(PlayerType playerType)
+        {
+            return FindPlayerArmies().ContainsKey(playerType);
+        }
+
+        public void EnableArmies(PlayerType playerType)
+        {
+            for (int i = 1; i <= GetBoardHeight(); i++)
+            {
+                for (int j = 1; j <= GetBoardWidth(); j++)
+                {
+                    if (GetItem(j, i) is ArmyStorageItem)
+                    {
+                        Army army = ((ArmyStorageItem)GetItem(j, i)).Army;
+                        if (army.playerType == playerType)
+                        {
+                            (army as UserArmy).SetActive();
+                        }
+                    }
+                }
+            }
+        }
+
         public bool IsCastle(IntVector2 position)
         {
             return bonusTable[position.x, position.y] is Castle;
@@ -100,13 +171,13 @@ namespace Assets.Scripts
         
         public void InvertBoard()
         {
-            for (int col = 1; col <= board.width / 2 + Math.Sign(board.width % 2); col++)
+            for (int col = 1; col <= board.Width / 2 + Math.Sign(board.Width % 2); col++)
             {
-                for (int row = 1; row <= board.height; row++)
+                for (int row = 1; row <= board.Height; row++)
 
                 {
-                    int newCol = board.width - col + 1;
-                    int newRow = board.height - row + 1;
+                    int newCol = board.Width - col + 1;
+                    int newRow = board.Height - row + 1;
 
                     SwapItems(col, row, newCol, newRow);
                 }
@@ -126,26 +197,26 @@ namespace Assets.Scripts
 
         public void Reset()
         {
-            for (int row = 1; row <= board.height; row++)
+            for (int row = 1; row <= board.Height; row++)
             {
-                for (int col = 1; col <= board.width; col++)
+                for (int col = 1; col <= board.Width; col++)
                 {
                     var oldItem = GetItem(col, row);
                     SetItem(col, row, null);
                     if (oldItem != null)
                     {
-                        Destroy(oldItem.StoredObject);
+                        Object.Destroy(oldItem.StoredObject);
                     }
                     
                     var oldBonusItem = GetItem(col, row);
                     SetBonusItem(col, row, null);
                     if (oldBonusItem != null)
                     {
-                        Destroy(oldBonusItem.StoredObject);
+                        Object.Destroy(oldBonusItem.StoredObject);
                     }
                 }
             }
-            Initialize();
+            Initialize(board.Width, board.Height);
             board.Reset();
         }
 
@@ -155,9 +226,9 @@ namespace Assets.Scripts
         {
             var playerArmyPositions = new Dictionary<PlayerType, List<IntVector2>>();
 
-            for (int i = 1; i <= board.width; i++)
+            for (int i = 1; i <= board.Width; i++)
             {
-                for (int j = 1; j <= board.height; j++)
+                for (int j = 1; j <= board.Height; j++)
                 {
                     if (GetItem(i, j) != null)
                     {

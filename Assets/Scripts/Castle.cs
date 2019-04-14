@@ -5,7 +5,7 @@ namespace Assets.Scripts
     public class Castle : BoardStorageItem
     {
         public PlayerType ownerType;
-        public PlayGameState playGameState;
+        private PlayGameState playGameState;
 
         public bool PerformAction(Army enteredArmy)
         {
@@ -27,6 +27,8 @@ namespace Assets.Scripts
 
         public Castle(GameObject targetObject) : base(targetObject)
         {
+            //TODO: awful solution...
+            playGameState = StateManager.Instance.CurrentState as PlayGameState;
         }
     }
 }

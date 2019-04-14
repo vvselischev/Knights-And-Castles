@@ -8,7 +8,8 @@ namespace Assets.Scripts
 {
     public class AIPlayer : MonoBehaviour
     {
-        public BoardStorage boardStorage;
+        public BoardManager boardManager;
+        private IBoardStorage boardStorage;
         public InputListener inputListener;
         public UserController controller;
         public PlayerType playerType;
@@ -20,6 +21,7 @@ namespace Assets.Scripts
         {
             this.playerType = playerType;
             this.controller = controller;
+            boardStorage = boardManager.BoardStorage;
         }
 
         public void Activate()
@@ -30,6 +32,7 @@ namespace Assets.Scripts
         private void MakeTurn()
         {
             controller.FinishedMove -= MakeTurn;
+            
             var gameSimulation = new GameSimulation(boardStorage);
             if (gameSimulation.GetNumberOfActiveArmies(playerType) == 0)
             {

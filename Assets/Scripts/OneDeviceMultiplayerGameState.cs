@@ -10,7 +10,7 @@ namespace Assets.Scripts
         public override void InvokeState()
         {
             base.InvokeState();
-            board.EnableBoard();
+            storage.EnableBoardButtons();
         }
 
         protected override void ChangeTurn()
