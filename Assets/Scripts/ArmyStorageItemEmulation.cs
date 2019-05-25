@@ -6,7 +6,7 @@ namespace Assets.Scripts
     {
         public bool IsAvailable { get; }
 
-        public Army Army { get; set; }
+        public Army Army { get; }
 
         public ArmyStorageItemEmulation(BoardStorageItem boardStorageItem)
         {

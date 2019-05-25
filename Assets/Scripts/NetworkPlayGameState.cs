@@ -9,7 +9,7 @@ namespace Assets.Scripts
     //TODO: should we disable exit listener on setup?
     public class NetworkPlayGameState : PlayGameState
     {
-        public NetworkInputListener inputListener;
+        public NetworkInputListener networkInputListener;
         private MultiplayerController multiplayerController;
         private List<Participant> allPlayers;
         private bool isHost;
@@ -18,19 +18,21 @@ namespace Assets.Scripts
         public Text logText;
 
         public override void InvokeState()
-        {
+        { 
             SetupGame();
-            SetupListeners();
             
+            logText.text = "";
             multiplayerController = MultiplayerController.GetInstance();
+            multiplayerController.logText = logText;
+            
+            logText.text += "Invoking\n";
+            SetupListeners();
+            logText.text += "Finish setup\n";
             
             allPlayers = multiplayerController.GetAllPlayers();
             
             string hostID = ChooseHost();
             string myId = multiplayerController.GetMyParticipantId();
-
-            multiplayerController.logText = logText;
-            logText.text = "";
             
             isHost = false;
             
@@ -51,9 +53,10 @@ namespace Assets.Scripts
 
         private void SetupListeners()
         {
-            inputListener.Init(storage.GetBoardWidth(), storage.GetBoardHeight());
-            boardFactory.patternButton.GetComponent<BoardButton>().inputListener = inputListener;
-            playMenu.startButton.GetComponent<StartButton>().inputListener = inputListener;
+            networkInputListener.Init();
+            board.SetInputListener(networkInputListener);
+            playMenu.finishTurnButton.GetComponent<FinishTurnButton>().inputListener = networkInputListener;
+            playMenu.splitButton.GetComponent<SplitButton>().inputListener = networkInputListener;
         }
         
         private string ChooseHost()
@@ -63,21 +66,20 @@ namespace Assets.Scripts
 
         private void SetupRoundHost()
         {
-            boardFactory.FillBoardStorageRandomly();
-            
-            controllerManager.FirstController = new UserController(PlayerType.FIRST, storage, boardFactory,this, armyText);
-            controllerManager.SecondController = new UserController(PlayerType.SECOND, storage, boardFactory,this, armyText);
+            logText.text += "Creating board...";
+            boardFactory.FillBoardStorageRandomly(storage);
 
-            List<byte> bytes = boardFactory.ConvertBoardStorageToBytes();
+            logText.text += "Board created. Converting to bytes...";
+            boardFactory.logText = logText;
+            List<byte> message = boardFactory.ConvertBoardStorageToBytes(storage);
             
             //Insert 'S' -- Setup message.
-            bytes.Insert(0, (byte) 'S');
-            //Host is always First
-            bytes.Add(2);
+            message.Insert(0, (byte) 'S');
 
-            logText.text += "Sending setup info...\n";
+            multiplayerController.SendMessage(message.ToArray());
             
-            multiplayerController.SendMessage(bytes.ToArray());
+            controllerManager.firstController = new UserController(PlayerType.FIRST, storage, boardFactory,this, armyText);
+            controllerManager.secondController = new UserController(PlayerType.SECOND, storage, boardFactory,this, armyText);
         }
         
         private void SetupRoundFromNetwork(byte[] message)
@@ -86,14 +88,16 @@ namespace Assets.Scripts
             {
                 return;
             }
-
-            logText.text += "Create board from network..." + "\n";
+ 
             multiplayerController.OnMessageReceived -= SetupRoundFromNetwork;
-
-            boardFactory.FillBoardStorageFromArray(message.Skip(1).ToArray());
             
-            controllerManager.FirstController = new UserController(PlayerType.FIRST, storage, boardFactory,this, armyText);
-            controllerManager.SecondController = new UserController(PlayerType.SECOND, storage, boardFactory,this, armyText);
+            logText.text += "Create board from network..." + "\n";
+
+            boardFactory.FillBoardStorageFromArray(message.Skip(1).ToArray(), storage);
+            
+            controllerManager.firstController = new UserController(PlayerType.FIRST, storage, boardFactory,this, armyText);
+            controllerManager.secondController = new UserController(PlayerType.SECOND, storage, boardFactory,this, armyText);
+            logText.text += "Finish setup listeners";
             InitNewGame();
             
             //Because host is the first to move
@@ -163,7 +167,7 @@ namespace Assets.Scripts
 
         public override void CloseState()
         {
-            inputListener.Stop();
+            networkInputListener.Stop();
             base.CloseState();
         }
 

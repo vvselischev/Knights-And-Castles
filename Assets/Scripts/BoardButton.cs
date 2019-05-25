@@ -7,11 +7,8 @@ namespace Assets.Scripts
 {
     public class BoardButton : MonoBehaviour
     {
-        //TODO: make private
-        [NonSerialized]
-        public int boardX;
-        [NonSerialized]
-        public int boardY;
+        private int boardX;
+        private int boardY;
 
         public GameIcon frame;
 

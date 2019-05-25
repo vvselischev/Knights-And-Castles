@@ -13,13 +13,13 @@ namespace Assets.Scripts
         public float maxScale = 3;
         public float fraction = 1;
         private const float EPS = 0.05f;
-        public Canvas PlayCanvas;
+        public Canvas playCanvas;
 
         public event VoidHandler FinishedLerp;
 
         void Start()
         {
-            PlayCanvas.enabled = false;
+            playCanvas.enabled = false;
         }
 
         public void PerformLerpString(string s, Color color)
@@ -43,12 +43,6 @@ namespace Assets.Scripts
             Debug.Log("Lerp finished");
             textClone.enabled = false;
             FinishedLerp?.Invoke();
-        }
-
-        public void DisableText()
-        {
-            StopCoroutine(ScaleTextCoroutine());
-            textClone.enabled = false;
         }
     }
 }

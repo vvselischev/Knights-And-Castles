@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Assets.Scripts
 {
-    public class StartButton : MonoBehaviour
+    public class FinishTurnButton : MonoBehaviour
     {
         public GameIcon icon;
         public Color defaultColor = Color.white;

@@ -40,13 +40,6 @@ namespace Assets.Scripts
                                        newExperience);
         }
 
-        public void Nullify()
-        {
-            spearmen = 0;
-            archers = 0;
-            cavalrymen = 0;
-        }
-
         public static ArmyComposition Fight(ArmyComposition winnerArmyComposition, 
                                             ArmyComposition loserArmyComposition)
         {

@@ -15,13 +15,8 @@ public class ExitListener : MonoBehaviour
     {
         StopCoroutine(BackButtonListener());
     }
-    
-    public void ExitGame()
-    {
-        Application.Quit();
-    }
-    
-    protected IEnumerator BackButtonListener()
+
+    private IEnumerator BackButtonListener()
     {
         while (true)
         {

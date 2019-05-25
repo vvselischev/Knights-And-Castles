@@ -12,7 +12,7 @@ namespace Assets.Scripts
         public event VoidHandler FinishedMove;
         private BoardFactory boardFactory;
         private PlayGameState playGameState;
-        private IBoardStorage boardStorage;
+        private BlockBoardStorage boardStorage;
         private PlayerType playerType;
         private ArmyStorageItem chosenArmyItem;
         private ArmyText armyText;
@@ -23,7 +23,8 @@ namespace Assets.Scripts
         private IntVector2 currentTargetPosition;
         private bool splitButtonClicked;
 
-        public UserController(PlayerType playerType, IBoardStorage storage, BoardFactory boardFactory, PlayGameState playGameState, ArmyText armyText)
+        public UserController(PlayerType playerType, BlockBoardStorage storage, BoardFactory boardFactory, 
+            PlayGameState playGameState, ArmyText armyText)
         {
             this.playerType = playerType;
             boardStorage = storage;
@@ -58,7 +59,7 @@ namespace Assets.Scripts
                 
                 armyText.ChangeText(clickedArmyItem.Army.armyComposition.ToString());
                 
-                if ((chosenArmyItem == null) && (clickedArmyItem.Army.playerType == playerType) && 
+                if ((clickedArmyItem.Army.playerType == playerType) && 
                     ((UserArmy) clickedArmyItem.Army).IsActive())
                 {
                     chosenArmyItem = clickedArmyItem;
@@ -114,7 +115,7 @@ namespace Assets.Scripts
         private void ProcessSplit(int chosenPositionX, int chosenPositionY, int positionX, int positionY)
         {
             Army splittedArmyPart = chosenArmyItem.Army.SplitIntoEqualParts();
-            GameObject clonedIcon = boardFactory.CloneBoardIcon(chosenPositionX, chosenPositionY);
+            GameObject clonedIcon = boardFactory.CloneBoardIcon(boardStorage, chosenPositionX, chosenPositionY);
             boardStorage.SetItem(positionX, positionY, new ArmyStorageItem(splittedArmyPart, clonedIcon));
             splitButtonClicked = false;
             armyText.ChangeText(splittedArmyPart.armyComposition.ToString());
@@ -141,8 +142,14 @@ namespace Assets.Scripts
 
             boardStorage.EnableBoardButtons();
 
-            ArmyStorageItem resultItem = GetResultItem();
+            ArmyStorageItem resultItem = GetResultItem(boardStorage.GetCurrentBlock(), currentTargetPosition);
             boardStorage.SetItem(currentTargetPosition, resultItem);
+            
+            //TODO: make castle, pass etc. implement interface IBonusItem so to process them in a common way
+            if (boardStorage.GetBonusItem(currentTargetPosition) is Pass)
+            {
+                (boardStorage.GetBonusItem(currentTargetPosition) as Pass).PassArmy(resultItem);
+            }
             
             if (ProcessAliveArmies())
             {
@@ -154,12 +161,6 @@ namespace Assets.Scripts
             {
                 ClearMoveState(); 
                 return;
-            }
-            
-            //TODO: make castle, pass etc. implement interface IBonusItem so to process them in a common way
-            if (boardStorage.GetBonusItem(currentTargetPosition) is Pass)
-            {
-                (boardStorage.GetBonusItem(currentTargetPosition) as Pass).PassArmy(chosenArmyItem);
             }
 
             ClearMoveState();        
@@ -202,24 +203,34 @@ namespace Assets.Scripts
             return false;
         }
 
-        private ArmyStorageItem GetResultItem()
+        private ArmyStorageItem GetResultItem(BoardStorage targetBlock, IntVector2 targetPosition)
         {
-            if (boardStorage.GetItem(currentTargetPosition) is ArmyStorageItem)
+            if (targetBlock.GetItem(targetPosition) is ArmyStorageItem)
             {
-                ArmyStorageItem clickedArmyItem = boardStorage.GetItem(currentTargetPosition) as ArmyStorageItem;
+                ArmyStorageItem clickedArmyItem = targetBlock.GetItem(targetPosition) as ArmyStorageItem;
                 Army resultArmy = clickedArmyItem.Army.PerformAction(chosenArmyItem.Army);
                 if (resultArmy.playerType == playerType)
                 {
                     clickedArmyItem.StoredObject.SetActive(false);
+                    targetBlock.SetItem(targetPosition, null);
                     chosenArmyItem.Army = resultArmy;
+                    return chosenArmyItem;
                 }
                 else
                 {
                     chosenArmyItem.StoredObject.SetActive(false);
+                    targetBlock.SetItem(targetPosition, null);
                     clickedArmyItem.Army = resultArmy;
                     return clickedArmyItem;
                 }
             }
+
+            if (targetBlock.GetBonusItem(targetPosition) is Pass)
+            {
+                var pass = targetBlock.GetBonusItem(targetPosition) as Pass;
+                return GetResultItem(boardStorage.GetBlock(pass.toBlock), pass.ToPosition);
+            }
+
             return chosenArmyItem;
         }
 
@@ -229,8 +240,8 @@ namespace Assets.Scripts
             {
                 return true;
             }
-            return Math.Abs(chosenArmyPosition.x - position.x) + 
-                Math.Abs(chosenArmyPosition.y - position.y) == 1;
+
+            return Math.Abs(chosenArmyPosition.x - position.x) + Math.Abs(chosenArmyPosition.y - position.y) == 1;
         }
 
         public void Disable()

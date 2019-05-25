@@ -16,18 +16,20 @@ namespace Assets.Scripts
             MultiplayerController = MultiplayerController.GetInstance();
             
             MultiplayerController.logText = lobbyMenu.logText;
-            MultiplayerController.logText.text = "";
+            lobbyMenu.logText.text = "Enter lobby\n";
             
             MultiplayerController.OnRoomSetupCompleted += ChangeStateToNetworkGameState;
             
             exitListener.Enable();
             exitListener.OnExitClicked += OnExit;
                 
+            lobbyMenu.logText.text += "Sign in...\n";
             MultiplayerController.SignInAndStartMPGame();
         }
 
         private void ChangeStateToNetworkGameState()
         {
+            lobbyMenu.logText.text += "Signed\n";
             stateManager.ChangeState(StateType.NETWORK_GAME_STATE);
         }
 
@@ -38,6 +40,7 @@ namespace Assets.Scripts
         
         public void CloseState()
         {
+            lobbyMenu.logText.text += "Closing\n";
             exitListener.OnExitClicked -= OnExit;
             exitListener.Disable();
             menuActivator.CloseMenu();

@@ -11,8 +11,8 @@ namespace Assets.Scripts
         private GameObject parentObject;
         private Button patternButton;
 
-        public int Width = 8;
-        public int Height = 10;
+        public int width = 8;
+        public int height = 10;
         private const float SPACE_BETWEEN_BUTTONS = -2; //-2.44f; //buttonWidth/20;
 
         private static float ButtonWidth;
@@ -35,7 +35,7 @@ namespace Assets.Scripts
         public void Reset()
         {
             DeleteButtons();
-            boardButtons = new Button[Width + 1, Height + 1];
+            boardButtons = new Button[width + 1, height + 1];
             CreateButtons();
         }
 
@@ -43,28 +43,10 @@ namespace Assets.Scripts
         {
             return boardButtons[position.x, position.y].gameObject.GetComponent<BoardButton>();
         }
-
-        public void Activate()
-        {
-            var buttons = Object.FindObjectsOfType(typeof(Button));
-            foreach (Button button in buttons.Cast<Button>().Where(button => button.gameObject.name.Contains("Clone")))
-            {
-                button.gameObject.SetActive(true);
-            }
-        }
-
-        public void Deactivate()
-        {
-            var buttons = Object.FindObjectsOfType(typeof(Button));
-            foreach (Button button in buttons.Cast<Button>().Where(button => button.gameObject.name.Contains("Clone")))
-            {
-                button.gameObject.SetActive(false);
-            }
-        }
         
         public void EnableBoard()
         {
-            var buttons = Object.FindObjectsOfType(typeof(Button));
+            var buttons = FindObjectsOfType(typeof(Button));
             foreach (Button button in buttons.Cast<Button>().Where(button => button.gameObject.name.Contains("Clone")))
             {
                 button.gameObject.GetComponent<BoardButton>().Enable();
@@ -73,23 +55,33 @@ namespace Assets.Scripts
 
         public void DisableBoard()
         {
-            var buttons = Object.FindObjectsOfType(typeof(Button));
+            var buttons = FindObjectsOfType(typeof(Button));
             foreach (Button button in buttons.Cast<Button>().Where(button => button.gameObject.name.Contains("Clone")))
             {
                 button.gameObject.GetComponent<BoardButton>().Disable();
             }
         }
 
-        public void DeleteButtons()
+        public void SetInputListener(InputListener inputListener)
         {
-            Debug.Log("Deleting buttons");
-            var buttons = Object.FindObjectsOfType(typeof(Button));
+            var buttons = FindObjectsOfType(typeof(Button));
             foreach (Button button in buttons.Cast<Button>().Where(button => button.gameObject.name.Contains("Clone")))
             {
-                Object.DestroyImmediate(button.gameObject);
+                button.gameObject.GetComponent<BoardButton>().inputListener = inputListener;
             }
         }
-        public static Vector3 GetOffsetFromPattern(int currentColumn, int currentRow)
+
+        private void DeleteButtons()
+        {
+            Debug.Log("Deleting buttons");
+            var buttons = FindObjectsOfType(typeof(Button));
+            foreach (Button button in buttons.Cast<Button>().Where(button => button.gameObject.name.Contains("Clone")))
+            {
+                DestroyImmediate(button.gameObject);
+            }
+        }
+
+        private Vector3 GetOffsetFromPattern(int currentColumn, int currentRow)
         {
             return new Vector3((currentColumn - 1) * (ButtonWidth + SPACE_BETWEEN_BUTTONS),
                                                  (currentRow - 1) * (ButtonHeight + SPACE_BETWEEN_BUTTONS));
@@ -99,12 +91,12 @@ namespace Assets.Scripts
         private void CreateButtons()
         {
             Debug.Log("Creating buttons");
-            for (int currentRow = 1; currentRow <= Height; currentRow++)
+            for (int currentRow = 1; currentRow <= height; currentRow++)
             {
-                for (int currentColumn = 1; currentColumn <= Width; currentColumn++)
+                for (int currentColumn = 1; currentColumn <= width; currentColumn++)
                 {
                     Vector3 offset = GetOffsetFromPattern(currentColumn, currentRow);
-                    Button newButton = Object.Instantiate(patternButton);
+                    Button newButton = Instantiate(patternButton);
                     RectTransform rectTransform = newButton.GetComponent<RectTransform>();
 
                     //This line seems to be useless (it doesn't change size)

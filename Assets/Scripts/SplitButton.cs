@@ -11,6 +11,16 @@ namespace Assets.Scripts
         public GameIcon icon;
         public Color defaultColor = Color.white;
         public Color lockColor = Color.red;
+
+        public InputListener inputListener;
+
+        public void OnClick()
+        {
+            if (enabled)
+            {
+                inputListener.ProcessSplitButtonClick();
+            }
+        }
         
         public void Lock()
         {

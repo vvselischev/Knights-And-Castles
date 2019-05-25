@@ -34,8 +34,9 @@ namespace Assets.Scripts
        
         public void SignInAndStartMPGame()
         {
-            Social.localUser.Authenticate((bool success) =>
+            Social.localUser.Authenticate(success =>
             {
+                ShowMPStatus("I am + " + Social.localUser.userName);
                 ShowMPStatus(success.ToString());
                 if (!success)
                 {

@@ -8,18 +8,18 @@ namespace Assets.Scripts
     public class ControllerManager : MonoBehaviour
     {
         public UserController currentController;
-        public UserController FirstController;
-        public UserController SecondController;
+        public UserController firstController;
+        public UserController secondController;
 
         public void SetCurrentController(TurnType type)
         {
             if (type == TurnType.SECOND)
             {
-                currentController = SecondController;
+                currentController = secondController;
             }
             else if (type == TurnType.FIRST)
             {
-                currentController = FirstController;
+                currentController = firstController;
             }
         }
 
@@ -27,11 +27,11 @@ namespace Assets.Scripts
         {
             if (type == TurnType.FIRST)
             {
-                FirstController.Enable();
+                firstController.Enable();
             }
             else
             {
-                SecondController.Enable();
+                secondController.Enable();
             }
         }
 
@@ -39,11 +39,11 @@ namespace Assets.Scripts
         {
             if (type == TurnType.FIRST)
             {
-                FirstController.Disable();
+                firstController.Disable();
             }
             else
             {
-                SecondController.Disable();
+                secondController.Disable();
             }
         }
 
@@ -55,8 +55,8 @@ namespace Assets.Scripts
         public void DeactivateAll()
         {
             currentController = null;
-            FirstController.Disable();
-            SecondController.Disable();
+            firstController.Disable();
+            secondController.Disable();
         }
     }
 }

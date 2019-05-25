@@ -4,7 +4,7 @@ using Object = UnityEngine.Object;
 
 namespace Assets.Scripts
 {
-    public class BoardStorage : IBoardStorage //: MonoBehaviour
+    public class BoardStorage : IBoardStorage
     {
         private BoardStorageItem[,] boardTable;
         private BoardStorageItem[,] bonusTable;
@@ -36,9 +36,9 @@ namespace Assets.Scripts
 
         private void SetAllItemsActive(bool active)
         {
-            for (int col = 1; col <= board.Width; col++)
+            for (int col = 1; col <= board.width; col++)
             {
-                for (int row = 1; row <= board.Height; row++)
+                for (int row = 1; row <= board.height; row++)
                 {
                     boardTable[col, row]?.StoredObject.SetActive(active);
                     bonusTable[col, row]?.StoredObject.SetActive(active);
@@ -48,12 +48,38 @@ namespace Assets.Scripts
 
         public int GetBoardHeight()
         {
-            return board.Height;
+            return board.height;
         }
-        
+
+        public void Fill(BoardStorageItem[,] items, BoardStorageItem[,] bonusItems)
+        {
+            for (int col = 1; col <= board.width; col++)
+            {
+                for (int row = 1; row <= board.height; row++)
+                {
+                    boardTable[col, row] = items[col, row];
+                    bonusTable[col, row] = items[col, row];
+                }
+            }
+        }
+
+        public void ConvertToArrays(out BoardStorageItem[,] items, out BoardStorageItem[,] bonusItems)
+        {
+            items = new BoardStorageItem[board.width + 1, board.height + 1];
+            bonusItems = new BoardStorageItem[board.width + 1, board.height + 1];
+            for (int col = 1; col <= board.width; col++)
+            {
+                for (int row = 1; row <= board.height; row++)
+                {
+                    items[col, row] = boardTable[col, row];
+                    bonusItems[col, row] = bonusItems[col, row];
+                }
+            }
+        }
+
         public int GetBoardWidth()
         {
-            return board.Width;
+            return board.width;
         }
         
         public void EnableBoardButtons()
@@ -76,7 +102,7 @@ namespace Assets.Scripts
             SetItem(positionX, positionY, item, boardTable);
         }
 
-        private BoardStorageItem GetBonusItem(int positionX, int positionY)
+        public BoardStorageItem GetBonusItem(int positionX, int positionY)
         {
             return bonusTable[positionX, positionY];
         }
@@ -171,13 +197,13 @@ namespace Assets.Scripts
         
         public void InvertBoard()
         {
-            for (int col = 1; col <= board.Width / 2 + Math.Sign(board.Width % 2); col++)
+            for (int col = 1; col <= board.width / 2 + Math.Sign(board.width % 2); col++)
             {
-                for (int row = 1; row <= board.Height; row++)
+                for (int row = 1; row <= board.height; row++)
 
                 {
-                    int newCol = board.Width - col + 1;
-                    int newRow = board.Height - row + 1;
+                    int newCol = board.width - col + 1;
+                    int newRow = board.height - row + 1;
 
                     SwapItems(col, row, newCol, newRow);
                 }
@@ -197,9 +223,9 @@ namespace Assets.Scripts
 
         public void Reset()
         {
-            for (int row = 1; row <= board.Height; row++)
+            for (int row = 1; row <= board.height; row++)
             {
-                for (int col = 1; col <= board.Width; col++)
+                for (int col = 1; col <= board.width; col++)
                 {
                     var oldItem = GetItem(col, row);
                     SetItem(col, row, null);
@@ -216,7 +242,7 @@ namespace Assets.Scripts
                     }
                 }
             }
-            Initialize(board.Width, board.Height);
+            Initialize(board.width, board.height);
             board.Reset();
         }
 
@@ -226,9 +252,9 @@ namespace Assets.Scripts
         {
             var playerArmyPositions = new Dictionary<PlayerType, List<IntVector2>>();
 
-            for (int i = 1; i <= board.Width; i++)
+            for (int i = 1; i <= board.width; i++)
             {
-                for (int j = 1; j <= board.Height; j++)
+                for (int j = 1; j <= board.height; j++)
                 {
                     if (GetItem(i, j) != null)
                     {
@@ -247,6 +273,24 @@ namespace Assets.Scripts
             }
 
             return playerArmyPositions;
+        }
+
+        public IEnumerable<Pass> GetPasses()
+        {
+            var passes = new List<Pass>();
+            for (int i = 1; i <= board.width; i++)
+            {
+                for (int j = 1; j <= board.height; j++)
+                {
+                    var item = GetBonusItem(i, j);
+                    if (item is Pass)
+                    {
+                        passes.Add(item as Pass);
+                    }
+                }
+            }
+
+            return passes;
         }
     }
 }

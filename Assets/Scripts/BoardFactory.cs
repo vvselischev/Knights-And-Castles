@@ -2,18 +2,18 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using UnityEngine;
+ using GooglePlayGames.Native.PInvoke;
+ using UnityEngine;
 using UnityEngine.UI;
 
 namespace Assets.Scripts
 {
     public class BoardFactory : MonoBehaviour
     {
-        private BlockBoardStorage boardStorage;
-        private BoardStorageItem[,] currentBoardTable;
-        private BoardStorageItem[,] currentBonusTable;
         private System.Random random = new System.Random();
 
+        public Text logText;
+        
         //Set in editor
         public int blocksHorizontal = 1;
         public int blocksVertical = 1;
@@ -26,6 +26,9 @@ namespace Assets.Scripts
         
         public IntVector2[] firstCastlesPositions = { new IntVector2(1, 1) };
         public IntVector2[] secondCastlesPositions = { new IntVector2(8, 10) };
+        
+        public IntVector2 firstStartBlock = new IntVector2(1, 1);
+        public IntVector2 secondStartBlock = new IntVector2(1, 1);
 
         public const int PASSES_NUMBER = 2;
 
@@ -43,7 +46,7 @@ namespace Assets.Scripts
         
         public IntVector2[] passesFromPositions = new IntVector2[PASSES_NUMBER]
         {
-            new IntVector2(2, 1),
+            new IntVector2(7, 10),
             new IntVector2(4, 5) 
         };
         
@@ -56,7 +59,6 @@ namespace Assets.Scripts
 
         public GameObject patternIcon;
         public GameObject parent;
-        public GameObject patternButton;
 
         public CheckeredButtonBoard board; //just to transfer it to board storage 
         public BoardManager boardManager;
@@ -68,21 +70,19 @@ namespace Assets.Scripts
 
         public Sprite NeutralFriendlySprite, NeutralAgressiveSprite, FirstUserSprite, SecondUserSprite, CastleSprite, PassSprite;
 
-        public BlockBoardStorage Initialize()
+        public BlockBoardStorage CreateEmptyStorage()
         {
-            boardStorage = new BlockBoardStorage(blocksHorizontal, blocksVertical, board);
-            
             imbalance = startImbalance;
-            return boardStorage;
+            return new BlockBoardStorage(blocksHorizontal, blocksVertical, board);
         }
         
-        public void FillBoardStorageRandomly()
+        public void FillBoardStorageRandomly(IBoardStorage boardStorage)
         {
-            currentBoardTable = new BoardStorageItem[blockWidth * blocksHorizontal + 1, blockHeight * blocksVertical + 1];
-            currentBonusTable = new BoardStorageItem[blockWidth * blocksHorizontal + 1, blockHeight * blocksVertical + 1];
+            var currentBoardTable = new BoardStorageItem[blockWidth * blocksHorizontal + 1, blockHeight * blocksVertical + 1];
+            var currentBonusTable = new BoardStorageItem[blockWidth * blocksHorizontal + 1, blockHeight * blocksVertical + 1];
             
-            InstantiateCastles();
-            InstantiatePasses();
+            InstantiateCastles(currentBonusTable);
+            InstantiatePasses(currentBonusTable);
             
             for (int col = 1; col <= blockWidth * blocksHorizontal; col++)
             {
@@ -159,7 +159,7 @@ namespace Assets.Scripts
             return new IntVector2(globalX, globalY);
         }
         
-        private void InstantiatePasses()
+        private void InstantiatePasses(BoardStorageItem[,] bonusTable)
         {
             for (int i = 0; i < PASSES_NUMBER; i++)
             {
@@ -169,24 +169,24 @@ namespace Assets.Scripts
                     passesFromPositions[i], passesToPositions[i]);
 
                 var globalFrom = GetGlobalPosition(passesFromPositions[i], passesFromBlocks[i]);
-                currentBonusTable[globalFrom.x, globalFrom.y] = pass;
+                bonusTable[globalFrom.x, globalFrom.y] = pass;
             }
         }
 
-        private void InstantiateCastles()
+        private void InstantiateCastles(BoardStorageItem[,] bonusTable)
         {
-            InstantiateCastlesFromList(firstCastlesPositions, PlayerType.FIRST);
-            InstantiateCastlesFromList(secondCastlesPositions, PlayerType.SECOND);
+            InstantiateCastlesFromList(firstCastlesPositions, PlayerType.FIRST, bonusTable);
+            InstantiateCastlesFromList(secondCastlesPositions, PlayerType.SECOND, bonusTable);
         }
 
-        private void InstantiateCastlesFromList(IntVector2[] positions, PlayerType ownerType)
+        private void InstantiateCastlesFromList(IntVector2[] positions, PlayerType ownerType, BoardStorageItem[,] bonusTable)
         {
             foreach (var position in positions)
             {
                 var castleObject = InstantiateIcon(CastleSprite);
                 castleObject.SetActive(false);
                 var castle = new Castle(castleObject) {ownerType = ownerType};
-                currentBonusTable[position.x, position.y] = castle;
+                bonusTable[position.x, position.y] = castle;
             }
         }
 
@@ -197,15 +197,19 @@ namespace Assets.Scripts
         //x == 2 => NeutralAggressive
         //x == 11 => FirstPlayer
         //x == 12 => SecondPlayer
-        //x > 10 => after x go (v1, v2, v3) -- spearmen, archers, cavalrymen
-        public void FillBoardStorageFromArray(byte[] array)
+        //x = 1, 2, 11, 12 => after x goes (v1, v2, v3) -- spearmen, archers, cavalrymen
+        public void FillBoardStorageFromArray(byte[] array, IBoardStorage boardStorage)
         {            
-            InstantiateCastles();
+            var currentBoardTable = new BoardStorageItem[blockWidth * blocksHorizontal + 1, blockHeight * blocksVertical + 1];
+            var currentBonusTable = new BoardStorageItem[blockWidth * blocksHorizontal + 1, blockHeight * blocksVertical + 1];
+            
+            InstantiateCastles(currentBonusTable);
+            InstantiatePasses(currentBonusTable);
             
             int currentInd = 0;
-            for (int row = 1; row <= blockHeight * blocksVertical; row++)
+            for (int col = 1; col <= blockWidth * blocksHorizontal; col++)
             {
-                for (int col = 1; col <= blockWidth * blocksHorizontal; col++)
+                for (int row = 1; row <= blockHeight * blocksVertical; row++)
                 {
                     byte currentType = array[currentInd];
                     currentInd++;
@@ -248,25 +252,35 @@ namespace Assets.Scripts
                     }
 
                     GameObject iconGO = InstantiateIcon(currentSprite);
-                    
-                    //TODO!!!
-                    boardStorage.SetItem(col, row, new ArmyStorageItem(currentArmy, iconGO));
+                    iconGO.SetActive(false);
+                    currentBoardTable[col, row] = new ArmyStorageItem(currentArmy, iconGO);
                 }
             }
+            
+            boardStorage.Fill(currentBoardTable, currentBonusTable);
         }
 
-        public List<byte> ConvertBoardStorageToBytes()
+        public List<byte> ConvertBoardStorageToBytes(BlockBoardStorage boardStorage)
         {
+            BoardStorageItem[,] items;
+            BoardStorageItem[,] bonusItems;
+
+            logText.text += "Trying to convert...\n";
+                       
+            boardStorage.ConvertToArrays(out items, out bonusItems, logText);
+
+            logText.text += "Converted to arrays\n";
+            
             List<byte> byteList = new List<byte>();
-            for (int row = 1; row <= boardStorage.GetBoardHeight(); row++)
+            for (int col = 1; col <= blockWidth * blocksHorizontal; col++)
             {
-                for (int col = 1; col <= boardStorage.GetBoardWidth(); col++)
+                for (int row = 1; row <= blockHeight * blocksVertical; row++)
                 {
                     byte currentType = 0;
                     Army army = null;
-                    if (boardStorage.GetItem(col, row) is ArmyStorageItem)
+                    if (items[col, row] != null && items[col, row] is ArmyStorageItem)
                     {
-                        army = (boardStorage.GetItem(col, row) as ArmyStorageItem).Army;
+                        army = ((ArmyStorageItem) items[col, row]).Army;
                         if (army.playerType == PlayerType.FIRST)
                         {
                             currentType = 11;
@@ -302,7 +316,7 @@ namespace Assets.Scripts
             return byteList;
         }
 
-        public GameObject CloneBoardIcon(int fromX, int fromY)
+        public GameObject CloneBoardIcon(IBoardStorage boardStorage, int fromX, int fromY)
         {
             BoardStorageItem item = boardStorage.GetItem(fromX, fromY);
             return InstantiateIcon(item.StoredObject.GetComponent<Image>().sprite);

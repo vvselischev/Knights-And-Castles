@@ -7,14 +7,9 @@ namespace Assets.Scripts
         private MultiplayerController multiplayerController;
 
         public Text logText;
-
-        private int boardWidth;
-        private int boardHeight;
         
-        public void Init(int boardWidth, int boardHeight)
+        public void Init()
         {
-            this.boardWidth = boardWidth;
-            this.boardHeight = boardHeight;
             multiplayerController = MultiplayerController.GetInstance();
             multiplayerController.OnMessageReceived += ProcessNetworkData;
         }
@@ -37,8 +32,8 @@ namespace Assets.Scripts
 
             if (message[1] == 'B')
             {
-                int x = boardWidth - message[2] + 1;
-                int y = boardHeight - message[3] + 1;
+                int x = message[2];
+                int y = message[3];
                 logText.text += "Receive:" + x + " " + y + "\n";
                 base.ProcessBoardClick(x, y);
             }

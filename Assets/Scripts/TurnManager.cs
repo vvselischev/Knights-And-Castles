@@ -19,17 +19,12 @@ namespace Assets.Scripts
     {
         public ControllerManager controllerManager;
         public BoardManager boardManager;
-        public GameObject FirstIcon;
-        public GameObject SecondIcon;
+        public GameObject firstIcon;
+        public GameObject secondIcon;
 
         private TurnType currentTurn;
-        
-        public TurnType CurrentTurn => currentTurn;
 
-        public void Initialize(BlockBoardStorage storage)
-        {
-            boardManager.Initialize(storage);
-        }
+        public TurnType CurrentTurn => currentTurn;
         
         public void SetTurn(TurnType turn)
         {
@@ -43,8 +38,8 @@ namespace Assets.Scripts
                 boardManager.SetPlayerBlockActive(TurnType.FIRST);
                 controllerManager.EnableController(TurnType.FIRST);
                 
-                SecondIcon.SetActive(false);
-                FirstIcon.SetActive(true);
+                secondIcon.SetActive(false);
+                firstIcon.SetActive(true);
             }
             else if (turn == TurnType.SECOND)
             {
@@ -54,8 +49,8 @@ namespace Assets.Scripts
                 boardManager.SetPlayerBlockActive(TurnType.SECOND);
                 controllerManager.DisableController(TurnType.FIRST);
                 
-                SecondIcon.SetActive(true);
-                FirstIcon.SetActive(false);
+                secondIcon.SetActive(true);
+                firstIcon.SetActive(false);
             }
             else if (turn == TurnType.RESULT)
             {

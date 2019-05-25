@@ -10,16 +10,9 @@ namespace Assets.Scripts
     {
         //public Transform transform;
         public float velocity = 120;
-
         public event VoidHandler ReachedTarget;
 
-        private Vector3 localPosition;
         private float fraction;
-
-        void Awake()
-        {
-            localPosition = gameObject.GetComponent<RectTransform>().localPosition;
-        }
 
         public IEnumerator MoveTo(Vector3 startPosition, Vector3 targetPosition)
         {

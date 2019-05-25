@@ -9,6 +9,6 @@ public class Record  {
 
     public override string ToString ()
     {
-        return string.Format ("[Person: Id={0}, Login={1},  WinsBot={2}]", Id, Login, WinsBot);
+        return $"[Person: Id={Id}, Login={Login},  WinsBot={WinsBot}]";
     }
 }

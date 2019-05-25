@@ -4,7 +4,7 @@ namespace Assets.Scripts
 {
     public class BoardStorageEmulation
     {
-        private readonly ArmyStorageItemEmulation[,] boardStorageEmulation;
+        private ArmyStorageItemEmulation[,] boardStorageEmulation;
 
         public int Height { get; }
 

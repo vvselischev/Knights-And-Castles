@@ -40,19 +40,7 @@ public class Timer : MonoBehaviour
 
     public void StopTimer()
     {
-        Reset();
         started = false;
         StopCoroutine(UpdateTimer());       
-    }
-
-    public void Reset()
-    {
-        //secondsLeft = 0;
-        //timeText.text = "0";
-    }
-
-    public void AddTime(int deltaTime)
-    {
-        secondsLeft += deltaTime;
     }
 }

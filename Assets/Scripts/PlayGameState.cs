@@ -27,25 +27,29 @@ namespace Assets.Scripts
         public UIManager uiManager;
         public StateManager stateManager;
         public ExitListener exitListener;
-
+        public CheckeredButtonBoard board;
+        public BoardManager boardManager;
+        public InputListener inputListener;
+        
         protected BlockBoardStorage storage;
         protected DataService dataService;
         private MenuActivator menuActivator = MenuActivator.GetInstance();
 
-        public const int MAX_TURNS = 10000;
+        private const int MAX_TURNS = 10000;
 
         private int playedTurns;
 
         public virtual void InvokeState()
         {
             SetupGame();
-            boardFactory.FillBoardStorageRandomly();
-
-            controllerManager.FirstController =
+            boardFactory.FillBoardStorageRandomly(storage);
+            
+            board.SetInputListener(inputListener);
+            controllerManager.firstController =
                 new UserController(PlayerType.FIRST, storage, boardFactory, this, armyText);
-            controllerManager.SecondController =
+            controllerManager.secondController =
                 new UserController(PlayerType.SECOND, storage, boardFactory, this, armyText);
-
+            
             InitNewGame();
         }
 
@@ -56,9 +60,9 @@ namespace Assets.Scripts
 
             uiManager.FinishedLerp += SetupFinishGame;
             
-            storage = boardFactory.Initialize();
+            storage = boardFactory.CreateEmptyStorage();
 
-            turnManager.Initialize(storage);
+            boardManager.Initialize(storage, boardFactory.firstStartBlock, boardFactory.secondStartBlock);
             playedTurns = 0;
 
             timer.OnFinish += ChangeTurn;
@@ -124,6 +128,8 @@ namespace Assets.Scripts
                 Login = "Vlad",
                 WinsBot = total + 10,
             });
+            
+            stateManager.ChangeState(StateType.START_GAME_STATE);
         }
 
         protected virtual void ExitGame()

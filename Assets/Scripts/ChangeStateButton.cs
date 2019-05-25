@@ -8,12 +8,12 @@ namespace Assets.Scripts
 {
     public class ChangeStateButton : MonoBehaviour
     {
-        public StateType NextState;
+        public StateType nextState;
         public StateManager stateManager;
 
         public void OnClick()
         {
-            stateManager.ChangeState(NextState);
+            stateManager.ChangeState(nextState);
         }
     }
 }

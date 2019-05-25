@@ -5,6 +5,8 @@ namespace Assets.Scripts
         void DisableBoardButtons();
         void EnableBoardButtons();
         void InvertBoard();
+        void Fill(BoardStorageItem[,] items, BoardStorageItem[,] bonusItems);
+        void ConvertToArrays(out BoardStorageItem[,] items, out BoardStorageItem[,] bonusItems);
         int GetBoardWidth();
         int GetBoardHeight();
         BoardStorageItem GetItem(int positionX, int positionY);
@@ -12,6 +14,7 @@ namespace Assets.Scripts
         void SetItem(IntVector2 position, BoardStorageItem item);
         BoardButton GetBoardButton(IntVector2 position);
         BoardStorageItem GetItem(IntVector2 position);
+        BoardStorageItem GetBonusItem(int positionX, int positionY);
         void DisableFrame(IntVector2 position);
         void EnableFrame(IntVector2 position);
         bool IsCastle(IntVector2 position);

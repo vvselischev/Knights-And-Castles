@@ -18,11 +18,11 @@ namespace Assets.Scripts
 
         public static StateManager Instance { get; private set; }
 
-        public StartGameState StartState;
+        public StartGameState startGameState;
         public NetworkPlayGameState networkPlayGameState;
         public AIPlayGameState aiPlayGameState;
         public OneDeviceMultiplayerGameState oneDeviceMultiplayerGameState;
-        public LobbyGameState LobbyGameState;
+        public LobbyGameState lobbyGameState;
         
         private static Dictionary<StateType, IGameState> states;
 
@@ -40,8 +40,8 @@ namespace Assets.Scripts
         {
             states = new Dictionary<StateType, IGameState>
             {
-                {StateType.START_GAME_STATE, StartState},
-                {StateType.LOBBY_GAME_STATE, LobbyGameState},
+                {StateType.START_GAME_STATE, startGameState},
+                {StateType.LOBBY_GAME_STATE, lobbyGameState},
                 {StateType.NETWORK_GAME_STATE, networkPlayGameState},
                 {StateType.AI_GAME_STATE, aiPlayGameState},
                 {StateType.ONE_DEVICE_MULTIPLAYER_STATE, oneDeviceMultiplayerGameState}

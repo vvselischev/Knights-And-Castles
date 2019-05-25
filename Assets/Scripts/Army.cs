@@ -22,7 +22,7 @@ namespace Assets.Scripts
 
         //TODO: fields about army composition, methods Merge, Battle etc.
 
-        public Army(ArmyType armyType, PlayerType playerType, ArmyComposition armyComposition)
+        protected Army(ArmyType armyType, PlayerType playerType, ArmyComposition armyComposition)
         {
             this.armyType = armyType;
             this.playerType = playerType;
@@ -45,7 +45,7 @@ namespace Assets.Scripts
 
         public abstract Army PerformAction(Army attackingArmy);
 
-        public static Army Merge(Army firstArmy, Army secondArmy)
+        protected static Army Merge(Army firstArmy, Army secondArmy)
         {
             if (firstArmy.armyType == ArmyType.USER && secondArmy.armyType == ArmyType.USER)
             {
@@ -85,7 +85,7 @@ namespace Assets.Scripts
             throw new Exception("MergeUserAndNeutralArmies: neutral army type is not NEUTRAL_FRIENDLY");
         }
 
-        public static Army PerformBattle(Army firstArmy, Army secondArmy)
+        protected static Army PerformBattle(Army firstArmy, Army secondArmy)
         {
             if (ArmyComposition.IsFirstWinner(firstArmy.armyComposition, secondArmy.armyComposition))
             {
@@ -109,7 +109,7 @@ namespace Assets.Scripts
             throw new Exception("PerformBattle: Inappropriate army types");
         }
 
-        public Army Split(int spearmen, int archers, int cavalrymen)
+        private Army Split(int spearmen, int archers, int cavalrymen)
         {
             armyComposition.DeleteArmyPart(spearmen, archers, cavalrymen);
             
@@ -122,7 +122,7 @@ namespace Assets.Scripts
             }
             else
             {
-                throw new NotImplementedException();
+                return this;
             }
         }
 

@@ -1,5 +1,7 @@
+using System;
 using System.ComponentModel.Design;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace Assets.Scripts
 {
@@ -21,13 +23,6 @@ namespace Assets.Scripts
             this.board = board;
             
             blocks = new BoardStorage[width + 1, height + 1];
-        }
-
-        public void FillBlock(BoardStorageItem[,] items, BoardStorageItem[,] bonusItems, IntVector2 blockPosition)
-        {
-            int blockWidth = items.GetLength(0) - 1;
-            int blockHeight = items.GetLength(1) - 1;
-            FillBlock(items, bonusItems, blockPosition, 1, blockWidth, 1,blockHeight);
         }
 
         private void FillBlock(BoardStorageItem[,] items, BoardStorageItem[,] bonusItems,
@@ -68,6 +63,66 @@ namespace Assets.Scripts
             }
         }
 
+        public void ConvertToArrays(out BoardStorageItem[,] items, out BoardStorageItem[,] bonusItems)
+        {
+            //TODO: stupid solution, assuming that all blocks have equal size...
+            int blockWidth = blocks[1, 1].GetBoardWidth();
+            int blockHeight = blocks[1, 1].GetBoardHeight();
+
+            items = new BoardStorageItem[width * blockWidth + 1, height * blockHeight + 1];
+            bonusItems = new BoardStorageItem[width * blockWidth + 1, height * blockHeight + 1];
+            
+            for (int col = 1; col <= width; col++)
+            {
+                for (int row = 1; row <= height; row++)
+                {
+                    int fromX = (col - 1) * blockWidth + 1;
+                    int fromY = (row - 1) * blockHeight + 1;
+                    for (int blockCol = 1; blockCol <= blockWidth; blockCol++)
+                    {
+                        for (int blockRow = 1; blockRow <= blockHeight; blockRow++)
+                        {
+                            items[fromX + blockCol - 1, fromY + blockRow - 1] =
+                                blocks[col, row].GetItem(blockCol, blockRow);
+                            bonusItems[fromX + blockCol - 1, fromY + blockRow - 1] =
+                                blocks[col, row].GetBonusItem(blockCol, blockRow);
+                        }
+                    }
+                }
+            }
+        }
+        
+        public void ConvertToArrays(out BoardStorageItem[,] items, out BoardStorageItem[,] bonusItems, Text logText)
+        {
+            //TODO: stupid solution, assuming that all blocks have equal size...
+            int blockWidth = blocks[1, 1].GetBoardWidth();
+            int blockHeight = blocks[1, 1].GetBoardHeight();
+
+            items = new BoardStorageItem[width * blockWidth + 1, height * blockHeight + 1];
+            bonusItems = new BoardStorageItem[width * blockWidth + 1, height * blockHeight + 1];
+            
+            for (int col = 1; col <= width; col++)
+            {
+                for (int row = 1; row <= height; row++)
+                {
+                    int fromX = (col - 1) * blockWidth + 1;
+                    int fromY = (row - 1) * blockHeight + 1;
+                    for (int blockCol = 1; blockCol <= blockWidth; blockCol++)
+                    {
+                        for (int blockRow = 1; blockRow <= blockHeight; blockRow++)
+                        {
+                            logText.text = "fromX = " + fromX + ", " + "blockCol = " + blockCol + ", fromY = " +
+                                            fromY + ", blockRow = " + blockRow + "\n";
+                            items[fromX + blockCol - 1, fromY + blockRow - 1] =
+                                blocks[col, row].GetItem(blockCol, blockRow);
+                            bonusItems[fromX + blockCol - 1, fromY + blockRow - 1] =
+                                blocks[col, row].GetBonusItem(blockCol, blockRow);
+                        }
+                    }
+                }
+            }
+        }
+
         public void SetCurrentBlock(IntVector2 position)
         {
             currentBlock?.Deactivate();
@@ -81,7 +136,7 @@ namespace Assets.Scripts
             return currentBlockPosition;
         }
         
-        public IBoardStorage GetCurrentBlock()
+        public BoardStorage GetCurrentBlock()
         {
             return currentBlock;
         }
@@ -98,6 +153,36 @@ namespace Assets.Scripts
 
         public void InvertBoard()
         {
+            //Loops are completely separated, because after swapping blocks we cannot determine dimensions of
+            //the target block for pass (actually, we can, but it is very painful)
+            
+            //Loop through blocks and invert passes
+            for (int col = 1; col <= width / 2 + Math.Sign(width % 2); col++)
+            {
+                for (int row = 1; row <= height / 2 + Math.Sign(height % 2); row++)
+                {
+                    var invertedPosition = GetInvertedPosition(width, height, col, row);
+                    int invertedCol = invertedPosition.x;
+                    int invertedRow = invertedPosition.y;
+                    
+                    var firstBlock = blocks[col, row];
+                    var secondBlock = blocks[invertedCol, invertedRow];
+                    var firstPasses = firstBlock.GetPasses();
+                    var secondPasses = secondBlock.GetPasses();
+
+                    foreach (var pass in firstPasses)
+                    {
+                        InvertPass(pass, col, row);
+                    }
+
+                    foreach (var pass in secondPasses)
+                    {
+                        InvertPass(pass, invertedCol, invertedRow);
+                    }
+                }
+            }
+            
+            //Invert all blocks
             for (int col = 1; col <= width; col++)
             {
                 for (int row = 1; row <= height; row++)
@@ -105,6 +190,35 @@ namespace Assets.Scripts
                     blocks[col, row].InvertBoard();
                 }
             }
+        }
+
+        private void SwapBlocks(int firstCol, int firstRow, int secondCol, int secondRow)
+        {
+            var tmp = blocks[firstCol, firstRow];
+            blocks[firstCol, firstRow] = blocks[secondCol, secondRow];
+            blocks[secondCol, secondRow] = tmp;
+        }
+
+        private void InvertPass(Pass pass, int oldBlockX, int oldBlockY)
+        {
+            var oldBlock = blocks[oldBlockX, oldBlockY];
+            var oldToBlockPosition = pass.toBlock;
+            var toBlock = blocks[oldToBlockPosition.x, oldToBlockPosition.y];
+            var newToBlockPosition = GetInvertedPosition(board.width, board.height,
+                oldToBlockPosition.x, oldToBlockPosition.y);
+
+            //pass.toBlock = newToBlockPosition;
+            
+            var fromPosition = pass.FromPosition;
+            pass.FromPosition = GetInvertedPosition(oldBlock.GetBoardWidth(), oldBlock.GetBoardHeight(), fromPosition.x, fromPosition.y);
+            
+            var toPosition = pass.ToPosition;
+            pass.ToPosition = GetInvertedPosition(toBlock.GetBoardWidth(), toBlock.GetBoardHeight(),toPosition.x, toPosition.y);
+        }
+
+        private IntVector2 GetInvertedPosition(int width, int height, int col, int row)
+        {
+            return new IntVector2(width - col + 1, height - row + 1);
         }
 
         public int GetBoardWidth()
@@ -136,6 +250,11 @@ namespace Assets.Scripts
         public BoardStorageItem GetItem(IntVector2 position)
         {
             return currentBlock.GetItem(position);
+        }
+
+        public BoardStorageItem GetBonusItem(int positionX, int positionY)
+        {
+            return currentBlock.GetBonusItem(positionX, positionY);
         }
 
         public void SetItem(int col, int row, BoardStorageItem item)
@@ -203,6 +322,11 @@ namespace Assets.Scripts
                     blocks[col, row].EnableArmies(playerType);
                 }
             }
+        }
+
+        public BoardStorage GetBlock(IntVector2 blockPosition)
+        {
+            return blocks[blockPosition.x, blockPosition.y];
         }
     }
 }

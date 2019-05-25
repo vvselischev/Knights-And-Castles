@@ -6,7 +6,6 @@ using UnityEngine;
 
 namespace Assets.Scripts
 {
-    //в этих методах прописываем конкретные кнопки, надписи и т.д., вешаем на Canvas
     public class StartMenu : MonoBehaviour, IMenu
     {
         public void Activate()

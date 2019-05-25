@@ -6,12 +6,9 @@ namespace Assets.Scripts
     {
         private IntVector2 firstPlayerBlockPosition;
         private IntVector2 secondPlayerBlockPosition;
-         
-        private IntVector2 firstStartBlock = new IntVector2(1, 1);
-        private IntVector2 secondStartBlock = new IntVector2(1, 1);
         public BlockBoardStorage BoardStorage { get; private set; }
 
-        public void Initialize(BlockBoardStorage boardStorage)
+        public void Initialize(BlockBoardStorage boardStorage, IntVector2 firstStartBlock, IntVector2 secondStartBlock)
         {
             BoardStorage = boardStorage;
             firstPlayerBlockPosition = firstStartBlock;

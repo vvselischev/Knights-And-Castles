@@ -4,10 +4,10 @@ namespace Assets.Scripts
 {
     public class Pass : BoardStorageItem
     {
-        private IntVector2 toBlock;
-        public IntVector2 FromPosition { get; }
-        public IntVector2 ToPosition { get; }
-        public BoardManager boardManager;
+        public IntVector2 toBlock { get; }
+        public IntVector2 FromPosition { get; set; }
+        public IntVector2 ToPosition { get; set; }
+        private BoardManager boardManager;
 
         public void ChangeBlock()
         {
