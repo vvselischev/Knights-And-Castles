@@ -60,9 +60,11 @@ namespace Assets.Scripts
 
             uiManager.FinishedLerp += SetupFinishGame;
             
-            storage = boardFactory.CreateEmptyStorage();
+            storage = boardFactory.CreateEmptyStorage(new LargeBoardConfiguration());
 
-            boardManager.Initialize(storage, boardFactory.firstStartBlock, boardFactory.secondStartBlock);
+            boardManager.Initialize(storage, boardFactory.Configuration.FirstStartBlock,
+                boardFactory.Configuration.SecondStartBlock);
+            
             playedTurns = 0;
 
             timer.OnFinish += ChangeTurn;

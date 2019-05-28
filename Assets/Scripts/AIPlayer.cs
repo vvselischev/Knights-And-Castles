@@ -9,7 +9,7 @@ namespace Assets.Scripts
     public class AIPlayer : MonoBehaviour
     {
         public BoardManager boardManager;
-        private IBoardStorage boardStorage;
+        private BlockBoardStorage boardStorage;
         public InputListener inputListener;
         public UserController controller;
         public PlayerType playerType;
@@ -57,12 +57,26 @@ namespace Assets.Scripts
             MakeMove(bestMove.From, bestMove.To);    
         }
 
-        private void MakeMove(IntVector2 from, IntVector2 to)
+        private void MakeMove(Cell from, Cell to)
         {
             //Don't forget, that you must control the correctness of moves!
             //TODO: check the correctness.
-            inputListener.ProcessBoardClick(from.x, from.y);
-            inputListener.ProcessBoardClick(to.x, to.y);
+            var fromBlockPosition = boardStorage.GetBlockPosition(from);
+            var fromBlock = boardStorage.GetBlock(fromBlockPosition);
+            var currentBlock = boardManager.GetCurrentBlock();
+
+            if (fromBlock != currentBlock)
+            {
+                boardManager.SetActiveBlock(fromBlockPosition);
+            }
+            
+            Debug.Log("AI move: fromBlock = " + fromBlockPosition);
+            Debug.Log("Current block is " + boardStorage.GetCurrentBlockPosition());
+
+            var positionFrom = boardStorage.GetPositionOnBoard(from);
+            var positionTo = boardStorage.GetPositionOnBoard(to);
+            inputListener.ProcessBoardClick(positionFrom.x, positionFrom.y);
+            inputListener.ProcessBoardClick(positionTo.x, positionTo.y);
         }
 
         private void FinishTurn()

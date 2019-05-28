@@ -1,6 +1,6 @@
 using System;
-using System.ComponentModel.Design;
-using UnityEngine;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine.UI;
 
 namespace Assets.Scripts
@@ -10,19 +10,29 @@ namespace Assets.Scripts
         private int width;
         private int height;
 
-        private BoardStorage[,] blocks;
+        private SingleBoardStorage[,] blocks;
         private CheckeredButtonBoard board;
 
-        private BoardStorage currentBlock;
+        private SingleBoardStorage currentBlock;
         private IntVector2 currentBlockPosition;
         
+        private Dictionary<PlayerType, List<Cell>> castles; // Where should be initialized?
+        private Graph graph;  // Where should be initialized?
+
         public BlockBoardStorage(int width, int height, CheckeredButtonBoard board)
         {
             this.width = width;
             this.height = height;
             this.board = board;
             
-            blocks = new BoardStorage[width + 1, height + 1];
+            blocks = new SingleBoardStorage[width + 1, height + 1];
+        }
+
+        public void FillBlock(BoardStorageItem[,] items, BoardStorageItem[,] bonusItems, IntVector2 blockPosition)
+        {
+            int blockWidth = items.GetLength(0) - 1;
+            int blockHeight = items.GetLength(1) - 1;
+            FillBlock(items, bonusItems, blockPosition, 1, blockWidth, 1,blockHeight);
         }
 
         private void FillBlock(BoardStorageItem[,] items, BoardStorageItem[,] bonusItems,
@@ -30,9 +40,9 @@ namespace Assets.Scripts
         {
             int blockWidth = toX - fromX + 1;
             int blockHeight = toY - fromY + 1;
-            blocks[blockPosition.x, blockPosition.y] = new BoardStorage(blockWidth, blockHeight, board);
+            blocks[blockPosition.x, blockPosition.y] = new SingleBoardStorage(blockWidth, blockHeight, board);
 
-            BoardStorage targetBlock = blocks[blockPosition.x, blockPosition.y];
+            SingleBoardStorage targetBlock = blocks[blockPosition.x, blockPosition.y];
             for (int col = fromX; col <= toX; col++)
             {
                 for (int row = fromY; row <= toY; row++)
@@ -43,6 +53,11 @@ namespace Assets.Scripts
                     targetBlock.SetBonusItem(targetX, targetY, bonusItems[col, row]);
                 }
             }
+        }
+
+        public SingleBoardStorage GetBlock(IntVector2 position)
+        {
+            return blocks[position.x, position.y];
         }
 
         public void Fill(BoardStorageItem[,] items, BoardStorageItem[,] bonusItems)
@@ -91,37 +106,6 @@ namespace Assets.Scripts
                 }
             }
         }
-        
-        public void ConvertToArrays(out BoardStorageItem[,] items, out BoardStorageItem[,] bonusItems, Text logText)
-        {
-            //TODO: stupid solution, assuming that all blocks have equal size...
-            int blockWidth = blocks[1, 1].GetBoardWidth();
-            int blockHeight = blocks[1, 1].GetBoardHeight();
-
-            items = new BoardStorageItem[width * blockWidth + 1, height * blockHeight + 1];
-            bonusItems = new BoardStorageItem[width * blockWidth + 1, height * blockHeight + 1];
-            
-            for (int col = 1; col <= width; col++)
-            {
-                for (int row = 1; row <= height; row++)
-                {
-                    int fromX = (col - 1) * blockWidth + 1;
-                    int fromY = (row - 1) * blockHeight + 1;
-                    for (int blockCol = 1; blockCol <= blockWidth; blockCol++)
-                    {
-                        for (int blockRow = 1; blockRow <= blockHeight; blockRow++)
-                        {
-                            logText.text = "fromX = " + fromX + ", " + "blockCol = " + blockCol + ", fromY = " +
-                                            fromY + ", blockRow = " + blockRow + "\n";
-                            items[fromX + blockCol - 1, fromY + blockRow - 1] =
-                                blocks[col, row].GetItem(blockCol, blockRow);
-                            bonusItems[fromX + blockCol - 1, fromY + blockRow - 1] =
-                                blocks[col, row].GetBonusItem(blockCol, blockRow);
-                        }
-                    }
-                }
-            }
-        }
 
         public void SetCurrentBlock(IntVector2 position)
         {
@@ -131,12 +115,18 @@ namespace Assets.Scripts
             currentBlock?.Activate();
         }
 
+        public void SetCurrentBlock(SingleBoardStorage block)
+        {
+            currentBlock?.Deactivate();
+            currentBlock = block;
+        }
+
         public IntVector2 GetCurrentBlockPosition()
         {
             return currentBlockPosition;
         }
         
-        public BoardStorage GetCurrentBlock()
+        public SingleBoardStorage GetCurrentBlock()
         {
             return currentBlock;
         }
@@ -151,7 +141,7 @@ namespace Assets.Scripts
             currentBlock.EnableBoardButtons();
         }
 
-        public void InvertBoard()
+         public void InvertBoard()
         {
             //Loops are completely separated, because after swapping blocks we cannot determine dimensions of
             //the target block for pass (actually, we can, but it is very painful)
@@ -192,22 +182,11 @@ namespace Assets.Scripts
             }
         }
 
-        private void SwapBlocks(int firstCol, int firstRow, int secondCol, int secondRow)
-        {
-            var tmp = blocks[firstCol, firstRow];
-            blocks[firstCol, firstRow] = blocks[secondCol, secondRow];
-            blocks[secondCol, secondRow] = tmp;
-        }
-
-        private void InvertPass(Pass pass, int oldBlockX, int oldBlockY)
+         private void InvertPass(Pass pass, int oldBlockX, int oldBlockY)
         {
             var oldBlock = blocks[oldBlockX, oldBlockY];
-            var oldToBlockPosition = pass.toBlock;
+            var oldToBlockPosition = pass.ToBlock;
             var toBlock = blocks[oldToBlockPosition.x, oldToBlockPosition.y];
-            var newToBlockPosition = GetInvertedPosition(board.width, board.height,
-                oldToBlockPosition.x, oldToBlockPosition.y);
-
-            //pass.toBlock = newToBlockPosition;
             
             var fromPosition = pass.FromPosition;
             pass.FromPosition = GetInvertedPosition(oldBlock.GetBoardWidth(), oldBlock.GetBoardHeight(), fromPosition.x, fromPosition.y);
@@ -324,9 +303,225 @@ namespace Assets.Scripts
             }
         }
 
-        public BoardStorage GetBlock(IntVector2 blockPosition)
+        public List<Cell> FindPlayerArmies(PlayerType playerType)
         {
+            var playerArmies = new List<Cell>();
+            foreach (var block in blocks)
+            {
+                if (block != null)
+                {
+                    playerArmies.AddRange(block.FindPlayerArmies(playerType));
+                }
+            }
+
+            return playerArmies;
+        }
+
+        public IBoardStorage CreateSimulation()
+        {
+            var simulation = new BlockBoardStorage(width, height, board);
+            simulation.currentBlockPosition = currentBlockPosition.CloneVector();
+            for (int i = 1; i <= width; i++)
+            {
+                for (int j = 1; j <= height; j++)
+                {
+                    simulation.blocks[i, j] = blocks[i, j].CreateSimulation() as SingleBoardStorage;
+                }
+            }
+
+            simulation.currentBlock = simulation.blocks[currentBlockPosition.x, currentBlockPosition.y];
+            return simulation;
+        }
+
+        public BoardStorageItem GetItem(Cell cell)
+        {
+            return (from SingleBoardStorage block in blocks where block != null && block.ContainsCell(cell)
+                select block.GetItem(cell)).FirstOrDefault();
+        }
+
+        public void SetItem(Cell cell, BoardStorageItem item)
+        {
+            var blockWithCell =
+                (from SingleBoardStorage block in blocks where block != null && block.ContainsCell(cell) select block)
+                .FirstOrDefault();
+
+            blockWithCell?.SetItem(cell, item);
+        }
+
+        public int GetDistanceToEnemyCastle(Cell cell, PlayerType playerType)
+        {
+            InitializeGraphAndListOfCastlesIfNot();
+            var castleCell = castles[ChangePlayerType(playerType)][0];
+
+            return graph.GetDistance(cell, castleCell);
+        }
+
+        private PlayerType ChangePlayerType(PlayerType playerType)
+        {
+            if (playerType == PlayerType.FIRST)
+            {
+                return PlayerType.SECOND;
+            }
+
+            return PlayerType.FIRST;
+        }
+
+        private void InitializeGraphAndListOfCastlesIfNot()
+        {
+            if (graph == null)
+            {
+                graph = new Graph(this);
+            }
+
+            if (castles == null)
+            {
+                FillCastles();
+            }
+        }
+
+        public List<Cell> GetAdjacent(Cell cell)
+        {
+            var block = GetBlock(cell);
+            var adjacentInSingleBoard = block.GetAdjacent(cell);
+            var adjacent = new List<Cell>();
+
+            foreach (var adjacentCell in adjacentInSingleBoard)
+            {
+                var item = block.GetItem(adjacentCell);
+                var pass = item as Pass;
+                if (pass != null)
+                {
+                    var toBlock = blocks[pass.ToBlock.x, pass.ToBlock.y];
+                    adjacent.Add(toBlock.GetCellByPosition(pass.ToPosition));
+                }
+                else
+                {
+                    adjacent.Add(adjacentCell);
+                }
+            }
+
+            return adjacent;
+        }
+
+        public List<Cell> FindActivePlayerArmies(PlayerType playerType)
+        {
+            var activePlayerArmies = new List<Cell>();
+            foreach (var block in blocks) {
+                if (block != null)
+                {
+                    activePlayerArmies.AddRange(block.FindActivePlayerArmies(playerType));
+                }
+            }
+
+            return activePlayerArmies;
+        }
+
+        public IntVector2 GetPositionOnBoard(Cell cell) // Function is called in MakeMove and cell must be in current block
+        {
+            return currentBlock.GetPositionOnBoard(cell);
+        }
+
+        public SingleBoardStorage GetBlock(Cell cell)
+        {
+            var blockPosition = GetBlockPosition(cell);
+            if (blockPosition == null)
+            {
+                return null;
+            }
+
             return blocks[blockPosition.x, blockPosition.y];
+        }
+
+        public IntVector2 GetBlockPosition(Cell cell)
+        {
+            for (int col = 1; col <= width; col++)
+            {
+                for (int row = 1; row <= height; row++)
+                {
+                    var block = blocks[col, row];
+                    if (block.GetPositionOnBoard(cell) != null)
+                    {
+                        return new IntVector2(col, row);
+                    }
+                }
+            }
+
+            return null;
+        }
+        
+        public int GetNumberOfCells()
+        {
+            int numberOfCells = 0;
+            foreach (var block in blocks)
+            {
+                if (block != null)
+                {
+                    numberOfCells += block.GetNumberOfCells();
+                }
+            }
+
+            return numberOfCells;
+        }
+
+        public List<Cell> GetListOfCells()
+        {
+            var listOfCells = new List<Cell>();
+            foreach (var block in blocks)
+            {
+                if (block != null)
+                {
+                    listOfCells.AddRange(block.GetListOfCells());
+                }
+            }
+
+            return listOfCells;
+        }
+
+        private void FillCastles()
+        {
+            castles = new Dictionary<PlayerType, List<Cell>>
+            {
+                {PlayerType.FIRST, new List<Cell>()}, {PlayerType.SECOND, new List<Cell>()}
+            };
+            foreach (var block in blocks)
+            {
+                if (block != null)
+                {
+                    var castleFirstPlayer = block.FindCastle(PlayerType.FIRST);
+                    var castleSecondPlayer = block.FindCastle(PlayerType.SECOND);
+
+                    if (castleFirstPlayer != null)
+                    {
+                        castles[PlayerType.FIRST].AddRange(castleFirstPlayer);
+                    }
+
+                    if (castleSecondPlayer != null)
+                    {
+                        castles[PlayerType.SECOND].AddRange(castleSecondPlayer);
+                    }
+                }
+            }
+        }
+
+        public List<PassAsFromToCells> GetPassesAsFromToCells()
+        {
+            var passesAsFromToCells = new List<PassAsFromToCells>();
+
+            foreach (var block in blocks)
+            {
+                if (block != null)
+                {
+                    var passes = block.GetPasses();
+                    foreach (var pass in passes)
+                    {
+                        var toCell = blocks[pass.ToBlock.x, pass.ToBlock.y].GetCellByPosition(pass.ToPosition);
+                        var fromCell = block.GetCellByPosition(pass.FromPosition);
+                        passesAsFromToCells.Add(new PassAsFromToCells(fromCell, toCell));
+                    }
+                }
+            }
+
+            return passesAsFromToCells;
         }
     }
 }

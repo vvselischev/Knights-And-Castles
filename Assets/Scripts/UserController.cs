@@ -203,7 +203,7 @@ namespace Assets.Scripts
             return false;
         }
 
-        private ArmyStorageItem GetResultItem(BoardStorage targetBlock, IntVector2 targetPosition)
+        private ArmyStorageItem GetResultItem(SingleBoardStorage targetBlock, IntVector2 targetPosition)
         {
             if (targetBlock.GetItem(targetPosition) is ArmyStorageItem)
             {
@@ -228,7 +228,7 @@ namespace Assets.Scripts
             if (targetBlock.GetBonusItem(targetPosition) is Pass)
             {
                 var pass = targetBlock.GetBonusItem(targetPosition) as Pass;
-                return GetResultItem(boardStorage.GetBlock(pass.toBlock), pass.ToPosition);
+                return GetResultItem(boardStorage.GetBlock(pass.ToBlock), pass.ToPosition);
             }
 
             return chosenArmyItem;

@@ -22,7 +22,7 @@ namespace Assets.Scripts
             sourceObject.transform.localPosition = startPointObject.transform.localPosition;
         }
 
-        void Start()
+        void Awake()
         {
             follower.ReachedTarget += FollowerReachedTarget;
             sourceObject = gameObject;

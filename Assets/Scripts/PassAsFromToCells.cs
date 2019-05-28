@@ -1,14 +1,11 @@
 namespace Assets.Scripts
 {
-    public class MoveInformation
+    public class PassAsFromToCells
     {
         public Cell From { get; }
-
         public Cell To { get; }
 
-        public double benefit;
-
-        public MoveInformation(Cell from, Cell to)
+        public PassAsFromToCells(Cell from, Cell to)
         {
             From = from;
             To = to;

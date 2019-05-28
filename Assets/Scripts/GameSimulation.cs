@@ -8,105 +8,87 @@ namespace Assets.Scripts
     {
         private class ItemAndPosition
         {
-            public ArmyStorageItemEmulation item;
-            public int x;
-            public int y;
-
-            public ItemAndPosition(ArmyStorageItemEmulation item, IntVector2 position)
+            public readonly ArmyStorageItem Item;
+            public readonly Cell Cell;
+            public ItemAndPosition(ArmyStorageItem item, Cell cell)
             {
-                this.item = item;
-                x = position.x;
-                y = position.y;
+                Item = item;
+                Cell = cell;
             }
         }
         
-        private BoardStorageEmulation boardStorageEmulation;
+        private IBoardStorage boardStorage;
 
         public GameSimulation(IBoardStorage boardStorage)
         {
-            boardStorageEmulation = new BoardStorageEmulation(boardStorage); 
+            this.boardStorage = boardStorage.CreateSimulation();
         }
 
-        private Dictionary<PlayerType, List<IntVector2>> FindPlayerArmies()
+        private Dictionary<PlayerType, List<Cell>> FindPlayerArmies()
         {
-            var playerArmyPositions = new Dictionary<PlayerType, List<IntVector2>>();
-
-            for (int i = 1; i <= boardStorageEmulation.Width; i++)
+            var armiesByType = new Dictionary<PlayerType, List<Cell>>
             {
-                for (int j = 1; j <= boardStorageEmulation.Height; j++)
-                {
-                    if (boardStorageEmulation.GetItem(i, j) != null)
-                    {
-                        var army = boardStorageEmulation.GetItem(i, j).Army;
+                {PlayerType.FIRST, boardStorage.FindPlayerArmies(PlayerType.FIRST)},
+                {PlayerType.SECOND, boardStorage.FindPlayerArmies(PlayerType.SECOND)}
+            };
 
-                        if (army != null)
-                        {
-                            if (!playerArmyPositions.ContainsKey(army.playerType))
-                            {
-                                playerArmyPositions.Add(army.playerType, new List<IntVector2>());
-                            }
-                            playerArmyPositions[army.playerType].Add(new IntVector2(i, j));
-                        }
-                    }
-                }
-            }
 
-            return playerArmyPositions;
+            return armiesByType;
         }
 
-        private double AnalyzePosition(List<IntVector2> currentPlayerArmyPositions, List<IntVector2> otherPlayerArmyPositions)
+        private double AnalyzePosition(List<Cell> currentPlayerArmyCells, List<Cell> otherPlayerArmyCells)
         {
-            double currentPlayerPositionProfit = CalcPlayerPositionProfit(currentPlayerArmyPositions);
-            double otherPlayerPositionProfit = CalcPlayerPositionProfit(otherPlayerArmyPositions);
+            double currentPlayerPositionProfit = CalcPlayerPositionProfit(currentPlayerArmyCells);
+            double otherPlayerPositionProfit = CalcPlayerPositionProfit(otherPlayerArmyCells);
 
             return currentPlayerPositionProfit - otherPlayerPositionProfit;
         }
 
-        private double CalcPlayerPositionProfit(List<IntVector2> currentPlayerArmyPositions)
+        private double CalcPlayerPositionProfit(List<Cell> currentPlayerArmyCells)
         {
             double result = 0;
 
-            if (currentPlayerArmyPositions.Count == 0)
+            if (currentPlayerArmyCells.Count == 0)
             {
                 return 0;
             }
 
-            var playerType = GetPlayerTypeByPosition(currentPlayerArmyPositions[0]);
-            var enemyCastlePosition = FindEnemyCastlePosition(playerType);
+            var playerType = GetPlayerTypeByCell(currentPlayerArmyCells[0]);
 
-            foreach (var position in currentPlayerArmyPositions)
+            foreach (var cell in currentPlayerArmyCells)
             {
-                var army = boardStorageEmulation.GetItem(position.x, position.y).Army;
-                result += CalcArmyPositionProfit(army.ArmyPower(), 
-                    DistanceBetweenPositions(position, enemyCastlePosition));
+                var boardItem = boardStorage.GetItem(cell);
+                if (boardItem is ArmyStorageItem item)
+                {
+                    result += CalcArmyPositionProfit(item.Army.ArmyPower(),
+                        boardStorage.GetDistanceToEnemyCastle(cell, playerType));
+                }
             }
 
             return result;
         }
 
-        private PlayerType GetPlayerTypeByPosition(IntVector2 position)
+        private PlayerType GetPlayerTypeByCell(Cell cell)
         {
-            var item = boardStorageEmulation.GetItem(position.x, position.y);
-            
-            if (item?.Army == null)
+            var boardItem = boardStorage.GetItem(cell);
+            if (boardItem is ArmyStorageItem item)
             {
-                throw new ArgumentException("Army does not exist on this position");
+                if (item.Army == null)
+                {
+                    throw new ArgumentException("Army does not exist on this position");
+                }
+
+                var army = item.Army;
+
+                if (army is UserArmy userArmy)
+                {
+                    return userArmy.playerType;
+                }
+
+                throw new ArgumentException("Not UserArmy on this position");
             }
 
-            var army = item.Army;
-
-            if (army is UserArmy)
-            {
-                var userArmy = army as UserArmy;
-                return userArmy.playerType;
-            }
-
-            throw new ArgumentException("Not UserArmy on this position");
-        }
-
-        private static int DistanceBetweenPositions(IntVector2 from, IntVector2 to)
-        {
-            return Math.Abs(from.x - to.x) + Math.Abs(from.y - to.y);
+            throw new ArgumentException("Not ArmyStorageItem");
         }
 
         private double CalcArmyPositionProfit(double armyPower, int distanceToEnemyCastle)
@@ -119,7 +101,7 @@ namespace Assets.Scripts
             return armyPower / distanceToEnemyCastle;
         }
 
-        private static PlayerType ChangePlayerType(PlayerType playerType)
+        private PlayerType ChangePlayerType(PlayerType playerType)
         {
             if (playerType == PlayerType.FIRST)
             {
@@ -134,45 +116,29 @@ namespace Assets.Scripts
             throw new ArgumentException("such playerType is not allowed");
         }
 
-        //TODO: avoid hardcode constants.
-        private IntVector2 FindEnemyCastlePosition(PlayerType playerType)
-        {
-            if (playerType == PlayerType.FIRST)
-            {
-                return new IntVector2(boardStorageEmulation.Width, boardStorageEmulation.Height);
-            }
-
-            if (playerType == PlayerType.SECOND)
-            {
-                return new IntVector2(1,1);
-            }
-            
-            throw new ArgumentException("such playerType is not allowed");
-        }
-
         public MoveInformation FindBestMove(PlayerType playerType, int depth)
         {
             //TODO: do it simultaneously.
-            var currentPlayerArmyPosition = FindPlayerArmies()[playerType];
-            var otherPlayerArmyPosition = FindPlayerArmies()[ChangePlayerType(playerType)];
+            var currentPlayerArmyCells = FindPlayerArmies()[playerType];
+            var otherPlayerArmyCells = FindPlayerArmies()[ChangePlayerType(playerType)];
             
             return AnalyzeStrategy(playerType, true, 
-                depth, currentPlayerArmyPosition, otherPlayerArmyPosition).Item2;
+                depth, currentPlayerArmyCells, otherPlayerArmyCells).Item2;
         }
 
         private Tuple<double, MoveInformation> AnalyzeStrategy(PlayerType playerType, bool isFirstTurn,
-            int depth, List<IntVector2> currentPlayerArmyPositions, List<IntVector2> otherPlayerArmyPositions)
+            int depth, List<Cell> currentPlayerArmyCells, List<Cell> otherPlayerArmyCells)
         {
             if (depth == 0)
             {
                 return new Tuple<double, MoveInformation>(AnalyzePosition(
-                    currentPlayerArmyPositions, otherPlayerArmyPositions), null);
+                    currentPlayerArmyCells, otherPlayerArmyCells), null);
             }
 
-            var possibleMoves = GetListOfMoves(currentPlayerArmyPositions, isFirstTurn);
-            var resultOnWaiting = AnalyzeStrategy(ChangePlayerType(playerType), false,depth - 1, 
-                otherPlayerArmyPositions, currentPlayerArmyPositions);
-            double resultBenefit = resultOnWaiting.Item1;
+            var possibleMoves = GetListOfMoves(currentPlayerArmyCells, isFirstTurn);
+            //var resultOnWaiting = AnalyzeStrategy(ChangePlayerType(playerType), false,depth - 1, 
+            //    otherPlayerArmyCells, currentPlayerArmyCells);
+            double resultBenefit = double.PositiveInfinity;
             MoveInformation bestMoveInformation = null; // not move
 
             if (possibleMoves == null)
@@ -183,9 +149,11 @@ namespace Assets.Scripts
             foreach (var moveInformation in possibleMoves)
             {
                 var intermediateResult = MakeAnalyzingMoves(moveInformation, depth, playerType, 
-                    currentPlayerArmyPositions, otherPlayerArmyPositions);
+                    currentPlayerArmyCells, otherPlayerArmyCells);
                 //Enemy will lose
-                if (double.IsNegativeInfinity(intermediateResult.Item1))
+                if (double.IsNegativeInfinity(intermediateResult.Item1) && 
+                    boardStorage.GetDistanceToEnemyCastle(moveInformation.To, playerType) < 
+                    boardStorage.GetDistanceToEnemyCastle(moveInformation.From, playerType))
                 {
                     resultBenefit = intermediateResult.Item1;
                     bestMoveInformation = moveInformation;
@@ -203,64 +171,62 @@ namespace Assets.Scripts
         }
 
         private Tuple<double, MoveInformation> MakeAnalyzingMoves(MoveInformation moveInformation, int depth, 
-            PlayerType playerType,  List<IntVector2> currentPlayerArmyPositions, 
-            List<IntVector2> otherPlayerArmyPositions)
+            PlayerType playerType,  List<Cell> currentPlayerArmyCells, 
+            List<Cell> otherPlayerArmyCells)
         {
             var memorizedFrom = new ItemAndPosition(GetItemByPosition(moveInformation.From), moveInformation.From);
             var memorizedTo = new ItemAndPosition(GetItemByPosition(moveInformation.To), moveInformation.To);
            
             MakeMove(moveInformation.From, moveInformation.To, false);
-            currentPlayerArmyPositions.Remove(moveInformation.From);
-            currentPlayerArmyPositions.Remove(moveInformation.To);
-            otherPlayerArmyPositions.Remove(moveInformation.From);
-            otherPlayerArmyPositions.Remove(moveInformation.To);
+            currentPlayerArmyCells.Remove(moveInformation.From);
+            currentPlayerArmyCells.Remove(moveInformation.To);
+            otherPlayerArmyCells.Remove(moveInformation.From);
+            otherPlayerArmyCells.Remove(moveInformation.To);
 
-            var resultArmy = boardStorageEmulation.GetItem(moveInformation.To.x,
-                                                           moveInformation.To.y);
+            var resultItem = boardStorage.GetItem(moveInformation.To) as ArmyStorageItem;
 
-            if (resultArmy.Army != null && resultArmy.Army is UserArmy)
+            if (resultItem.Army != null && resultItem.Army is UserArmy userArmy)
             {
-                var userArmy = resultArmy.Army as UserArmy;
                 if (playerType == userArmy.playerType)
                 {
-                    currentPlayerArmyPositions.Add(moveInformation.To);
+                    currentPlayerArmyCells.Add(moveInformation.To);
                 }
                 else
                 {
-                    otherPlayerArmyPositions.Add(moveInformation.To);
+                    otherPlayerArmyCells.Add(moveInformation.To);
                 }
             }
 
             var result = AnalyzeStrategy(ChangePlayerType(playerType), false, 
-                    depth - 1,otherPlayerArmyPositions, 
-                    currentPlayerArmyPositions);
+                    depth - 1,otherPlayerArmyCells, 
+                    currentPlayerArmyCells);
 
             CancelMove(memorizedFrom, memorizedTo);
-            currentPlayerArmyPositions.Remove(moveInformation.To);
-            otherPlayerArmyPositions.Remove(moveInformation.To);
-            if (memorizedFrom.item?.Army != null)
+            currentPlayerArmyCells.Remove(moveInformation.To);
+            otherPlayerArmyCells.Remove(moveInformation.To);
+            if (memorizedFrom.Item?.Army != null)
             {
-                if (memorizedFrom.item.Army.playerType == playerType)
+                if (memorizedFrom.Item.Army.playerType == playerType)
                 {
-                    currentPlayerArmyPositions.Add(moveInformation.From);
+                    currentPlayerArmyCells.Add(moveInformation.From);
                 }
 
-                 if (memorizedFrom.item.Army.playerType == ChangePlayerType(playerType))
+                 if (memorizedFrom.Item.Army.playerType == ChangePlayerType(playerType))
                  {
-                    otherPlayerArmyPositions.Add(moveInformation.From);
+                    otherPlayerArmyCells.Add(moveInformation.From);
                  }
             }
 
-            if (memorizedTo.item?.Army != null)
+            if (memorizedTo.Item?.Army != null)
             {
-                if (memorizedTo.item.Army.playerType == playerType)
+                if (memorizedTo.Item.Army.playerType == playerType)
                 {
-                    currentPlayerArmyPositions.Add(moveInformation.To);
+                    currentPlayerArmyCells.Add(moveInformation.To);
                 }
 
-                if (memorizedTo.item.Army.playerType == ChangePlayerType(playerType))
+                if (memorizedTo.Item.Army.playerType == ChangePlayerType(playerType))
                 {
-                    otherPlayerArmyPositions.Add(moveInformation.To);
+                    otherPlayerArmyCells.Add(moveInformation.To);
                 }
             }
 
@@ -269,34 +235,35 @@ namespace Assets.Scripts
 
         private void CancelMove(ItemAndPosition from, ItemAndPosition to)
         {
-            from.item.Army.SetActive();
-            boardStorageEmulation.SetItem(from.x, from.y, from.item);
-            boardStorageEmulation.SetItem(to.x, to.y, to.item);
+            from.Item.Army.SetActive();
+            boardStorage.SetItem(from.Cell, from.Item);
+            boardStorage.SetItem(to.Cell, to.Item);
         }
 
-        private ArmyStorageItemEmulation GetItemByPosition(IntVector2 position)
+        private ArmyStorageItem GetItemByPosition(Cell cell)
         {
-            return boardStorageEmulation.GetItem(position.x, position.y);
+            return boardStorage.GetItem(cell) as ArmyStorageItem;
         }
 
-        public void MakeMove(IntVector2 from, IntVector2 to, bool isRealMove) //changes boardStorageEmulation
+        public void MakeMove(Cell from, Cell to, bool isRealMove) //changes boardStorageEmulation
         {
-            var fromItem = boardStorageEmulation.GetItem(from.x, from.y);
-            var toItem = boardStorageEmulation.GetItem(to.x, to.y);
+            var fromItem = boardStorage.GetItem(from) as ArmyStorageItem;
+            var toItem = boardStorage.GetItem(to) as ArmyStorageItem;
 
+            
             if (fromItem == null)
             {
                 throw new ArgumentException("cannot move nonexistent army");
             }
 
-            boardStorageEmulation.SetItem(from.x, from.y, null);
+            boardStorage.SetItem(from, null);
             if (toItem?.Army == null)
             {
-                boardStorageEmulation.SetItem(to.x, to.y, fromItem);
+                boardStorage.SetItem(to, fromItem);
 
-                if (isRealMove && fromItem.Army is UserArmy)
+                if (isRealMove && fromItem.Army is UserArmy userArmy)
                 {
-                    ((UserArmy)fromItem.Army).SetInactive();
+                    userArmy.SetInactive();
                 }
             }
             else
@@ -308,32 +275,22 @@ namespace Assets.Scripts
                     resultArmy.SetActive();
                 }
 
-                boardStorageEmulation.SetItem(to.x, to.y, new ArmyStorageItemEmulation(resultArmy));
+                boardStorage.SetItem(to, new ArmyStorageItem(resultArmy, null));
             }
         }
 
-        public void SetArmyInactive(int x, int y)
-        {
-            var item = boardStorageEmulation.GetItem(x, y);
-            if (item?.Army is UserArmy)
-            {
-                (item.Army as UserArmy).SetInactive();
-            }
-        }
-
-        private List<MoveInformation> GetListOfMoves(List<IntVector2> playerArmiesPositions, bool isFirstTurn)
+        private List<MoveInformation> GetListOfMoves(List<Cell> playerArmiesCells, bool isFirstTurn)
         {
             var possibleMoves = new List<MoveInformation>();
 
-            foreach (var position in playerArmiesPositions)
+            foreach (var cell in playerArmiesCells)
             {
-                var army = boardStorageEmulation.GetItem(position.x, position.y).Army;
-                if (army is UserArmy)
+                var boardItem = boardStorage.GetItem(cell);
+                if (boardItem is ArmyStorageItem item && item.Army is UserArmy userArmy)
                 {
-                    var userArmy = army as UserArmy;
                     if (userArmy.IsActive() || !isFirstTurn)
                     {
-                        AddPossibleMoves(possibleMoves, position);
+                        AddPossibleMoves(possibleMoves, cell);
                     }
                 }
             }
@@ -341,80 +298,18 @@ namespace Assets.Scripts
             return possibleMoves;
         }
         
-        private void AddPossibleMoves(List<MoveInformation> possibleMoves, IntVector2 position)
+        private void AddPossibleMoves(List<MoveInformation> possibleMoves, Cell cell)
         {
-            int x = position.x;
-            int y = position.y;
-
-            if (PossibleToMove(x, y - 1))
+            var adjacentCells = boardStorage.GetAdjacent(cell);
+            foreach (var adjacentCell in adjacentCells)
             {
-                possibleMoves.Add(new MoveInformation(position, new IntVector2(x, y - 1)));
+                possibleMoves.Add(new MoveInformation(cell, adjacentCell));
             }
-
-            if (PossibleToMove(x - 1, y))
-            {
-                possibleMoves.Add(new MoveInformation(position, new IntVector2(x - 1, y)));
-            }
-
-            if (PossibleToMove(x, y + 1))
-            {
-                possibleMoves.Add(new MoveInformation(position, new IntVector2(x,y + 1)));
-            }
-
-            if (PossibleToMove(x + 1, y))
-            {
-                possibleMoves.Add(new MoveInformation(position, new IntVector2(x + 1, y)));
-            }
-        }
-
-        private bool PossibleToMove(int x, int y)
-        {
-            int boardHeight = boardStorageEmulation.Height;
-            int boardWidth = boardStorageEmulation.Width;
-
-            if (x > boardWidth || x <= 0)
-            {
-                return false;
-            }
-            
-            if (y > boardHeight || y <= 0)
-            {
-                return false;
-            }
-
-            var item = boardStorageEmulation.GetItem(x, y);
-            
-            return item == null || item.IsAvailable;
         }
 
         public int GetNumberOfActiveArmies(PlayerType playerType)
         {
-            return GetActiveArmies(playerType).Count;
-        }
-
-        private List<IntVector2> GetActiveArmies(PlayerType playerType)
-        {
-            var activeArmiesPositions = new List<IntVector2>();
-            
-            foreach (var position in FindPlayerArmies()[playerType])
-            {
-                var army = boardStorageEmulation.GetItem(position.x, position.y).Army;
-
-                if (army is UserArmy)
-                {
-                    var userArmy = army as UserArmy;
-                    if (userArmy.IsActive())
-                    {
-                        activeArmiesPositions.Add(position);
-                    }
-                }
-                else
-                {
-                    throw new Exception("something went wrong"); // I don't know what to throw
-                }
-            }
-
-            return activeArmiesPositions;
+            return boardStorage.FindActivePlayerArmies(playerType).Count;
         }
     }
 }

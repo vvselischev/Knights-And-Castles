@@ -70,7 +70,6 @@ namespace Assets.Scripts
             boardFactory.FillBoardStorageRandomly(storage);
 
             logText.text += "Board created. Converting to bytes...";
-            boardFactory.logText = logText;
             List<byte> message = boardFactory.ConvertBoardStorageToBytes(storage);
             
             //Insert 'S' -- Setup message.

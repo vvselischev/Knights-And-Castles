@@ -15,7 +15,7 @@ namespace Assets.Scripts
             secondPlayerBlockPosition = secondStartBlock;
         }
 
-        public IBoardStorage GetCurrentBlock()
+        public SingleBoardStorage GetCurrentBlock()
         {
             return BoardStorage.GetCurrentBlock();
         }
@@ -24,7 +24,6 @@ namespace Assets.Scripts
         {
             BoardStorage.SetCurrentBlock(position);
         }
-
         public void SetPlayerBlockActive(TurnType playerType)
         {
             if (playerType == TurnType.FIRST)

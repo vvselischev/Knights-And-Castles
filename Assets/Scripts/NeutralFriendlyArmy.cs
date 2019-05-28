@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace Assets.Scripts
+﻿namespace Assets.Scripts
 {
     public class NeutralFriendlyArmy : Army
     {
@@ -17,7 +12,7 @@ namespace Assets.Scripts
             return Merge(this, attackingArmy);
         }
 
-        public override object Clone()
+        public override Army CloneArmy()
         {
             return new NeutralFriendlyArmy(armyComposition);
         }

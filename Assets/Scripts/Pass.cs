@@ -4,7 +4,7 @@ namespace Assets.Scripts
 {
     public class Pass : BoardStorageItem
     {
-        public IntVector2 toBlock { get; }
+        public IntVector2 ToBlock { get; }
         public IntVector2 FromPosition { get; set; }
         public IntVector2 ToPosition { get; set; }
         private BoardManager boardManager;
@@ -12,7 +12,7 @@ namespace Assets.Scripts
         public void ChangeBlock()
         {
             Debug.Log("Change block without army");
-            boardManager.SetActiveBlock(toBlock);
+            boardManager.SetActiveBlock(ToBlock);
         }
         
         public void PassArmy(ArmyStorageItem army)
@@ -28,7 +28,7 @@ namespace Assets.Scripts
             IntVector2 fromPosition, IntVector2 toPosition) : base(targetObject)
         {
             this.boardManager = boardManager;
-            this.toBlock = toBlock;
+            ToBlock = toBlock;
             FromPosition = fromPosition;
             ToPosition = toPosition;
         }

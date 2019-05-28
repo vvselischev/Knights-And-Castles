@@ -1,8 +1,6 @@
 ﻿﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
- using GooglePlayGames.Native.PInvoke;
+ using System.Linq;
  using UnityEngine;
 using UnityEngine.UI;
 
@@ -12,51 +10,13 @@ namespace Assets.Scripts
     {
         private System.Random random = new System.Random();
 
-        public Text logText;
-        
-        //Set in editor
-        public int blocksHorizontal = 1;
-        public int blocksVertical = 1;
+        public BoardConfiguration Configuration { get; private set; }
 
-        public int blockWidth = 8;
-        public int blockHeight = 10;
+        private int blockWidth;
+        private int blockHeight;
+        private int blocksHorizontal;
+        private int blocksVertical;
         
-        public IntVector2[] startFirstPositions = { new IntVector2(1, 1), new IntVector2(1, 2) };
-        public IntVector2[] startSecondPositions = { new IntVector2(8, 10), new IntVector2(8, 9) };
-        
-        public IntVector2[] firstCastlesPositions = { new IntVector2(1, 1) };
-        public IntVector2[] secondCastlesPositions = { new IntVector2(8, 10) };
-        
-        public IntVector2 firstStartBlock = new IntVector2(1, 1);
-        public IntVector2 secondStartBlock = new IntVector2(1, 1);
-
-        public const int PASSES_NUMBER = 2;
-
-        public IntVector2[] passesFromBlocks = new IntVector2[PASSES_NUMBER]
-        {
-            new IntVector2(1, 1),
-            new IntVector2(1, 2) 
-        };
-        
-        public IntVector2[] passesToBlocks = new IntVector2[PASSES_NUMBER]
-        {
-            new IntVector2(1, 2),
-            new IntVector2(1, 1)
-        };
-        
-        public IntVector2[] passesFromPositions = new IntVector2[PASSES_NUMBER]
-        {
-            new IntVector2(7, 10),
-            new IntVector2(4, 5) 
-        };
-        
-        //It will be more convenient for user to be placed next to the pass, but not on the same cell.
-        public IntVector2[] passesToPositions = new IntVector2[PASSES_NUMBER]
-        {
-            new IntVector2(4, 6),
-            new IntVector2(4, 4) 
-        };
-
         public GameObject patternIcon;
         public GameObject parent;
 
@@ -67,12 +27,18 @@ namespace Assets.Scripts
         private const int startImbalance = 100;
         private const int RandomNumberOfUnitsFrom = 500;
         private const int RandomNumberOfUnitsTo = 1000;
+        
 
         public Sprite NeutralFriendlySprite, NeutralAgressiveSprite, FirstUserSprite, SecondUserSprite, CastleSprite, PassSprite;
 
-        public BlockBoardStorage CreateEmptyStorage()
+        public BlockBoardStorage CreateEmptyStorage(BoardConfiguration configuration)
         {
             imbalance = startImbalance;
+            Configuration = configuration;
+            blockWidth = configuration.BlockWidth;
+            blockHeight = configuration.BlockHeight;
+            blocksHorizontal = configuration.BlocksHorizontal;
+            blocksVertical = configuration.BlocksVertical;
             return new BlockBoardStorage(blocksHorizontal, blocksVertical, board);
         }
         
@@ -90,14 +56,16 @@ namespace Assets.Scripts
                 {                    
                     Army currentArmy;
                     Sprite currentSprite;
-                    if (Array.Exists(startFirstPositions, position => position.Equals(new IntVector2(col, row))))
+                    if (ExistsPlayerArmy(col, row, PlayerType.FIRST))
                     {
-                        currentArmy = new UserArmy(PlayerType.FIRST, GenerateArmyComposition(RandomNumberOfUnitsFrom, RandomNumberOfUnitsTo));
+                        currentArmy = new UserArmy(PlayerType.FIRST, GenerateArmyComposition(RandomNumberOfUnitsFrom, 
+                            RandomNumberOfUnitsTo));
                         currentSprite = FirstUserSprite;
                     }
-                    else if (Array.Exists(startSecondPositions, position => position.Equals(new IntVector2(col, row))))
+                    else if (ExistsPlayerArmy(col, row, PlayerType.SECOND))
                     {
-                        currentArmy = new UserArmy(PlayerType.SECOND, GenerateArmyComposition(RandomNumberOfUnitsFrom, RandomNumberOfUnitsTo));
+                        currentArmy = new UserArmy(PlayerType.SECOND, GenerateArmyComposition(RandomNumberOfUnitsFrom, 
+                            RandomNumberOfUnitsTo));
                         currentSprite = SecondUserSprite;
                     }
                     else if (ExistsPass(col, row))
@@ -107,7 +75,8 @@ namespace Assets.Scripts
                     }
                     else
                     {
-                        int randomValue = random.Next() % 3; //0 -- Empty, 1 -- Friendly, 2 -- Aggressive
+                        //0 -- Empty, 1 -- Friendly, 2 -- Aggressive
+                        int randomValue = random.Next() % 3;
                         if (randomValue == 0)
                         {
                             continue;
@@ -137,13 +106,42 @@ namespace Assets.Scripts
             boardStorage.Fill(currentBoardTable, currentBonusTable);
         }
 
+        private bool ExistsPlayerArmy(int col, int row, PlayerType playerType)
+        {
+            var position = new IntVector2(col, row);
+            if (playerType == PlayerType.FIRST)
+            {
+                var startFirstPositions = Configuration.StartFirstPositions;
+                if (startFirstPositions.Any(localPosition =>
+                    GetGlobalPosition(localPosition, Configuration.FirstStartBlock).Equals(position)))
+                {
+                    return true;
+                }
+
+                return false;
+            }
+
+            if (playerType == PlayerType.SECOND)
+            {
+                var startSecondPositions = Configuration.StartSecondPositions;
+                if (startSecondPositions.Any(localPosition =>
+                    GetGlobalPosition(localPosition, Configuration.SecondStartBlock).Equals(position)))
+                {
+                    return true;
+                }    
+            }
+            return false;
+        }
+
         private bool ExistsPass(int col, int row)
         {
             var position = new IntVector2(col, row);
-            for (int i = 0; i < PASSES_NUMBER; i++)
+            for (int i = 0; i < Configuration.PassesNumber; i++)
             {
-                var globalFromPosition = GetGlobalPosition(passesFromPositions[i], passesFromBlocks[i]);
-                var globalToPosition = GetGlobalPosition(passesToPositions[i], passesToBlocks[i]);
+                var globalFromPosition = GetGlobalPosition(Configuration.PassesFromPositions[i],
+                    Configuration.PassesFromBlocks[i]);
+                var globalToPosition = GetGlobalPosition(Configuration.PassesToPositions[i],
+                    Configuration.PassesToBlocks[i]);
                 if (position.Equals(globalFromPosition) || position.Equals(globalToPosition))
                 {
                     return true;
@@ -161,24 +159,25 @@ namespace Assets.Scripts
         
         private void InstantiatePasses(BoardStorageItem[,] bonusTable)
         {
-            for (int i = 0; i < PASSES_NUMBER; i++)
+            for (int i = 0; i < Configuration.PassesNumber; i++)
             {
                 var passObject = InstantiateIcon(PassSprite);
                 passObject.SetActive(false);
-                var pass = new Pass(passObject, boardManager, passesToBlocks[i], 
-                    passesFromPositions[i], passesToPositions[i]);
+                var pass = new Pass(passObject, boardManager, Configuration.PassesToBlocks[i], 
+                    Configuration.PassesFromPositions[i], Configuration.PassesToPositions[i]);
 
-                var globalFrom = GetGlobalPosition(passesFromPositions[i], passesFromBlocks[i]);
+                var globalFrom = GetGlobalPosition(Configuration.PassesFromPositions[i], Configuration.PassesFromBlocks[i]);
                 bonusTable[globalFrom.x, globalFrom.y] = pass;
             }
         }
 
         private void InstantiateCastles(BoardStorageItem[,] bonusTable)
         {
-            InstantiateCastlesFromList(firstCastlesPositions, PlayerType.FIRST, bonusTable);
-            InstantiateCastlesFromList(secondCastlesPositions, PlayerType.SECOND, bonusTable);
+            InstantiateCastlesFromList(Configuration.FirstCastlesPositions, PlayerType.FIRST, bonusTable);
+            InstantiateCastlesFromList(Configuration.SecondCastlesPositions, PlayerType.SECOND, bonusTable);
         }
 
+        //TODO: castles may be not only in first block!!!
         private void InstantiateCastlesFromList(IntVector2[] positions, PlayerType ownerType, BoardStorageItem[,] bonusTable)
         {
             foreach (var position in positions)
@@ -264,12 +263,8 @@ namespace Assets.Scripts
         {
             BoardStorageItem[,] items;
             BoardStorageItem[,] bonusItems;
-
-            logText.text += "Trying to convert...\n";
                        
-            boardStorage.ConvertToArrays(out items, out bonusItems, logText);
-
-            logText.text += "Converted to arrays\n";
+            boardStorage.ConvertToArrays(out items, out bonusItems);
             
             List<byte> byteList = new List<byte>();
             for (int col = 1; col <= blockWidth * blocksHorizontal; col++)

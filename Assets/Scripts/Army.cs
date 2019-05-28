@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using UnityEngine;
-using UnityEngine.UI;
+﻿﻿using System;
 
-namespace Assets.Scripts
+ namespace Assets.Scripts
 {
     public enum ArmyType
     {
@@ -14,13 +9,11 @@ namespace Assets.Scripts
         NEUTRAL_AGGRESSIVE
     }
 
-    public abstract class Army : ICloneable
+    public abstract class Army
     {
         public readonly PlayerType playerType;
-        public readonly ArmyType armyType;
+        private readonly ArmyType armyType;
         public ArmyComposition armyComposition;
-
-        //TODO: fields about army composition, methods Merge, Battle etc.
 
         protected Army(ArmyType armyType, PlayerType playerType, ArmyComposition armyComposition)
         {
@@ -139,6 +132,6 @@ namespace Assets.Scripts
             return Split(spearmen, archers, cavalrymen);
         }
 
-        public abstract object Clone();
+        public abstract Army CloneArmy();
     }
 }

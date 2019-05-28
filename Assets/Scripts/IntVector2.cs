@@ -31,6 +31,11 @@ namespace Assets.Scripts
             return "(" + x + ", " + y + ")";
         }
 
+        public IntVector2 CloneVector()
+        {
+            return new IntVector2(x, y);
+        }
+
         public int Compare(IntVector2 x, IntVector2 y)
         {
             if (x == null)
@@ -44,6 +49,26 @@ namespace Assets.Scripts
             }
 
             return -1;
+        }
+
+        public IntVector2 IncrementX()
+        {
+            return new IntVector2(x + 1, y);
+        }
+
+        public IntVector2 IncrementY()
+        {
+            return new IntVector2(x, y + 1);
+        }
+
+        public IntVector2 DecrementX()
+        {
+            return new IntVector2(x - 1, y);
+        }
+
+        public IntVector2 DecrementY()
+        {
+            return new IntVector2(x, y - 1);
         }
     }
 }

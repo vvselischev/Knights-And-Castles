@@ -18,10 +18,8 @@ namespace Assets.Scripts
         public override Army PerformAction(Army attackingArmy)
         {
             SetInactive();
-            if (attackingArmy is UserArmy)
-            {
-                (attackingArmy as UserArmy).SetInactive();
-            }
+            var army = attackingArmy as UserArmy;
+            army?.SetInactive();
 
             if (attackingArmy.playerType == playerType)
             {
@@ -30,11 +28,15 @@ namespace Assets.Scripts
             return PerformBattle(attackingArmy, this);
         }
 
-        public override object Clone()
+        public override Army CloneArmy()
         {
             var army = new UserArmy(playerType, armyComposition);
 
-            army.SetActive();
+            if (isActive)
+            {
+                army.SetActive();
+            }
+
             return army;
         }
 
