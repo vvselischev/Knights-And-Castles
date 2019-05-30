@@ -4,7 +4,7 @@ using UnityEngine;
 public class StartGameState : MonoBehaviour, IGameState
 {
     private MenuActivator menuActivator = MenuActivator.GetInstance();
-    public StartMenu startMenu;
+    public SimpleMenu startMenu;
 
     public void InvokeState()
     {

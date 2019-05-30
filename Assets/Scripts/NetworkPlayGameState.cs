@@ -14,6 +14,7 @@ namespace Assets.Scripts
         private List<Participant> allPlayers;
         private bool isHost;
         private TurnType myTurnType;
+        private UserResultType currentUserResultType;
 
         public Text logText;
 
@@ -125,8 +126,6 @@ namespace Assets.Scripts
         
         public override void OnFinishGame(ResultType resultType)
         {
-            base.OnFinishGame(resultType);
-
             multiplayerController.LeaveRoom();
             
             logText.text = "Result: " + resultType + '\n';
@@ -135,10 +134,12 @@ namespace Assets.Scripts
                 if (isHost)
                 {
                     uiManager.PerformLerpString("You win!", Color.green);
+                    currentUserResultType = UserResultType.WIN;
                 }
                 else
                 {
                     uiManager.PerformLerpString("You lose...", Color.red);
+                    currentUserResultType = UserResultType.LOSE;
                 }
             }
             else if (resultType == ResultType.SECOND_WIN)
@@ -146,16 +147,26 @@ namespace Assets.Scripts
                 if (!isHost)
                 {
                     uiManager.PerformLerpString("You win!", Color.green);
+                    currentUserResultType = UserResultType.WIN;
+                    
                 }
                 else
                 {
                     uiManager.PerformLerpString("You lose...", Color.red);
+                    currentUserResultType = UserResultType.LOSE;
                 }
             }
             else if (resultType == ResultType.DRAW)
             {
                 uiManager.PerformLerpString("Draw", Color.blue);
+                currentUserResultType = UserResultType.DRAW;
             }
+        }
+
+        protected override void CloseGame()
+        {
+            stateManager.resultGameState.Initialize(currentUserResultType, stateType);
+            stateManager.ChangeState(StateType.RESULT_GAME_STATE);
         }
 
         protected override void ExitGame()

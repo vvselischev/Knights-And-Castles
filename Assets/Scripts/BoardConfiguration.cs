@@ -11,6 +11,9 @@ namespace Assets.Scripts
         public abstract IntVector2[] StartFirstPositions { get; }
         public abstract IntVector2[] StartSecondPositions { get; }
 
+        public abstract IntVector2[] FirstCastlesBlocks { get; }
+        public abstract IntVector2[] SecondCastlesBlocks { get; }
+
         public abstract IntVector2[] FirstCastlesPositions { get; }
         public abstract IntVector2[] SecondCastlesPositions { get; }
         

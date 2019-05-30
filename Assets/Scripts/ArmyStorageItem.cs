@@ -12,10 +12,10 @@ namespace Assets.Scripts
             Army = army;
             if (iconGO != null)
             {
+                iconGO.AddComponent<Follower>();
                 ObjectMover mover = iconGO.AddComponent<ObjectMover>();
-                Follower follower = iconGO.AddComponent<Follower>();
                 mover.parentTransform = iconGO.GetComponentInParent<Transform>();
-                mover.follower = follower;
+                //mover.follower = follower;
             }
         }
 

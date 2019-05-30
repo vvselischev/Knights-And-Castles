@@ -13,6 +13,9 @@ namespace  Assets.Scripts
         public override IntVector2[] StartSecondPositions { get; } =
             {new IntVector2(8, 10), new IntVector2(8, 9),};
 
+        public override IntVector2[] FirstCastlesBlocks { get; } = {new IntVector2(1, 1)};
+        public override IntVector2[] SecondCastlesBlocks { get; } = {new IntVector2(1, 1)};
+        
         public override IntVector2[] FirstCastlesPositions { get; } = {new IntVector2(1, 1)};
         public override IntVector2[] SecondCastlesPositions { get; } = {new IntVector2(8, 10)};
 

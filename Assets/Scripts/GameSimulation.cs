@@ -150,8 +150,11 @@ namespace Assets.Scripts
             {
                 var intermediateResult = MakeAnalyzingMoves(moveInformation, depth, playerType, 
                     currentPlayerArmyCells, otherPlayerArmyCells);
+
+                var distanceEnemyCastleTo = boardStorage.GetDistanceToEnemyCastle(moveInformation.To, playerType);
+                var distanceEnemyCastleFrom = boardStorage.GetDistanceToEnemyCastle(moveInformation.From, playerType);
                 
-                if (boardStorage.GetDistanceToEnemyCastle(moveInformation.To, playerType) == 0) 
+                if (distanceEnemyCastleTo == 0) 
                 {
                     resultBenefit = playerType == PlayerType.FIRST ? double.PositiveInfinity : double.NegativeInfinity; 
 
@@ -160,19 +163,20 @@ namespace Assets.Scripts
                 }
                 
                 //Enemy will lose
-                if (double.IsNegativeInfinity(intermediateResult.Item1) && 
-                    boardStorage.GetDistanceToEnemyCastle(moveInformation.To, playerType) < 
-                    boardStorage.GetDistanceToEnemyCastle(moveInformation.From, playerType))
+                if (double.IsNegativeInfinity(intermediateResult.Item1) && distanceEnemyCastleTo < distanceEnemyCastleFrom)
                 {
                     resultBenefit = intermediateResult.Item1;
                     bestMoveInformation = moveInformation;
                     break;
                 }
                 
-                if (intermediateResult.Item1 < resultBenefit)
-                {
-                    resultBenefit = intermediateResult.Item1;
-                    bestMoveInformation = moveInformation;
+                if (intermediateResult.Item1 < resultBenefit || 
+                    Math.Abs(intermediateResult.Item1 - resultBenefit) < 0.00001 
+                    && (bestMoveInformation == null || 
+                        boardStorage.GetDistanceToEnemyCastle(bestMoveInformation.To, playerType) > distanceEnemyCastleTo)) 
+                { 
+                    resultBenefit = intermediateResult.Item1; 
+                    bestMoveInformation = moveInformation; 
                 }
             }
             
@@ -206,9 +210,35 @@ namespace Assets.Scripts
                 }
             }
 
-            var result = AnalyzeStrategy(ChangePlayerType(playerType), false, 
-                    depth - 1,otherPlayerArmyCells, 
-                    currentPlayerArmyCells);
+            Tuple<double, MoveInformation> result; 
+            if (otherPlayerArmyCells.Count == 0) 
+            { 
+                if (playerType == PlayerType.FIRST) 
+                { 
+                    result = new Tuple<double, MoveInformation>(Double.PositiveInfinity, null); 
+                } 
+                else 
+                { 
+                    result = new Tuple<double, MoveInformation>(Double.NegativeInfinity, null); 
+                } 
+            } 
+            else if (currentPlayerArmyCells.Count == 0) 
+            { 
+                if (playerType == PlayerType.FIRST) 
+                { 
+                    result = new Tuple<double, MoveInformation>(Double.NegativeInfinity, null); 
+                } 
+                else 
+                { 
+                    result = new Tuple<double, MoveInformation>(Double.PositiveInfinity, null); 
+                } 
+            } 
+            else 
+            { 
+                result = AnalyzeStrategy(ChangePlayerType(playerType), false, 
+                    depth - 1, otherPlayerArmyCells, 
+                    currentPlayerArmyCells); 
+            }
 
             CancelMove(memorizedFrom, memorizedTo);
             currentPlayerArmyCells.Remove(moveInformation.To);

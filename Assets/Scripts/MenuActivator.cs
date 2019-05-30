@@ -33,7 +33,6 @@ namespace Assets.Scripts
 
         public void CloseMenu()
         {
-            //Debug.Log("Current Menu: " + currentMenu);
             currentMenu?.Deactivate();
             currentMenu = null;
         }

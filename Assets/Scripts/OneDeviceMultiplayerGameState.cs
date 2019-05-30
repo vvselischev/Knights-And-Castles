@@ -36,6 +36,11 @@ namespace Assets.Scripts
             }
         }
 
+        protected override void CloseGame()
+        {
+            stateManager.ChangeState(StateType.START_GAME_STATE);
+        }
+
         protected override void InitNewRound()
         {
             base.InitNewRound();

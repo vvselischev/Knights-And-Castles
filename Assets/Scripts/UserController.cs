@@ -59,8 +59,7 @@ namespace Assets.Scripts
                 
                 armyText.ChangeText(clickedArmyItem.Army.armyComposition.ToString());
                 
-                if (clickedArmyItem.Army.playerType == playerType && 
-                    ((UserArmy) clickedArmyItem.Army).IsActive())
+                if (clickedArmyItem.Army.playerType == playerType && ((UserArmy) clickedArmyItem.Army).IsActive())
                 {
                     if (chosenArmyItem == null)
                     {
@@ -79,11 +78,14 @@ namespace Assets.Scripts
                     if (ReachableFromChosen(position) && splitButtonClicked)
                     {
                         ProcessSplit(chosenArmyPosition.x, chosenArmyPosition.y, positionX, positionY);
+                        splitButtonClicked = false;
+                        return;
                     }
                 }
             }
 
-            if ((chosenArmyItem != null) && ReachableFromChosen(position) && (chosenArmyItem.Army as UserArmy).IsActive())
+            if ((chosenArmyItem != null) && ReachableFromChosen(position) && (chosenArmyItem.Army as UserArmy).IsActive() &&
+                !splitButtonClicked)
             {
                 (chosenArmyItem.Army as UserArmy).SetInactive();
                 MoveChosen(position, buttonGO);
@@ -97,6 +99,11 @@ namespace Assets.Scripts
                     pass.ChangeBlock();
                     SetActiveFrame(null);
                 }
+            }
+
+            if (splitButtonClicked)
+            {
+                splitButtonClicked = false;
             }
         }
 

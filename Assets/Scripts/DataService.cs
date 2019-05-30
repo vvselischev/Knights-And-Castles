@@ -6,6 +6,7 @@ using System.Collections;
 using System.IO;
 #endif
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Assets.Scripts
 {
@@ -79,10 +80,9 @@ namespace Assets.Scripts
 			//TODO: clear table before deploying for the first time (with code or with hands?)
 			try
 			{
-				foreach (var value in GetRecords())
-				{}
+				connection.Table<Record>().ToList();
 			}
-			catch (Exception e)
+			catch (Exception)
 			{
 				connection.CreateTable<Record>();
 			}
@@ -93,19 +93,16 @@ namespace Assets.Scripts
 			return connection.Table<Record>();
 		}
 
-		public IEnumerable<Record> GetUserRecords(String login)
+		public void UpdateRecord(Record record)
 		{
-			return connection.Table<Record>().Where(x => x.Login == login);
-		}
-
-		public void AddRecord(Record record)
-		{
-			connection.Insert(record);
-		}
-
-		public void ClearTable()
-		{
-			connection.DeleteAll<Record>();
+			if (GetRecords().Any(r => r.Id == record.Id))
+			{
+				connection.Update(record);
+			}
+			else
+			{
+				connection.Insert(record);
+			}
 		}
 	}
 }

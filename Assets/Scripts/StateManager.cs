@@ -3,16 +3,6 @@ using UnityEngine;
 
 namespace Assets.Scripts
 {
-    public enum StateType
-    {
-        START_GAME_STATE,
-        CHOOSE_BOARD_GAME_STATE,
-        LOBBY_GAME_STATE,
-        NETWORK_GAME_STATE,
-        AI_GAME_STATE,
-        ONE_DEVICE_MULTIPLAYER_STATE
-    }
-
     public class StateManager : MonoBehaviour
     {
         public IGameState CurrentState { get; private set; }
@@ -25,6 +15,7 @@ namespace Assets.Scripts
         public OneDeviceMultiplayerGameState oneDeviceMultiplayerGameState;
         public LobbyGameState lobbyGameState;
         public ChooseBoardGameState chooseBoardGameState;
+        public ResultGameState resultGameState;
         
         public Dictionary<StateType, IGameState> states;
 
@@ -47,7 +38,8 @@ namespace Assets.Scripts
                 {StateType.LOBBY_GAME_STATE, lobbyGameState},
                 {StateType.NETWORK_GAME_STATE, networkPlayGameState},
                 {StateType.AI_GAME_STATE, aiPlayGameState},
-                {StateType.ONE_DEVICE_MULTIPLAYER_STATE, oneDeviceMultiplayerGameState}
+                {StateType.ONE_DEVICE_MULTIPLAYER_STATE, oneDeviceMultiplayerGameState},
+                {StateType.RESULT_GAME_STATE, resultGameState}
             };
         }
 

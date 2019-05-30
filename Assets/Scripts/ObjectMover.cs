@@ -10,7 +10,7 @@ namespace Assets.Scripts
 {
     public class ObjectMover : MonoBehaviour
     {
-        public Follower follower;
+        private Follower follower;
         public Transform parentTransform;
         public event VoidHandler ReachedTarget;
         
@@ -24,6 +24,7 @@ namespace Assets.Scripts
 
         void Awake()
         {
+            follower = gameObject.GetComponent<Follower>();
             follower.ReachedTarget += FollowerReachedTarget;
             sourceObject = gameObject;
         }

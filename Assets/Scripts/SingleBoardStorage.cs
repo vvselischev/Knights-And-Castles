@@ -391,7 +391,7 @@ namespace Assets.Scripts
                 for (int row = 1; row <= height; row++)
                 {
                     boardTable[col, row] = items[col, row];
-                    bonusTable[col, row] = items[col, row];
+                    bonusTable[col, row] = bonusItems[col, row];
                 }
             }
         }

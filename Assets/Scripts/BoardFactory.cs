@@ -180,19 +180,22 @@ namespace Assets.Scripts
 
         private void InstantiateCastles(BoardStorageItem[,] bonusTable)
         {
-            InstantiateCastlesFromList(Configuration.FirstCastlesPositions, PlayerType.FIRST, bonusTable);
-            InstantiateCastlesFromList(Configuration.SecondCastlesPositions, PlayerType.SECOND, bonusTable);
+            InstantiateCastlesFromList(Configuration.FirstCastlesPositions, Configuration.FirstCastlesBlocks,
+                PlayerType.FIRST, bonusTable);
+            InstantiateCastlesFromList(Configuration.SecondCastlesPositions, Configuration.SecondCastlesBlocks, 
+                PlayerType.SECOND, bonusTable);
         }
 
-        //TODO: castles may be not only in first block!!!
-        private void InstantiateCastlesFromList(IntVector2[] positions, PlayerType ownerType, BoardStorageItem[,] bonusTable)
+        private void InstantiateCastlesFromList(IntVector2[] positions, IntVector2[] blocks, 
+            PlayerType ownerType, BoardStorageItem[,] bonusTable)
         {
-            foreach (var position in positions)
+            for (int i = 0; i < positions.Length; i++)
             {
                 var castleObject = InstantiateIcon(CastleSprite);
                 castleObject.SetActive(false);
                 var castle = new Castle(castleObject) {ownerType = ownerType};
-                bonusTable[position.x, position.y] = castle;
+                var globalPosition = GetGlobalPosition(positions[i], blocks[i]);
+                bonusTable[globalPosition.x, globalPosition.y] = castle;
             }
         }
 
@@ -268,10 +271,7 @@ namespace Assets.Scripts
 
         public List<byte> ConvertBoardStorageToBytes(BlockBoardStorage boardStorage)
         {
-            BoardStorageItem[,] items;
-            BoardStorageItem[,] bonusItems;
-                       
-            boardStorage.ConvertToArrays(out items, out bonusItems);
+            boardStorage.ConvertToArrays(out var items, out _);
             
             List<byte> byteList = new List<byte>();
             for (int col = 1; col <= blockWidth * blocksHorizontal; col++)
@@ -353,7 +353,7 @@ namespace Assets.Scripts
          */
         private ArmyComposition GenerateBalancedArmyComposition(bool isFriendly, IntVector2 position)
         {
-            int boardWidthPlusHeight = blockWidth + blockHeight;
+            int boardWidthPlusHeight = blockWidth * blocksHorizontal + blockHeight * blocksVertical;
             int balancePositionMultiplier = boardWidthPlusHeight - 2 * (position.x + position.y);
             if (!isFriendly)
             {

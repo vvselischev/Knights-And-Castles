@@ -5,7 +5,7 @@ namespace Assets.Scripts
     public class ChooseBoardGameState : MonoBehaviour, IGameState
     {
         private MenuActivator menuActivator = MenuActivator.GetInstance();
-        public ChooseBoardMenu chooseBoardMenu;
+        public SimpleMenu chooseBoardMenu;
         public ExitListener exitListener;
 
         public StateType NextStateType { get; set; }
@@ -18,8 +18,6 @@ namespace Assets.Scripts
 
         private void MoveToStartMenu()
         {
-            exitListener.OnExitClicked -= MoveToStartMenu;
-            exitListener.Disable();
             var stateManager = StateManager.Instance;
             stateManager.ChangeState(StateType.START_GAME_STATE);
         }
@@ -27,6 +25,8 @@ namespace Assets.Scripts
         public void CloseState()
         {
             menuActivator.CloseMenu();
+            exitListener.OnExitClicked -= MoveToStartMenu;
+            exitListener.Disable();
         }
     }
 }

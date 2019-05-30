@@ -13,7 +13,13 @@ namespace Assets.Scripts
         FIRST_WIN,
         SECOND_WIN,
         DRAW,
-        NONE
+    }
+
+    public enum UserResultType
+    {
+        WIN,
+        LOSE,
+        DRAW
     }
 
     public abstract class PlayGameState : MonoBehaviour, IGameState
@@ -31,9 +37,9 @@ namespace Assets.Scripts
         public BoardManager boardManager;
         public InputListener inputListener;
         public BoardType configurationType;
+        public StateType stateType;
         
         protected BlockBoardStorage storage;
-        protected DataService dataService;
         private MenuActivator menuActivator = MenuActivator.GetInstance();
 
         private const int MAX_TURNS = 10000;
@@ -57,9 +63,8 @@ namespace Assets.Scripts
         protected void SetupGame()
         {
             menuActivator.OpenMenu(playMenu);
-            dataService = new DataService("record_database.db");
 
-            uiManager.FinishedLerp += SetupFinishGame;
+            uiManager.FinishedLerp += CloseGame;
             
             storage = boardFactory.CreateEmptyStorage(configurationType);
 
@@ -79,7 +84,7 @@ namespace Assets.Scripts
             menuActivator.CloseMenu();
             timer.OnFinish -= ChangeTurn;
             exitListener.OnExitClicked -= ExitGame;
-            uiManager.FinishedLerp -= SetupFinishGame;
+            uiManager.FinishedLerp -= CloseGame;
             exitListener.Disable();
             storage.Reset();
         }
@@ -103,40 +108,26 @@ namespace Assets.Scripts
             ChangeTurn();
         }
 
-        public virtual void OnFinishGame(ResultType resultType)
+        /// <summary>
+        /// Called immediately after game finishes.
+        /// Children are supposed to perform an appropriate string lerp.
+        /// </summary>
+        public virtual void OnFinishGame(ResultType _)
         {
             timer.StopTimer();
             turnManager.SetTurn(TurnType.RESULT);
         }
 
-        private void SetupFinishGame()
-        {
-            //Here move to the result state
-            //Now by default we go to the start menu
-            //stateManager.ChangeState(StateType.START_GAME_STATE);
-
-            var records = dataService.GetUserRecords("Vlad");
-            int total = 0;
-
-            foreach (var value in records)
-            {
-                playMenu.playDebugText.text += value + "\n";
-                total++;
-            }
-
-            playMenu.playDebugText.text += "Total: " + total + '\n';
-
-            dataService.AddRecord(new Record
-            {
-                Login = "Vlad",
-                WinsBot = total + 10,
-            });
-            
-            stateManager.ChangeState(StateType.START_GAME_STATE);
-        }
+        /// <summary>
+        /// Called after string lerp is finished.
+        /// Supposed to move to the next state.
+        /// Do not forget to initialize ResultGameState if you move to it.
+        /// </summary>
+        protected abstract void CloseGame();
 
         protected virtual void ExitGame()
         {
+            timer.StopTimer();
             turnManager.SetTurn(TurnType.RESULT);
             stateManager.ChangeState(StateType.START_GAME_STATE);
         }

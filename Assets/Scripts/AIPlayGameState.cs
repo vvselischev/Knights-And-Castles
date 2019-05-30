@@ -9,6 +9,7 @@ namespace Assets.Scripts
     {
         public AIPlayer aiPlayer;
         public System.Random random = new System.Random();
+        private UserResultType resultType;
         public override void InvokeState()
         {
             base.InvokeState();
@@ -44,15 +45,24 @@ namespace Assets.Scripts
             if (resultType == ResultType.FIRST_WIN)
             {
                 uiManager.PerformLerpString("You win!", Color.green);
+                this.resultType = UserResultType.WIN;
             }
             else if (resultType == ResultType.SECOND_WIN)
             {
                 uiManager.PerformLerpString("You lose...", Color.red);
+                this.resultType = UserResultType.LOSE;
             }
             else if (resultType == ResultType.DRAW)
             {
                 uiManager.PerformLerpString("Draw", Color.blue);
+                this.resultType = UserResultType.DRAW;
             }
+        }
+
+        protected override void CloseGame()
+        {
+            stateManager.resultGameState.Initialize(resultType, stateType);
+            stateManager.ChangeState(StateType.RESULT_GAME_STATE);
         }
 
         protected override void InitNewRound()

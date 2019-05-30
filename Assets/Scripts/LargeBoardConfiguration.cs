@@ -8,6 +8,8 @@ namespace Assets.Scripts
         public override int BlockHeight { get; } = 10;
         public override IntVector2[] StartFirstPositions { get; } = {new IntVector2(1, 1), new IntVector2(1, 2)};
         public override IntVector2[] StartSecondPositions { get; } = {new IntVector2(8, 10), new IntVector2(8, 9)};
+        public override IntVector2[] FirstCastlesBlocks { get; } = {new IntVector2(1, 1)};
+        public override IntVector2[] SecondCastlesBlocks { get; } = {new IntVector2(2, 2)};
         public override IntVector2[] FirstCastlesPositions { get; } = {new IntVector2(1, 1)};
         public override IntVector2[] SecondCastlesPositions { get; } = {new IntVector2(8, 10)};
         public override IntVector2 FirstStartBlock { get; } = new IntVector2(1, 1);
