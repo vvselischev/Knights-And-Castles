@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -64,10 +65,11 @@ namespace Assets.Scripts
             var fromBlockPosition = boardStorage.GetBlockPosition(from);
             var fromBlock = boardStorage.GetBlock(fromBlockPosition);
             var currentBlock = boardManager.GetCurrentBlock();
-
+            
             if (fromBlock != currentBlock)
             {
                 boardManager.SetActiveBlock(fromBlockPosition);
+
             }
             
             Debug.Log("AI move: fromBlock = " + fromBlockPosition);

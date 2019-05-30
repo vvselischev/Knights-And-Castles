@@ -1,3 +1,5 @@
+
+using System.Threading;
 using UnityEngine;
 
 namespace Assets.Scripts
@@ -22,17 +24,22 @@ namespace Assets.Scripts
         
         public void SetActiveBlock(IntVector2 position)
         {
+            var currentBlockPosition = BoardStorage.GetCurrentBlockPosition();
             BoardStorage.SetCurrentBlock(position);
+            if (currentBlockPosition != null && !currentBlockPosition.Equals(position))
+            {
+                Thread.Sleep(500);
+            }
         }
         public void SetPlayerBlockActive(TurnType playerType)
         {
             if (playerType == TurnType.FIRST)
             {
-                BoardStorage.SetCurrentBlock(firstPlayerBlockPosition);
+                SetActiveBlock(firstPlayerBlockPosition);
             }
             else if (playerType == TurnType.SECOND)
             {
-                BoardStorage.SetCurrentBlock(secondPlayerBlockPosition);
+                SetActiveBlock(secondPlayerBlockPosition);
             }
         }
 

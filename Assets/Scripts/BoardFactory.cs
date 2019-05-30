@@ -31,14 +31,21 @@ namespace Assets.Scripts
 
         public Sprite NeutralFriendlySprite, NeutralAgressiveSprite, FirstUserSprite, SecondUserSprite, CastleSprite, PassSprite;
 
-        public BlockBoardStorage CreateEmptyStorage(BoardConfiguration configuration)
+        public BlockBoardStorage CreateEmptyStorage(BoardType configurationType)
         {
+            if (configurationType == BoardType.SMALL)
+            {
+                Configuration = new SmallBoardConfiguration();
+            }
+            else
+            {
+                Configuration = new LargeBoardConfiguration();
+            }
             imbalance = startImbalance;
-            Configuration = configuration;
-            blockWidth = configuration.BlockWidth;
-            blockHeight = configuration.BlockHeight;
-            blocksHorizontal = configuration.BlocksHorizontal;
-            blocksVertical = configuration.BlocksVertical;
+            blockWidth = Configuration.BlockWidth;
+            blockHeight = Configuration.BlockHeight;
+            blocksHorizontal = Configuration.BlocksHorizontal;
+            blocksVertical = Configuration.BlocksVertical;
             return new BlockBoardStorage(blocksHorizontal, blocksVertical, board);
         }
         

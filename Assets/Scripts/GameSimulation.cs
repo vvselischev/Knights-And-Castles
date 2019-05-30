@@ -21,7 +21,7 @@ namespace Assets.Scripts
 
         public GameSimulation(IBoardStorage boardStorage)
         {
-            this.boardStorage = boardStorage.CreateSimulation();
+            this.boardStorage = boardStorage.CreateSimulationStorage();
         }
 
         private Dictionary<PlayerType, List<Cell>> FindPlayerArmies()
@@ -150,6 +150,15 @@ namespace Assets.Scripts
             {
                 var intermediateResult = MakeAnalyzingMoves(moveInformation, depth, playerType, 
                     currentPlayerArmyCells, otherPlayerArmyCells);
+                
+                if (boardStorage.GetDistanceToEnemyCastle(moveInformation.To, playerType) == 0) 
+                {
+                    resultBenefit = playerType == PlayerType.FIRST ? double.PositiveInfinity : double.NegativeInfinity; 
+
+                    bestMoveInformation = moveInformation; 
+                    break; 
+                }
+                
                 //Enemy will lose
                 if (double.IsNegativeInfinity(intermediateResult.Item1) && 
                     boardStorage.GetDistanceToEnemyCastle(moveInformation.To, playerType) < 

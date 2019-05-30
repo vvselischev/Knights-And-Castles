@@ -30,6 +30,7 @@ namespace Assets.Scripts
         public CheckeredButtonBoard board;
         public BoardManager boardManager;
         public InputListener inputListener;
+        public BoardType configurationType;
         
         protected BlockBoardStorage storage;
         protected DataService dataService;
@@ -60,7 +61,7 @@ namespace Assets.Scripts
 
             uiManager.FinishedLerp += SetupFinishGame;
             
-            storage = boardFactory.CreateEmptyStorage(new LargeBoardConfiguration());
+            storage = boardFactory.CreateEmptyStorage(configurationType);
 
             boardManager.Initialize(storage, boardFactory.Configuration.FirstStartBlock,
                 boardFactory.Configuration.SecondStartBlock);

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 using UnityEngine.UI;
 
 namespace Assets.Scripts
@@ -113,12 +114,8 @@ namespace Assets.Scripts
             currentBlock = blocks[position.x, position.y];
             currentBlockPosition = position;
             currentBlock?.Activate();
-        }
-
-        public void SetCurrentBlock(SingleBoardStorage block)
-        {
-            currentBlock?.Deactivate();
-            currentBlock = block;
+            
+            Debug.Log("Current block: " + position);
         }
 
         public IntVector2 GetCurrentBlockPosition()
@@ -317,7 +314,7 @@ namespace Assets.Scripts
             return playerArmies;
         }
 
-        public IBoardStorage CreateSimulation()
+        public IBoardStorage CreateSimulationStorage()
         {
             var simulation = new BlockBoardStorage(width, height, board);
             simulation.currentBlockPosition = currentBlockPosition.CloneVector();
@@ -325,7 +322,7 @@ namespace Assets.Scripts
             {
                 for (int j = 1; j <= height; j++)
                 {
-                    simulation.blocks[i, j] = blocks[i, j].CreateSimulation() as SingleBoardStorage;
+                    simulation.blocks[i, j] = blocks[i, j].CreateSimulationStorage() as SingleBoardStorage;
                 }
             }
 

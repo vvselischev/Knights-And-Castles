@@ -59,11 +59,15 @@ namespace Assets.Scripts
                 
                 armyText.ChangeText(clickedArmyItem.Army.armyComposition.ToString());
                 
-                if ((clickedArmyItem.Army.playerType == playerType) && 
+                if (clickedArmyItem.Army.playerType == playerType && 
                     ((UserArmy) clickedArmyItem.Army).IsActive())
                 {
-                    chosenArmyItem = clickedArmyItem;
-                    chosenArmyPosition = position;
+                    if (chosenArmyItem == null)
+                    {
+                        chosenArmyItem = clickedArmyItem;
+                        chosenArmyPosition = position;
+                    }
+
                     chooseOrMoveClick = true;
                 }
             }

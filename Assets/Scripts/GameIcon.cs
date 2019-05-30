@@ -12,17 +12,6 @@ namespace Assets.Scripts
 
         public bool enabledByDefault = true;
 
-        public void SetImage(Image image)
-        {
-            currentImage.enabled = true;
-            currentImage.sprite = image.sprite;
-        }
-
-        public Image GetImage()
-        {
-            return currentImage;
-        }
-
         public void Reset()
         {
             currentImage.enabled = enabledByDefault;

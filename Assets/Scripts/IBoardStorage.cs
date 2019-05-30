@@ -21,7 +21,7 @@ namespace Assets.Scripts
         bool ContainsPlayerArmies(PlayerType playerType);
         void EnableArmies(PlayerType playerType);
         List<Cell> FindPlayerArmies(PlayerType playerType);
-        IBoardStorage CreateSimulation();
+        IBoardStorage CreateSimulationStorage();
         BoardStorageItem GetItem(Cell cell);
         void SetItem(Cell cell, BoardStorageItem item);
         int GetDistanceToEnemyCastle(Cell cell, PlayerType playerType);

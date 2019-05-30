@@ -6,6 +6,7 @@ namespace Assets.Scripts
     public enum StateType
     {
         START_GAME_STATE,
+        CHOOSE_BOARD_GAME_STATE,
         LOBBY_GAME_STATE,
         NETWORK_GAME_STATE,
         AI_GAME_STATE,
@@ -23,8 +24,9 @@ namespace Assets.Scripts
         public AIPlayGameState aiPlayGameState;
         public OneDeviceMultiplayerGameState oneDeviceMultiplayerGameState;
         public LobbyGameState lobbyGameState;
+        public ChooseBoardGameState chooseBoardGameState;
         
-        private static Dictionary<StateType, IGameState> states;
+        public Dictionary<StateType, IGameState> states;
 
         void Awake()
         {
@@ -41,6 +43,7 @@ namespace Assets.Scripts
             states = new Dictionary<StateType, IGameState>
             {
                 {StateType.START_GAME_STATE, startGameState},
+                {StateType.CHOOSE_BOARD_GAME_STATE, chooseBoardGameState},
                 {StateType.LOBBY_GAME_STATE, lobbyGameState},
                 {StateType.NETWORK_GAME_STATE, networkPlayGameState},
                 {StateType.AI_GAME_STATE, aiPlayGameState},

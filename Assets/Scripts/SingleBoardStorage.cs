@@ -11,6 +11,8 @@ namespace Assets.Scripts
         private BoardStorageItem[,] bonusTable;
         private Cell[,] cells;
         private Dictionary<Cell, IntVector2> indexByCell = new Dictionary<Cell, IntVector2>();
+        private int width;
+        private int height;
         
         //TODO: remove this dependency?
         private CheckeredButtonBoard board;
@@ -23,6 +25,8 @@ namespace Assets.Scripts
 
         private void Initialize(int width, int height)
         {
+            this.width = width;
+            this.height = height;
             boardTable = new BoardStorageItem[width + 1, height + 1];
             bonusTable = new BoardStorageItem[width + 1, height + 1];
             cells = new Cell[width + 1, height + 1];
@@ -31,9 +35,9 @@ namespace Assets.Scripts
 
         private void CreateCells()
         {
-            for (int i = 1; i <= board.width; i++)
+            for (int i = 1; i <= width; i++)
             {
-                for (int j = 1; j <= board.height; j++)
+                for (int j = 1; j <= height; j++)
                 {
                     var cell = new Cell();
                     indexByCell.Add(cell, new IntVector2(i, j));
@@ -54,9 +58,9 @@ namespace Assets.Scripts
 
         private void SetAllItemsActive(bool active)
         {
-            for (int col = 1; col <= board.width; col++)
+            for (int col = 1; col <= width; col++)
             {
-                for (int row = 1; row <= board.height; row++)
+                for (int row = 1; row <= height; row++)
                 {
                     boardTable[col, row]?.StoredObject.SetActive(active);
                     bonusTable[col, row]?.StoredObject.SetActive(active);
@@ -66,16 +70,16 @@ namespace Assets.Scripts
 
         public int GetBoardHeight()
         {
-            return board.height;
+            return height;
         }
 
         public void ConvertToArrays(out BoardStorageItem[,] items, out BoardStorageItem[,] bonusItems)
         {
-            items = new BoardStorageItem[board.width + 1, board.height + 1];
-            bonusItems = new BoardStorageItem[board.width + 1, board.height + 1];
-            for (int col = 1; col <= board.width; col++)
+            items = new BoardStorageItem[width + 1, height + 1];
+            bonusItems = new BoardStorageItem[width + 1, height + 1];
+            for (int col = 1; col <= width; col++)
             {
-                for (int row = 1; row <= board.height; row++)
+                for (int row = 1; row <= height; row++)
                 {
                     items[col, row] = boardTable[col, row];
                     bonusItems[col, row] = bonusItems[col, row];
@@ -85,7 +89,7 @@ namespace Assets.Scripts
 
         public int GetBoardWidth()
         {
-            return board.width;
+            return width;
         }
         
         public void EnableBoardButtons()
@@ -206,9 +210,9 @@ namespace Assets.Scripts
             return cellsWithArmies;
         }
 
-        public IBoardStorage CreateSimulation()
+        public IBoardStorage CreateSimulationStorage()
         {
-            var simulation = new SingleBoardStorage(GetBoardWidth(), GetBoardHeight(), board)
+            var simulationStorage = new SingleBoardStorage(GetBoardWidth(), GetBoardHeight(), board)
             {
                 cells = cells, indexByCell = indexByCell, bonusTable = bonusTable
             };
@@ -221,16 +225,16 @@ namespace Assets.Scripts
                     if (item is ArmyStorageItem)
                     {
                         var storageItem = item as ArmyStorageItem;
-                        simulation.boardTable[col, row] = storageItem.CloneWithoutIcon();
+                        simulationStorage.boardTable[col, row] = storageItem.CloneWithoutIcon();
                     }
                     else
                     {
-                        simulation.boardTable[col, row] = null;
+                        simulationStorage.boardTable[col, row] = null;
                     }
                 }
             }
 
-            return simulation;
+            return simulationStorage;
         }
 
         public bool ContainsCell(Cell cell)
@@ -310,7 +314,7 @@ namespace Assets.Scripts
 
         private bool IsValidPosition(IntVector2 position)
         {
-            return position.x > 0 && position.x <= board.width && position.y > 0 && position.y <= board.height;
+            return position.x > 0 && position.x <= width && position.y > 0 && position.y <= height;
         }
 
         public List<Cell> FindActivePlayerArmies(PlayerType playerType)
@@ -367,13 +371,13 @@ namespace Assets.Scripts
         
         public void InvertBoard()
         {
-            for (int col = 1; col <= board.width / 2 + Math.Sign(board.width % 2); col++)
+            for (int col = 1; col <= width / 2 + Math.Sign(width % 2); col++)
             {
-                for (int row = 1; row <= board.height; row++)
+                for (int row = 1; row <= height; row++)
 
                 {
-                    int newCol = board.width - col + 1;
-                    int newRow = board.height - row + 1;
+                    int newCol = width - col + 1;
+                    int newRow = height - row + 1;
 
                     SwapItems(col, row, newCol, newRow);
                 }
@@ -382,9 +386,9 @@ namespace Assets.Scripts
 
         public void Fill(BoardStorageItem[,] items, BoardStorageItem[,] bonusItems)
         {
-            for (int col = 1; col <= board.width; col++)
+            for (int col = 1; col <= width; col++)
             {
-                for (int row = 1; row <= board.height; row++)
+                for (int row = 1; row <= height; row++)
                 {
                     boardTable[col, row] = items[col, row];
                     bonusTable[col, row] = items[col, row];
@@ -405,9 +409,9 @@ namespace Assets.Scripts
 
         public void Reset()
         {
-            for (int row = 1; row <= board.height; row++)
+            for (int row = 1; row <= height; row++)
             {
-                for (int col = 1; col <= board.width; col++)
+                for (int col = 1; col <= width; col++)
                 {
                     var oldItem = GetItem(col, row);
                     SetItem(col, row, null);
@@ -424,7 +428,7 @@ namespace Assets.Scripts
                     }
                 }
             }
-            Initialize(board.width, board.height);
+            Initialize(width, height);
             board.Reset();
         }
 
