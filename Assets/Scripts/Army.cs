@@ -11,15 +11,15 @@
 
     public abstract class Army
     {
-        public readonly PlayerType playerType;
-        private readonly ArmyType armyType;
-        public ArmyComposition armyComposition;
-
+        public PlayerType PlayerType { get; }
+        private ArmyType armyType;
+        public ArmyComposition ArmyComposition { get; }
+        
         protected Army(ArmyType armyType, PlayerType playerType, ArmyComposition armyComposition)
         {
             this.armyType = armyType;
-            this.playerType = playerType;
-            this.armyComposition = armyComposition;
+            this.PlayerType = playerType;
+            ArmyComposition = armyComposition;
             if (!CheckValidTypes())
             {
                 throw new Exception("In Army constructor incompatible types were received");
@@ -31,9 +31,9 @@
         private bool CheckValidTypes()
         {
             return (((armyType == ArmyType.NEUTRAL_AGGRESSIVE) || (armyType == ArmyType.NEUTRAL_FRIENDLY)) &&
-                    (playerType == PlayerType.NEUTRAL)) || ((armyType == ArmyType.USER) &&
-                                                            ((playerType == PlayerType.FIRST) ||
-                                                             playerType == PlayerType.SECOND));
+                    (PlayerType == PlayerType.NEUTRAL)) || ((armyType == ArmyType.USER) &&
+                                                            ((PlayerType == PlayerType.FIRST) ||
+                                                             PlayerType == PlayerType.SECOND));
         }
 
         public abstract Army PerformAction(Army attackingArmy);
@@ -44,11 +44,11 @@
             {
                 return MergeUserArmies(firstArmy, secondArmy);
             }
-            if (firstArmy.armyType == ArmyType.USER && secondArmy.playerType == PlayerType.NEUTRAL)
+            if (firstArmy.armyType == ArmyType.USER && secondArmy.PlayerType == PlayerType.NEUTRAL)
             {
                 return MergeUserAndNeutralArmy(firstArmy, secondArmy);
             }
-            if (firstArmy.playerType == PlayerType.NEUTRAL && secondArmy.armyType == ArmyType.USER)
+            if (firstArmy.PlayerType == PlayerType.NEUTRAL && secondArmy.armyType == ArmyType.USER)
             {
                 return MergeUserAndNeutralArmy(secondArmy, firstArmy);
             }
@@ -57,30 +57,28 @@
 
         private static UserArmy MergeUserArmies(Army firstArmy, Army secondArmy)
         {
-            if (firstArmy.playerType == secondArmy.playerType)
+            if (firstArmy.PlayerType == secondArmy.PlayerType)
             {
-                return new UserArmy(firstArmy.playerType,
-                    ArmyComposition.Merge(firstArmy.armyComposition, secondArmy.armyComposition));
+                return new UserArmy(firstArmy.PlayerType,
+                    ArmyComposition.Merge(firstArmy.ArmyComposition, secondArmy.ArmyComposition));
             }
-            else
-            {
-                throw new Exception("MergeUserArmies: players types are different");
-            }
+
+            throw new Exception("MergeUserArmies: players types are different");
         }
 
         private static UserArmy MergeUserAndNeutralArmy(Army userArmy, Army neutralArmy)
         {
             if (neutralArmy.armyType == ArmyType.NEUTRAL_FRIENDLY)
             {
-                return new UserArmy(userArmy.playerType,
-                    ArmyComposition.Merge(userArmy.armyComposition, neutralArmy.armyComposition));
+                return new UserArmy(userArmy.PlayerType,
+                    ArmyComposition.Merge(userArmy.ArmyComposition, neutralArmy.ArmyComposition));
             }
             throw new Exception("MergeUserAndNeutralArmies: neutral army type is not NEUTRAL_FRIENDLY");
         }
 
         protected static Army PerformBattle(Army firstArmy, Army secondArmy)
         {
-            if (ArmyComposition.IsFirstWinner(firstArmy.armyComposition, secondArmy.armyComposition))
+            if (ArmyComposition.IsFirstWinner(firstArmy.ArmyComposition, secondArmy.ArmyComposition))
             {
                 return CalcResultArmies(firstArmy, secondArmy);
             }
@@ -90,10 +88,10 @@
         private static Army CalcResultArmies(Army winnerArmy, Army loserArmy)
         {
             ArmyComposition resultArmyComposition = ArmyComposition.Fight(
-                winnerArmy.armyComposition, loserArmy.armyComposition);
+                winnerArmy.ArmyComposition, loserArmy.ArmyComposition);
             if (winnerArmy.armyType == ArmyType.USER)
             {
-                return new UserArmy(winnerArmy.playerType, resultArmyComposition);
+                return new UserArmy(winnerArmy.PlayerType, resultArmyComposition);
             }
             if (winnerArmy.armyType == ArmyType.NEUTRAL_AGGRESSIVE)
             {
@@ -104,14 +102,14 @@
 
         private Army Split(int spearmen, int archers, int cavalrymen)
         {
-            armyComposition.DeleteArmyPart(spearmen, archers, cavalrymen);
+            ArmyComposition.DeleteArmyPart(spearmen, archers, cavalrymen);
             
             //TODO: move it to child class!!!
             if (armyType == ArmyType.USER)
             {
                 (this as UserArmy).SetInactive();
-                return new UserArmy(playerType, new ArmyComposition(spearmen,
-                    archers, cavalrymen, armyComposition.experience));
+                return new UserArmy(PlayerType, new ArmyComposition(spearmen,
+                    archers, cavalrymen, ArmyComposition.Experience));
             }
             else
             {
@@ -121,13 +119,13 @@
 
         public double ArmyPower()
         {
-            return armyComposition.ArmyPower();
+            return ArmyComposition.ArmyPower();
         }
 
         public Army SplitIntoEqualParts() {
-            int spearmen = armyComposition.spearmen / 2;
-            int archers = armyComposition.archers / 2;
-            int cavalrymen = armyComposition.cavalrymen / 2;
+            int spearmen = ArmyComposition.Spearmen / 2;
+            int archers = ArmyComposition.Archers / 2;
+            int cavalrymen = ArmyComposition.Cavalrymen / 2;
 
             return Split(spearmen, archers, cavalrymen);
         }

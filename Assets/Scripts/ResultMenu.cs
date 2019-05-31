@@ -5,12 +5,14 @@ namespace Assets.Scripts
 {
     public class ResultMenu : MonoBehaviour, IMenu
     {
-        public Text gamesWithBotText;
-        public Text winsBotText;
-        public Text gamesNetworkText;
-        public Text winsNetworkText;
-        public Text winsBotPercentageText;
-        public Text winsNetworkPercentageText;
+        [SerializeField] private Text gamesWithBotText;
+        [SerializeField] private Text winsBotText;
+        [SerializeField] private Text gamesNetworkText;
+        [SerializeField] private Text winsNetworkText;
+        [SerializeField] private Text winsBotPercentageText;
+        [SerializeField] private Text winsNetworkPercentageText;
+        [SerializeField] private Text resultText;
+        
         public void Activate()
         {
             gameObject.SetActive(true);
@@ -21,8 +23,21 @@ namespace Assets.Scripts
             gameObject.SetActive(false);
         }
 
-        public void DisplayStatistics(Record record)
+        public void DisplayStatistics(Record record, UserResultType resultType)
         {
+            if (resultType == UserResultType.WIN)
+            {
+                resultText.text = "You win!";
+            }
+            else if (resultType == UserResultType.LOSE)
+            {
+                resultText.text = "You lose!";
+            }
+            else
+            {
+                resultText.text = "Draw";
+            }
+            
             gamesWithBotText.text = record.GamesWithBot.ToString();
             winsBotText.text = record.WinsBot.ToString();
             gamesNetworkText.text = record.GamesNetwork.ToString();

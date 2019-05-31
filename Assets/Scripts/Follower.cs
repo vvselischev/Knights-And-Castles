@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Threading;
+﻿using System.Collections;
 using UnityEngine;
 
 namespace Assets.Scripts
@@ -10,7 +8,7 @@ namespace Assets.Scripts
     public class Follower : MonoBehaviour
     {
         //public Transform transform;
-        public float velocity = 120;
+        [SerializeField] private float velocity = 120;
         public event VoidHandler ReachedTarget;
 
         private float fraction;

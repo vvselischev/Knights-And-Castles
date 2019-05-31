@@ -6,8 +6,8 @@ using Assets.Scripts;
 
 public class Timer : MonoBehaviour
 {
-    public Text timeText;
-    public int duration = 30;
+    [SerializeField] protected Text timeText;
+    [SerializeField] protected int duration = 30;
 
     public event VoidHandler OnFinish;
 

@@ -1,28 +1,27 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace Assets.Scripts
 {
-    public class AIPlayer : MonoBehaviour
+    public class AIPlayer
     {
-        public BoardManager boardManager;
+        private BoardManager boardManager;
         private BlockBoardStorage boardStorage;
-        public InputListener inputListener;
-        public UserController controller;
-        public PlayerType playerType;
+        private InputListener inputListener;
+
+        private UserController controller;
+        private PlayerType playerType;
         
         //Depth of tree for analyze. Should be odd!!!
         private const int DEPTH = 5;
 
-        public void Initialize(UserController controller, PlayerType playerType)
+        public AIPlayer(UserController controller, PlayerType playerType, BlockBoardStorage boardStorage, 
+            BoardManager boardManager, InputListener inputListener)
         {
             this.playerType = playerType;
             this.controller = controller;
-            boardStorage = boardManager.BoardStorage;
+            this.boardManager = boardManager;
+            this.inputListener = inputListener;
+            this.boardStorage = boardStorage;
         }
 
         public void Activate()

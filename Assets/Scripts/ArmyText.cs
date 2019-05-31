@@ -1,15 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
 namespace Assets.Scripts
 {
     public class ArmyText : MonoBehaviour
     {
-        public Text armyCompositionText;
+        [SerializeField] 
+        private Text armyCompositionText;
 
         public void Init()
         {
@@ -17,9 +14,16 @@ namespace Assets.Scripts
             Enable();
         }
 
-        public void ChangeText(string newText)
+        public void UpdateText(Army army)
         {
-            armyCompositionText.text = newText;
+            if (army == null)
+            {
+                Clear();
+            }
+            else
+            {
+                armyCompositionText.text = army.ArmyComposition.ToString();
+            }
         }
 
         public void Clear()

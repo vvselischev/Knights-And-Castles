@@ -4,14 +4,14 @@ namespace Assets.Scripts
 {
     public class ChooseBoardButton : MonoBehaviour
     {
-        public ChooseBoardGameState chooseBoardGameState;
-        public BoardType boardType;
+        [SerializeField] private ChooseBoardGameState chooseBoardGameState;
+        [SerializeField] private BoardType boardType;
 
         public void OnClick()
         {
             var stateManager = StateManager.Instance;
             var nextStateType = chooseBoardGameState.NextStateType;
-            (stateManager.states[nextStateType] as PlayGameState).configurationType = boardType;
+            (stateManager.GetState(nextStateType) as PlayGameState).ConfigurationType = boardType;
             stateManager.ChangeState(nextStateType);
         }
     }

@@ -348,12 +348,12 @@ namespace Assets.Scripts
         public int GetDistanceToEnemyCastle(Cell cell, PlayerType playerType)
         {
             InitializeGraphAndListOfCastlesIfNot();
-            var castleCell = castles[ChangePlayerType(playerType)][0];
+            var castleCell = castles[GetOpponentPlayerType(playerType)][0];
 
             return graph.GetDistance(cell, castleCell);
         }
 
-        private PlayerType ChangePlayerType(PlayerType playerType)
+        private PlayerType GetOpponentPlayerType(PlayerType playerType)
         {
             if (playerType == PlayerType.FIRST)
             {
@@ -448,16 +448,9 @@ namespace Assets.Scripts
         
         public int GetNumberOfCells()
         {
-            int numberOfCells = 0;
-            foreach (var block in blocks)
-            {
-                if (block != null)
-                {
-                    numberOfCells += block.GetNumberOfCells();
-                }
-            }
-
-            return numberOfCells;
+            return (from SingleBoardStorage block in blocks 
+                    where block != null 
+                    select block.GetNumberOfCells()).Sum();
         }
 
         public List<Cell> GetListOfCells()
@@ -482,20 +475,21 @@ namespace Assets.Scripts
             };
             foreach (var block in blocks)
             {
-                if (block != null)
+                if (block == null)
                 {
-                    var castleFirstPlayer = block.FindCastle(PlayerType.FIRST);
-                    var castleSecondPlayer = block.FindCastle(PlayerType.SECOND);
+                    continue;
+                }
+                var castleFirstPlayer = block.FindCastle(PlayerType.FIRST);
+                var castleSecondPlayer = block.FindCastle(PlayerType.SECOND);
 
-                    if (castleFirstPlayer != null)
-                    {
-                        castles[PlayerType.FIRST].AddRange(castleFirstPlayer);
-                    }
+                if (castleFirstPlayer != null)
+                {
+                    castles[PlayerType.FIRST].AddRange(castleFirstPlayer);
+                }
 
-                    if (castleSecondPlayer != null)
-                    {
-                        castles[PlayerType.SECOND].AddRange(castleSecondPlayer);
-                    }
+                if (castleSecondPlayer != null)
+                {
+                    castles[PlayerType.SECOND].AddRange(castleSecondPlayer);
                 }
             }
         }
@@ -506,15 +500,17 @@ namespace Assets.Scripts
 
             foreach (var block in blocks)
             {
-                if (block != null)
+                if (block == null)
                 {
-                    var passes = block.GetPasses();
-                    foreach (var pass in passes)
-                    {
-                        var toCell = blocks[pass.ToBlock.x, pass.ToBlock.y].GetCellByPosition(pass.ToPosition);
-                        var fromCell = block.GetCellByPosition(pass.FromPosition);
-                        passesAsFromToCells.Add(new PassAsFromToCells(fromCell, toCell));
-                    }
+                    continue;
+                }
+                
+                var passes = block.GetPasses();
+                foreach (var pass in passes)
+                {
+                    var toCell = blocks[pass.ToBlock.x, pass.ToBlock.y].GetCellByPosition(pass.ToPosition);
+                    var fromCell = block.GetCellByPosition(pass.FromPosition);
+                    passesAsFromToCells.Add(new PassAsFromToCells(fromCell, toCell));
                 }
             }
 

@@ -4,19 +4,19 @@ namespace Assets.Scripts
 {
     public class Castle : BoardStorageItem
     {
-        public PlayerType ownerType;
+        private PlayerType ownerType;
         private PlayGameState playGameState;
 
         public bool PerformAction(Army enteredArmy)
         {
-            Debug.Log("Entered: " + enteredArmy.playerType + "; Owner: " + ownerType);
-            if (enteredArmy.playerType != ownerType)
+            Debug.Log("Entered: " + enteredArmy.PlayerType + "; Owner: " + ownerType);
+            if (enteredArmy.PlayerType != ownerType)
             {
-                if (enteredArmy.playerType == PlayerType.FIRST)
+                if (enteredArmy.PlayerType == PlayerType.FIRST)
                 {
                     playGameState.OnFinishGame(ResultType.FIRST_WIN);    
                 }
-                else if (enteredArmy.playerType == PlayerType.SECOND)
+                else if (enteredArmy.PlayerType == PlayerType.SECOND)
                 {
                     playGameState.OnFinishGame(ResultType.SECOND_WIN);
                 }
@@ -25,8 +25,9 @@ namespace Assets.Scripts
             return false;
         }
 
-        public Castle(GameObject targetObject) : base(targetObject)
+        public Castle(GameObject targetObject, PlayerType ownerType) : base(targetObject)
         {
+            this.ownerType = ownerType;
             //TODO: awful solution...
             playGameState = StateManager.Instance.CurrentState as PlayGameState;
         }

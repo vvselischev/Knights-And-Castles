@@ -6,11 +6,11 @@ namespace Assets.Scripts
     public class ResultGameState : MonoBehaviour, IGameState
     {
         private DataService dataService;
-        public ResultMenu resultMenu;
+        [SerializeField] private ResultMenu resultMenu;
         private UserResultType resultType;
         private StateType playStateType;
         
-        private MenuActivator menuActivator = MenuActivator.GetInstance();
+        private MenuActivator menuActivator = MenuActivator.Instance;
 
         public void Initialize(UserResultType resultType, StateType playStateType)
         {
@@ -53,7 +53,7 @@ namespace Assets.Scripts
 
             dataService.UpdateRecord(record);
 
-            resultMenu.DisplayStatistics(record);
+            resultMenu.DisplayStatistics(record, resultType);
         }
 
         public void CloseState()

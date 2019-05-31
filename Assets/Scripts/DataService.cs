@@ -14,12 +14,9 @@ namespace Assets.Scripts
 	{
 
 		private SQLiteConnection connection;
-		private string databaseName;
 
 		public DataService(string databaseName)
 		{
-			this.databaseName = databaseName;
-
 #if UNITY_EDITOR
 			var dbPath = string.Format(@"Assets/StreamingAssets/{0}", databaseName);
 #else

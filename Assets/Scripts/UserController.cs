@@ -57,9 +57,9 @@ namespace Assets.Scripts
             {
                 ArmyStorageItem clickedArmyItem = boardStorage.GetItem(position) as ArmyStorageItem;
                 
-                armyText.ChangeText(clickedArmyItem.Army.armyComposition.ToString());
+                armyText.UpdateText(clickedArmyItem.Army);
                 
-                if (clickedArmyItem.Army.playerType == playerType && ((UserArmy) clickedArmyItem.Army).IsActive())
+                if (clickedArmyItem.Army.PlayerType == playerType && ((UserArmy) clickedArmyItem.Army).IsActive())
                 {
                     if (chosenArmyItem == null)
                     {
@@ -72,7 +72,7 @@ namespace Assets.Scripts
             }
             else
             {
-                playGameState.armyText.ChangeText("");
+                armyText.Clear();
                 if (chosenArmyItem != null && !(boardStorage.GetBonusItem(position) is Pass))
                 {
                     if (ReachableFromChosen(position) && splitButtonClicked)
@@ -129,7 +129,7 @@ namespace Assets.Scripts
             GameObject clonedIcon = boardFactory.CloneBoardIcon(boardStorage, chosenPositionX, chosenPositionY);
             boardStorage.SetItem(positionX, positionY, new ArmyStorageItem(splittedArmyPart, clonedIcon));
             splitButtonClicked = false;
-            armyText.ChangeText(splittedArmyPart.armyComposition.ToString());
+            armyText.UpdateText(splittedArmyPart);
         }
 
         private void MoveChosen(IntVector2 targetPosition, GameObject targetObject)
@@ -198,7 +198,7 @@ namespace Assets.Scripts
         private void ClearMoveState()
         {
             SetActiveFrame(null);
-            armyText.ChangeText("");
+            armyText.Clear();
             chosenArmyItem = null;
             currentTargetPosition = null;
             currentMover = null;
@@ -220,7 +220,7 @@ namespace Assets.Scripts
             {
                 ArmyStorageItem clickedArmyItem = targetBlock.GetItem(targetPosition) as ArmyStorageItem;
                 Army resultArmy = clickedArmyItem.Army.PerformAction(chosenArmyItem.Army);
-                if (resultArmy.playerType == playerType)
+                if (resultArmy.PlayerType == playerType)
                 {
                     clickedArmyItem.StoredObject.SetActive(false);
                     targetBlock.SetItem(targetPosition, null);

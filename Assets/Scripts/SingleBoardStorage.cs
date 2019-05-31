@@ -182,7 +182,7 @@ namespace Assets.Scripts
                     if (item != null)
                     {
                         var userArmy = item.Army as UserArmy;
-                        if (item.Army.playerType == playerType)
+                        if (item.Army.PlayerType == playerType)
                         {
                             userArmy?.SetActive();
                         }
@@ -200,7 +200,7 @@ namespace Assets.Scripts
                 if (boardItem is ArmyStorageItem)
                 {
                     var item = boardItem as ArmyStorageItem;
-                    if (item.Army.playerType == playerType)
+                    if (item.Army.PlayerType == playerType)
                     {
                         cellsWithArmies.Add(dictionaryEntry.Key);
                     }

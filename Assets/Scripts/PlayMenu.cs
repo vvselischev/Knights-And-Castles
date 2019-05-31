@@ -1,21 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using UnityEngine;
-using UnityEngine.UI;
+﻿using UnityEngine;
 
 namespace Assets.Scripts
 {
     public class PlayMenu : MonoBehaviour, IMenu
     {
-        public Canvas canvas;
-        public FinishTurnButton finishTurnButton;
-        public SplitButton splitButton;
-        public BoardManager boardManager;
-        public ArmyText armyText;
+        [SerializeField] private Canvas canvas;
+        [SerializeField] private FinishTurnButton finishTurnButton;
+        [SerializeField] private SplitButton splitButton;
+        [SerializeField] private BoardManager boardManager;
+        [SerializeField] private ArmyText armyText;
 
-        public Text playDebugText;
+        public void Initialize(BoardManager boardManager, InputListener inputListener)
+        {
+            this.boardManager = boardManager;
+            finishTurnButton.inputListener = inputListener;
+            splitButton.InputListener = inputListener;
+        }
         
         public void Activate()
         {

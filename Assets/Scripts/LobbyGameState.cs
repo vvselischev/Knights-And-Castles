@@ -4,10 +4,10 @@ namespace Assets.Scripts
 {
     public class LobbyGameState : MonoBehaviour, IGameState
     {
-        private MenuActivator menuActivator = MenuActivator.GetInstance();
-        public SimpleMenu lobbyMenu;
-        public StateManager stateManager;
-        public ExitListener exitListener;
+        private MenuActivator menuActivator = MenuActivator.Instance;
+        [SerializeField] protected SimpleMenu lobbyMenu;
+        [SerializeField] private StateManager stateManager;
+        [SerializeField] protected ExitListener exitListener;
         private MultiplayerController MultiplayerController;
 
         public void InvokeState()

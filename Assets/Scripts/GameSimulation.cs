@@ -82,7 +82,7 @@ namespace Assets.Scripts
 
                 if (army is UserArmy userArmy)
                 {
-                    return userArmy.playerType;
+                    return userArmy.PlayerType;
                 }
 
                 throw new ArgumentException("Not UserArmy on this position");
@@ -200,7 +200,7 @@ namespace Assets.Scripts
 
             if (resultItem.Army != null && resultItem.Army is UserArmy userArmy)
             {
-                if (playerType == userArmy.playerType)
+                if (playerType == userArmy.PlayerType)
                 {
                     currentPlayerArmyCells.Add(moveInformation.To);
                 }
@@ -245,12 +245,12 @@ namespace Assets.Scripts
             otherPlayerArmyCells.Remove(moveInformation.To);
             if (memorizedFrom.Item?.Army != null)
             {
-                if (memorizedFrom.Item.Army.playerType == playerType)
+                if (memorizedFrom.Item.Army.PlayerType == playerType)
                 {
                     currentPlayerArmyCells.Add(moveInformation.From);
                 }
 
-                 if (memorizedFrom.Item.Army.playerType == ChangePlayerType(playerType))
+                 if (memorizedFrom.Item.Army.PlayerType == ChangePlayerType(playerType))
                  {
                     otherPlayerArmyCells.Add(moveInformation.From);
                  }
@@ -258,12 +258,12 @@ namespace Assets.Scripts
 
             if (memorizedTo.Item?.Army != null)
             {
-                if (memorizedTo.Item.Army.playerType == playerType)
+                if (memorizedTo.Item.Army.PlayerType == playerType)
                 {
                     currentPlayerArmyCells.Add(moveInformation.To);
                 }
 
-                if (memorizedTo.Item.Army.playerType == ChangePlayerType(playerType))
+                if (memorizedTo.Item.Army.PlayerType == ChangePlayerType(playerType))
                 {
                     otherPlayerArmyCells.Add(moveInformation.To);
                 }

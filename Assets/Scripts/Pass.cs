@@ -11,16 +11,13 @@ namespace Assets.Scripts
 
         public void ChangeBlock()
         {
-            Debug.Log("Change block without army");
             boardManager.SetActiveBlock(ToBlock);
         }
         
         public void PassArmy(ArmyStorageItem army)
         {
-            Debug.Log("Pass: " + FromPosition + " -> " + ToPosition);
             boardManager.GetCurrentBlock().SetItem(FromPosition, null);
             ChangeBlock();
-            Debug.Log("Current block: " + boardManager.BoardStorage.GetCurrentBlockPosition());
             boardManager.GetCurrentBlock().SetItem(ToPosition, army);
         }
         

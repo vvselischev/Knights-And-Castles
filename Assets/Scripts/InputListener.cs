@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.UI;
+﻿using UnityEngine;
 
 namespace Assets.Scripts
 {
@@ -9,11 +6,16 @@ namespace Assets.Scripts
     {
         public ControllerManager controllerManager;
 
+        public virtual void Initialize(ControllerManager controllerManager)
+        {
+            this.controllerManager = controllerManager;
+        }
+        
         public virtual void ProcessBoardClick(int x, int y)
         {
             if (controllerManager.HasActiveController())
             {
-                UserController currentController = controllerManager.currentController;
+                UserController currentController = controllerManager.CurrentController;
                 currentController.OnButtonClick(x, y);
             }
         }
@@ -22,7 +24,7 @@ namespace Assets.Scripts
         {
             if (controllerManager.HasActiveController())
             {
-                UserController currentController = controllerManager.currentController;
+                UserController currentController = controllerManager.CurrentController;
                 currentController.FinishTurn();
             }
         }
@@ -31,7 +33,7 @@ namespace Assets.Scripts
         {
             if (controllerManager.HasActiveController())
             {
-                UserController currentController = controllerManager.currentController;
+                UserController currentController = controllerManager.CurrentController;
                 currentController.OnSplitButtonClick();
             }
         }

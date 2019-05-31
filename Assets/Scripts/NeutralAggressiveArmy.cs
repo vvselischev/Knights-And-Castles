@@ -14,7 +14,7 @@
 
         public override Army CloneArmy()
         {
-            return new NeutralAggressiveArmy(armyComposition);
+            return new NeutralAggressiveArmy(ArmyComposition);
         }
     }
 }

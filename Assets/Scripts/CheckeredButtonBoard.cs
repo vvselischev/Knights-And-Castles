@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 using Object = UnityEngine.Object;
@@ -11,8 +12,8 @@ namespace Assets.Scripts
         private GameObject parentObject;
         private Button patternButton;
 
-        public int width = 8;
-        public int height = 10;
+        [SerializeField] private int width = 8;
+        [SerializeField] private int height = 10;
         private const float SPACE_BETWEEN_BUTTONS = -2; //-2.44f; //buttonWidth/20;
 
         private static float ButtonWidth;
@@ -67,7 +68,7 @@ namespace Assets.Scripts
             var buttons = FindObjectsOfType(typeof(Button));
             foreach (Button button in buttons.Cast<Button>().Where(button => button.gameObject.name.Contains("Clone")))
             {
-                button.gameObject.GetComponent<BoardButton>().inputListener = inputListener;
+                button.gameObject.GetComponent<BoardButton>().InputListener = inputListener;
             }
         }
 

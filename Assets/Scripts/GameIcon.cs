@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
 namespace Assets.Scripts
@@ -10,7 +8,7 @@ namespace Assets.Scripts
         private Sprite defaultSprite;
         private Image currentImage;
 
-        public bool enabledByDefault = true;
+        [SerializeField] private bool enabledByDefault = true;
 
         public void Reset()
         {

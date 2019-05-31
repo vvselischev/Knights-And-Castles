@@ -5,11 +5,11 @@ namespace Assets.Scripts
     public class NetworkInputListener : InputListener
     {
         private MultiplayerController multiplayerController;
+        private Text logText;
 
-        public Text logText;
-        
-        public void Init()
+        public override void Initialize(ControllerManager controllerManager)
         {
+            base.Initialize(controllerManager);
             multiplayerController = MultiplayerController.GetInstance();
             multiplayerController.OnMessageReceived += ProcessNetworkData;
         }

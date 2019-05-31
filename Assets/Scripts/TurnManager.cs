@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using UnityEngine;
-using UnityEngine.UI;
+﻿using UnityEngine;
 
 namespace Assets.Scripts
 {
@@ -17,18 +12,22 @@ namespace Assets.Scripts
 
     public class TurnManager : MonoBehaviour
     {
-        public ControllerManager controllerManager;
-        public BoardManager boardManager;
-        public GameObject firstIcon;
-        public GameObject secondIcon;
+        private ControllerManager controllerManager;
+        private BoardManager boardManager;
+        [SerializeField] private GameObject firstIcon;
+        [SerializeField] private GameObject secondIcon;
 
-        private TurnType currentTurn;
+        public TurnType CurrentTurn { get; private set; }
 
-        public TurnType CurrentTurn => currentTurn;
+        public void Initialize(BoardManager boardManager, ControllerManager controllerManager)
+        {
+            this.boardManager = boardManager;
+            this.controllerManager = controllerManager;
+        }
         
         public void SetTurn(TurnType turn)
         {
-            currentTurn = turn;
+            CurrentTurn = turn;
             controllerManager.SetCurrentController(turn);
             if (turn == TurnType.FIRST)
             {
@@ -61,7 +60,7 @@ namespace Assets.Scripts
 
         public void SetNextTurn()
         {
-            if (currentTurn == TurnType.FIRST)
+            if (CurrentTurn == TurnType.FIRST)
             {
                 SetTurn(TurnType.SECOND);
             }

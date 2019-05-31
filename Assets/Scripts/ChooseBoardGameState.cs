@@ -4,9 +4,9 @@ namespace Assets.Scripts
 {
     public class ChooseBoardGameState : MonoBehaviour, IGameState
     {
-        private MenuActivator menuActivator = MenuActivator.GetInstance();
-        public SimpleMenu chooseBoardMenu;
-        public ExitListener exitListener;
+        private MenuActivator menuActivator = MenuActivator.Instance;
+        [SerializeField] private SimpleMenu chooseBoardMenu;
+        [SerializeField] private ExitListener exitListener;
 
         public StateType NextStateType { get; set; }
         public void InvokeState()

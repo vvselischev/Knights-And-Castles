@@ -3,8 +3,8 @@ using UnityEngine;
 
 public class StartGameState : MonoBehaviour, IGameState
 {
-    private MenuActivator menuActivator = MenuActivator.GetInstance();
-    public SimpleMenu startMenu;
+    private MenuActivator menuActivator = MenuActivator.Instance;
+    [SerializeField] private SimpleMenu startMenu;
 
     public void InvokeState()
     {

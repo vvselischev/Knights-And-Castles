@@ -1,25 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using UnityEngine.UI;
-using UnityEngine;
-
-namespace Assets.Scripts
+﻿namespace Assets.Scripts
 {
-    public class ControllerManager : MonoBehaviour
+    public class ControllerManager
     {
-        public UserController currentController;
-        public UserController firstController;
-        public UserController secondController;
+        public UserController CurrentController { get; private set; }
+        public UserController FirstController { get; }
+        public UserController SecondController { get; }
 
+        public ControllerManager(UserController firstController, UserController secondController)
+        {
+            FirstController = firstController;
+            SecondController = secondController;
+        }
         public void SetCurrentController(TurnType type)
         {
             if (type == TurnType.SECOND)
             {
-                currentController = secondController;
+                CurrentController = SecondController;
             }
             else if (type == TurnType.FIRST)
             {
-                currentController = firstController;
+                CurrentController = FirstController;
             }
         }
 
@@ -27,11 +27,11 @@ namespace Assets.Scripts
         {
             if (type == TurnType.FIRST)
             {
-                firstController.Enable();
+                FirstController.Enable();
             }
             else
             {
-                secondController.Enable();
+                SecondController.Enable();
             }
         }
 
@@ -39,24 +39,24 @@ namespace Assets.Scripts
         {
             if (type == TurnType.FIRST)
             {
-                firstController.Disable();
+                FirstController.Disable();
             }
             else
             {
-                secondController.Disable();
+                SecondController.Disable();
             }
         }
 
         public bool HasActiveController()
         {
-            return currentController != null;
+            return CurrentController != null;
         }
 
         public void DeactivateAll()
         {
-            currentController = null;
-            firstController.Disable();
-            secondController.Disable();
+            CurrentController = null;
+            FirstController.Disable();
+            SecondController.Disable();
         }
     }
 }

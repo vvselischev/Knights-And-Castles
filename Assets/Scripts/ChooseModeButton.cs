@@ -4,16 +4,16 @@ namespace Assets.Scripts
 {
     public class ChooseModeButton : MonoBehaviour
     {
-        public StateType nextState;
+        [SerializeField] private StateType nextState;
 
         public void OnClick()
         {
-            var stateManager = StateManager.Instance;
-            (stateManager.states[StateType.CHOOSE_BOARD_GAME_STATE] as ChooseBoardGameState).NextStateType = nextState;
+            var stateManager = StateManager.Instance;         
             
-            //We do not want several board modes in network at this time.
-            if (nextState != StateType.NETWORK_GAME_STATE)
+            //We do not want several board modes in network in thi version.
+            if (nextState != StateType.LOBBY_GAME_STATE)
             {
+                (stateManager.GetState(StateType.CHOOSE_BOARD_GAME_STATE) as ChooseBoardGameState).NextStateType = nextState;
                 stateManager.ChangeState(StateType.CHOOSE_BOARD_GAME_STATE);
             }
             else

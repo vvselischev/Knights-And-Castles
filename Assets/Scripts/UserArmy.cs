@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace Assets.Scripts
+﻿namespace Assets.Scripts
 {
     public class UserArmy : Army
     {
@@ -21,7 +16,7 @@ namespace Assets.Scripts
             var army = attackingArmy as UserArmy;
             army?.SetInactive();
 
-            if (attackingArmy.playerType == playerType)
+            if (attackingArmy.PlayerType == PlayerType)
             {
                 return Merge(attackingArmy, this);
             }
@@ -30,7 +25,7 @@ namespace Assets.Scripts
 
         public override Army CloneArmy()
         {
-            var army = new UserArmy(playerType, armyComposition);
+            var army = new UserArmy(PlayerType, ArmyComposition);
 
             if (isActive)
             {

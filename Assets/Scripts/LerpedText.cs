@@ -2,25 +2,18 @@
 using System.Collections;
 using UnityEngine.UI;
 
-
 namespace Assets.Scripts
 {
-    public class UIManager : MonoBehaviour
+    public class LerpedText : MonoBehaviour
     {
-        public Text text;
+        [SerializeField] public Text text;
         private Text textClone;
 
-        public float maxScale = 3;
-        public float fraction = 1;
+        [SerializeField] private float maxScale = 3;
+        [SerializeField] private float fraction = 1;
         private const float EPS = 0.05f;
-        public Canvas playCanvas;
 
         public event VoidHandler FinishedLerp;
-
-        void Start()
-        {
-            playCanvas.enabled = false;
-        }
 
         public void PerformLerpString(string s, Color color)
         {

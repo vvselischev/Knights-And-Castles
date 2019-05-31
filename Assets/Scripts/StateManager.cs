@@ -6,7 +6,6 @@ namespace Assets.Scripts
     public class StateManager : MonoBehaviour
     {
         public IGameState CurrentState { get; private set; }
-
         public static StateManager Instance { get; private set; }
 
         public StartGameState startGameState;
@@ -17,7 +16,7 @@ namespace Assets.Scripts
         public ChooseBoardGameState chooseBoardGameState;
         public ResultGameState resultGameState;
         
-        public Dictionary<StateType, IGameState> states;
+        private Dictionary<StateType, IGameState> states;
 
         void Awake()
         {
@@ -27,6 +26,11 @@ namespace Assets.Scripts
             Instance = this;
             Initialize();
             ChangeState(StateType.START_GAME_STATE);
+        }
+
+        public IGameState GetState(StateType stateType)
+        {
+            return states[stateType];
         }
 
         private void Initialize()

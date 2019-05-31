@@ -10,18 +10,18 @@ namespace Assets.Scripts
     {
         private System.Random random = new System.Random();
 
-        public BoardConfiguration Configuration { get; private set; }
+        private BoardConfiguration configuration;
 
         private int blockWidth;
         private int blockHeight;
         private int blocksHorizontal;
         private int blocksVertical;
         
-        public GameObject patternIcon;
-        public GameObject parent;
+        [SerializeField] private GameObject patternIcon;
+        [SerializeField] private GameObject parent;
 
-        public CheckeredButtonBoard board; //just to transfer it to board storage 
-        public BoardManager boardManager;
+        [SerializeField] private CheckeredButtonBoard board; //just to transfer it to board storage 
+        [SerializeField] private BoardManager boardManager; //just to transfer ift to passes
 
         private int imbalance = startImbalance; // first is always in better position
         private const int startImbalance = 100;
@@ -29,24 +29,37 @@ namespace Assets.Scripts
         private const int RandomNumberOfUnitsTo = 1000;
         
 
-        public Sprite NeutralFriendlySprite, NeutralAgressiveSprite, FirstUserSprite, SecondUserSprite, CastleSprite, PassSprite;
+        [SerializeField] private Sprite neutralFriendlySprite;
 
-        public BlockBoardStorage CreateEmptyStorage(BoardType configurationType)
+        [SerializeField] private Sprite neutralAggressiveSprite;
+
+        [SerializeField] private Sprite firstUserSprite;
+
+        [SerializeField] private Sprite secondUserSprite;
+
+        [SerializeField] private Sprite castleSprite;
+
+        [SerializeField] private Sprite passSprite;
+
+        public BlockBoardStorage CreateEmptyStorage(BoardType configurationType, out BoardManager boardManager)
         {
             if (configurationType == BoardType.SMALL)
             {
-                Configuration = new SmallBoardConfiguration();
+                configuration = new SmallBoardConfiguration();
             }
             else
             {
-                Configuration = new LargeBoardConfiguration();
+                configuration = new LargeBoardConfiguration();
             }
             imbalance = startImbalance;
-            blockWidth = Configuration.BlockWidth;
-            blockHeight = Configuration.BlockHeight;
-            blocksHorizontal = Configuration.BlocksHorizontal;
-            blocksVertical = Configuration.BlocksVertical;
-            return new BlockBoardStorage(blocksHorizontal, blocksVertical, board);
+            blockWidth = configuration.BlockWidth;
+            blockHeight = configuration.BlockHeight;
+            blocksHorizontal = configuration.BlocksHorizontal;
+            blocksVertical = configuration.BlocksVertical;
+            var storage = new BlockBoardStorage(blocksHorizontal, blocksVertical, board);
+            boardManager = new BoardManager(storage, configuration.FirstStartBlock, configuration.SecondStartBlock);
+            this.boardManager = boardManager;
+            return storage;
         }
         
         public void FillBoardStorageRandomly(IBoardStorage boardStorage)
@@ -67,13 +80,13 @@ namespace Assets.Scripts
                     {
                         currentArmy = new UserArmy(PlayerType.FIRST, GenerateArmyComposition(RandomNumberOfUnitsFrom, 
                             RandomNumberOfUnitsTo));
-                        currentSprite = FirstUserSprite;
+                        currentSprite = firstUserSprite;
                     }
                     else if (ExistsPlayerArmy(col, row, PlayerType.SECOND))
                     {
                         currentArmy = new UserArmy(PlayerType.SECOND, GenerateArmyComposition(RandomNumberOfUnitsFrom, 
                             RandomNumberOfUnitsTo));
-                        currentSprite = SecondUserSprite;
+                        currentSprite = secondUserSprite;
                     }
                     else if (ExistsPass(col, row))
                     {
@@ -91,13 +104,13 @@ namespace Assets.Scripts
 
                         if (randomValue == 1)
                         {
-                            currentSprite = NeutralFriendlySprite;
+                            currentSprite = neutralFriendlySprite;
                             currentArmy = new NeutralFriendlyArmy(
                                 GenerateBalancedArmyComposition(true, new IntVector2(col, row)));
                         }
                         else
                         {
-                            currentSprite = NeutralAgressiveSprite;
+                            currentSprite = neutralAggressiveSprite;
                             currentArmy = new NeutralAggressiveArmy(
                                 GenerateBalancedArmyComposition(false, new IntVector2(col, row)));
                         }
@@ -118,9 +131,9 @@ namespace Assets.Scripts
             var position = new IntVector2(col, row);
             if (playerType == PlayerType.FIRST)
             {
-                var startFirstPositions = Configuration.StartFirstPositions;
+                var startFirstPositions = configuration.StartFirstPositions;
                 if (startFirstPositions.Any(localPosition =>
-                    GetGlobalPosition(localPosition, Configuration.FirstStartBlock).Equals(position)))
+                    GetGlobalPosition(localPosition, configuration.FirstStartBlock).Equals(position)))
                 {
                     return true;
                 }
@@ -130,9 +143,9 @@ namespace Assets.Scripts
 
             if (playerType == PlayerType.SECOND)
             {
-                var startSecondPositions = Configuration.StartSecondPositions;
+                var startSecondPositions = configuration.StartSecondPositions;
                 if (startSecondPositions.Any(localPosition =>
-                    GetGlobalPosition(localPosition, Configuration.SecondStartBlock).Equals(position)))
+                    GetGlobalPosition(localPosition, configuration.SecondStartBlock).Equals(position)))
                 {
                     return true;
                 }    
@@ -143,12 +156,12 @@ namespace Assets.Scripts
         private bool ExistsPass(int col, int row)
         {
             var position = new IntVector2(col, row);
-            for (int i = 0; i < Configuration.PassesNumber; i++)
+            for (int i = 0; i < configuration.PassesNumber; i++)
             {
-                var globalFromPosition = GetGlobalPosition(Configuration.PassesFromPositions[i],
-                    Configuration.PassesFromBlocks[i]);
-                var globalToPosition = GetGlobalPosition(Configuration.PassesToPositions[i],
-                    Configuration.PassesToBlocks[i]);
+                var globalFromPosition = GetGlobalPosition(configuration.PassesFromPositions[i],
+                    configuration.PassesFromBlocks[i]);
+                var globalToPosition = GetGlobalPosition(configuration.PassesToPositions[i],
+                    configuration.PassesToBlocks[i]);
                 if (position.Equals(globalFromPosition) || position.Equals(globalToPosition))
                 {
                     return true;
@@ -166,23 +179,23 @@ namespace Assets.Scripts
         
         private void InstantiatePasses(BoardStorageItem[,] bonusTable)
         {
-            for (int i = 0; i < Configuration.PassesNumber; i++)
+            for (int i = 0; i < configuration.PassesNumber; i++)
             {
-                var passObject = InstantiateIcon(PassSprite);
+                var passObject = InstantiateIcon(passSprite);
                 passObject.SetActive(false);
-                var pass = new Pass(passObject, boardManager, Configuration.PassesToBlocks[i], 
-                    Configuration.PassesFromPositions[i], Configuration.PassesToPositions[i]);
+                var pass = new Pass(passObject, boardManager, configuration.PassesToBlocks[i], 
+                    configuration.PassesFromPositions[i], configuration.PassesToPositions[i]);
 
-                var globalFrom = GetGlobalPosition(Configuration.PassesFromPositions[i], Configuration.PassesFromBlocks[i]);
+                var globalFrom = GetGlobalPosition(configuration.PassesFromPositions[i], configuration.PassesFromBlocks[i]);
                 bonusTable[globalFrom.x, globalFrom.y] = pass;
             }
         }
 
         private void InstantiateCastles(BoardStorageItem[,] bonusTable)
         {
-            InstantiateCastlesFromList(Configuration.FirstCastlesPositions, Configuration.FirstCastlesBlocks,
+            InstantiateCastlesFromList(configuration.FirstCastlesPositions, configuration.FirstCastlesBlocks,
                 PlayerType.FIRST, bonusTable);
-            InstantiateCastlesFromList(Configuration.SecondCastlesPositions, Configuration.SecondCastlesBlocks, 
+            InstantiateCastlesFromList(configuration.SecondCastlesPositions, configuration.SecondCastlesBlocks, 
                 PlayerType.SECOND, bonusTable);
         }
 
@@ -191,9 +204,9 @@ namespace Assets.Scripts
         {
             for (int i = 0; i < positions.Length; i++)
             {
-                var castleObject = InstantiateIcon(CastleSprite);
+                var castleObject = InstantiateIcon(castleSprite);
                 castleObject.SetActive(false);
-                var castle = new Castle(castleObject) {ownerType = ownerType};
+                var castle = new Castle(castleObject, ownerType);
                 var globalPosition = GetGlobalPosition(positions[i], blocks[i]);
                 bonusTable[globalPosition.x, globalPosition.y] = castle;
             }
@@ -242,22 +255,22 @@ namespace Assets.Scripts
                     if (currentType == 11)
                     {
                         currentArmy = new UserArmy(PlayerType.FIRST, armyComposition);
-                        currentSprite = FirstUserSprite;
+                        currentSprite = firstUserSprite;
                     }
                     else if (currentType == 12)
                     {
                         currentArmy = new UserArmy(PlayerType.SECOND, armyComposition);
-                        currentSprite = SecondUserSprite;
+                        currentSprite = secondUserSprite;
                     }
                     else if (currentType == 1)
                     {
                         currentArmy = new NeutralFriendlyArmy(armyComposition);
-                        currentSprite = NeutralFriendlySprite;
+                        currentSprite = neutralFriendlySprite;
                     }
                     else if (currentType == 2)
                     {
                         currentArmy = new NeutralAggressiveArmy(armyComposition);
-                        currentSprite = NeutralAgressiveSprite;
+                        currentSprite = neutralAggressiveSprite;
                     }
 
                     GameObject iconGO = InstantiateIcon(currentSprite);
@@ -283,15 +296,15 @@ namespace Assets.Scripts
                     if (items[col, row] != null && items[col, row] is ArmyStorageItem)
                     {
                         army = ((ArmyStorageItem) items[col, row]).Army;
-                        if (army.playerType == PlayerType.FIRST)
+                        if (army.PlayerType == PlayerType.FIRST)
                         {
                             currentType = 11;
                         }
-                        else if (army.playerType == PlayerType.SECOND)
+                        else if (army.PlayerType == PlayerType.SECOND)
                         {
                             currentType = 12;
                         }
-                        else if (army.playerType == PlayerType.NEUTRAL)
+                        else if (army.PlayerType == PlayerType.NEUTRAL)
                         {
                             if (army is NeutralFriendlyArmy)
                             {
@@ -307,10 +320,10 @@ namespace Assets.Scripts
                     
                     if (currentType != 0)
                     {
-                        ArmyComposition armyComposition = army.armyComposition;
-                        byteList.Add((byte)armyComposition.spearmen);
-                        byteList.Add((byte)armyComposition.archers);
-                        byteList.Add((byte)armyComposition.cavalrymen);
+                        ArmyComposition armyComposition = army.ArmyComposition;
+                        byteList.Add((byte)armyComposition.Spearmen);
+                        byteList.Add((byte)armyComposition.Archers);
+                        byteList.Add((byte)armyComposition.Cavalrymen);
                     }
                 }
             }

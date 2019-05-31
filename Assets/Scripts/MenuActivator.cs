@@ -1,21 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using UnityEngine;
-
-namespace Assets.Scripts
+﻿namespace Assets.Scripts
 {
     //простой класс для включения/выключения разных меню
     public class MenuActivator
     {
         private IMenu currentMenu;
-        private static MenuActivator instance = new MenuActivator();
-
-        public static MenuActivator GetInstance()
-        {
-            return instance;
-        }
+        public static MenuActivator Instance = new MenuActivator();
 
         private MenuActivator()
         {

@@ -9,26 +9,25 @@ namespace Assets.Scripts
     //TODO: should we disable exit listener on setup?
     public class NetworkPlayGameState : PlayGameState
     {
-        public NetworkInputListener networkInputListener;
+        [SerializeField] private NetworkInputListener networkInputListener;
         private MultiplayerController multiplayerController;
         private List<Participant> allPlayers;
         private bool isHost;
         private TurnType myTurnType;
         private UserResultType currentUserResultType;
 
-        public Text logText;
+        [SerializeField] private Text logText;
 
         public override void InvokeState()
-        { 
+        {
+            inputListener = networkInputListener;
             SetupGame();
             
             logText.text = "";
             multiplayerController = MultiplayerController.GetInstance();
             multiplayerController.logText = logText;
             
-            logText.text += "Invoking\n";
-            SetupListeners();
-            logText.text += "Finish setup\n";
+            board.SetInputListener(networkInputListener);
             
             allPlayers = multiplayerController.GetAllPlayers();
             
@@ -51,14 +50,6 @@ namespace Assets.Scripts
                 multiplayerController.OnMessageReceived += SetupRoundFromNetwork;
             }
         }
-
-        private void SetupListeners()
-        {
-            networkInputListener.Init();
-            board.SetInputListener(networkInputListener);
-            playMenu.finishTurnButton.GetComponent<FinishTurnButton>().inputListener = networkInputListener;
-            playMenu.splitButton.GetComponent<SplitButton>().inputListener = networkInputListener;
-        }
         
         private string ChooseHost()
         {
@@ -68,18 +59,20 @@ namespace Assets.Scripts
         private void SetupRoundHost()
         {
             logText.text += "Creating board...";
-            boardFactory.FillBoardStorageRandomly(storage);
+            boardFactory.FillBoardStorageRandomly(boardStorage);
 
             logText.text += "Board created. Converting to bytes...";
-            List<byte> message = boardFactory.ConvertBoardStorageToBytes(storage);
+            List<byte> message = boardFactory.ConvertBoardStorageToBytes(boardStorage);
             
             //Insert 'S' -- Setup message.
             message.Insert(0, (byte) 'S');
 
             multiplayerController.SendMessage(message.ToArray());
             
-            controllerManager.firstController = new UserController(PlayerType.FIRST, storage, boardFactory,this, armyText);
-            controllerManager.secondController = new UserController(PlayerType.SECOND, storage, boardFactory,this, armyText);
+            var firstController = new UserController(PlayerType.FIRST, boardStorage, boardFactory,this, armyText);
+            var secondController = new UserController(PlayerType.SECOND, boardStorage, boardFactory,this, armyText);
+            controllerManager = new ControllerManager(firstController, secondController);
+            networkInputListener.Initialize(controllerManager);
         }
         
         private void SetupRoundFromNetwork(byte[] message)
@@ -93,15 +86,18 @@ namespace Assets.Scripts
             
             logText.text += "Create board from network..." + "\n";
 
-            boardFactory.FillBoardStorageFromArray(message.Skip(1).ToArray(), storage);
+            boardFactory.FillBoardStorageFromArray(message.Skip(1).ToArray(), boardStorage);
             
-            controllerManager.firstController = new UserController(PlayerType.FIRST, storage, boardFactory,this, armyText);
-            controllerManager.secondController = new UserController(PlayerType.SECOND, storage, boardFactory,this, armyText);
+            var firstController = new UserController(PlayerType.FIRST, boardStorage, boardFactory,this, armyText);
+            var secondController = new UserController(PlayerType.SECOND, boardStorage, boardFactory,this, armyText);
+            controllerManager = new ControllerManager(firstController, secondController);
+            networkInputListener.Initialize(controllerManager);
+            
             logText.text += "Finish setup listeners";
             InitNewGame();
             
             //Because host is the first to move
-            storage.InvertBoard();
+            boardStorage.InvertBoard();
             playMenu.DisableUI();
         }
 
@@ -133,12 +129,12 @@ namespace Assets.Scripts
             {
                 if (isHost)
                 {
-                    uiManager.PerformLerpString("You win!", Color.green);
+                    lerpedText.PerformLerpString("You win!", Color.green);
                     currentUserResultType = UserResultType.WIN;
                 }
                 else
                 {
-                    uiManager.PerformLerpString("You lose...", Color.red);
+                    lerpedText.PerformLerpString("You lose...", Color.red);
                     currentUserResultType = UserResultType.LOSE;
                 }
             }
@@ -146,19 +142,19 @@ namespace Assets.Scripts
             {
                 if (!isHost)
                 {
-                    uiManager.PerformLerpString("You win!", Color.green);
+                    lerpedText.PerformLerpString("You win!", Color.green);
                     currentUserResultType = UserResultType.WIN;
                     
                 }
                 else
                 {
-                    uiManager.PerformLerpString("You lose...", Color.red);
+                    lerpedText.PerformLerpString("You lose...", Color.red);
                     currentUserResultType = UserResultType.LOSE;
                 }
             }
             else if (resultType == ResultType.DRAW)
             {
-                uiManager.PerformLerpString("Draw", Color.blue);
+                lerpedText.PerformLerpString("Draw", Color.blue);
                 currentUserResultType = UserResultType.DRAW;
             }
         }

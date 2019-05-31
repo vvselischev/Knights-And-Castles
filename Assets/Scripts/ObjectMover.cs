@@ -1,28 +1,22 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using UnityEngine;
-using UnityEngine.UI;
+﻿using UnityEngine;
 
 namespace Assets.Scripts
 {
     public class ObjectMover : MonoBehaviour
     {
         private Follower follower;
-        public Transform parentTransform;
+        public Transform ParentTransform { get; set; }
         public event VoidHandler ReachedTarget;
         
         private GameObject sourceObject;
 
         public void PrepareMovement(GameObject startPointObject)
         {
-            sourceObject.transform.SetParent(parentTransform);
+            sourceObject.transform.SetParent(ParentTransform);
             sourceObject.transform.localPosition = startPointObject.transform.localPosition;
         }
 
-        void Awake()
+        private void Awake()
         {
             follower = gameObject.GetComponent<Follower>();
             follower.ReachedTarget += FollowerReachedTarget;

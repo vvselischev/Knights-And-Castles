@@ -7,14 +7,15 @@ namespace Assets.Scripts
 {
     public class AIPlayGameState : PlayGameState
     {
-        public AIPlayer aiPlayer;
-        public System.Random random = new System.Random();
+        private AIPlayer aiPlayer;
         private UserResultType resultType;
+
         public override void InvokeState()
         {
             base.InvokeState();
             //Let AI be the Type.Second (however, it can be the first to move)
-            aiPlayer.Initialize(controllerManager.secondController, PlayerType.SECOND);
+            aiPlayer = new AIPlayer(controllerManager.SecondController, PlayerType.SECOND, boardStorage, 
+                boardManager, inputListener);
         }
 
         protected override void ChangeTurn()
@@ -44,17 +45,17 @@ namespace Assets.Scripts
             base.OnFinishGame(resultType);
             if (resultType == ResultType.FIRST_WIN)
             {
-                uiManager.PerformLerpString("You win!", Color.green);
+                lerpedText.PerformLerpString("You win!", Color.green);
                 this.resultType = UserResultType.WIN;
             }
             else if (resultType == ResultType.SECOND_WIN)
             {
-                uiManager.PerformLerpString("You lose...", Color.red);
+                lerpedText.PerformLerpString("You lose...", Color.red);
                 this.resultType = UserResultType.LOSE;
             }
             else if (resultType == ResultType.DRAW)
             {
-                uiManager.PerformLerpString("Draw", Color.blue);
+                lerpedText.PerformLerpString("Draw", Color.blue);
                 this.resultType = UserResultType.DRAW;
             }
         }

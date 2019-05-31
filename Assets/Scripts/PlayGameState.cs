@@ -24,23 +24,23 @@ namespace Assets.Scripts
 
     public abstract class PlayGameState : MonoBehaviour, IGameState
     {
-        public PlayMenu playMenu;
-        public TurnManager turnManager;
-        public Timer timer;
-        public BoardFactory boardFactory;
-        public ControllerManager controllerManager;
-        public ArmyText armyText;
-        public UIManager uiManager;
-        public StateManager stateManager;
-        public ExitListener exitListener;
-        public CheckeredButtonBoard board;
-        public BoardManager boardManager;
-        public InputListener inputListener;
-        public BoardType configurationType;
-        public StateType stateType;
+        [SerializeField] protected PlayMenu playMenu;
+        [SerializeField] protected TurnManager turnManager;
+        [SerializeField] protected Timer timer;
+        [SerializeField] protected BoardFactory boardFactory;
+        [SerializeField] protected ArmyText armyText;
+        [SerializeField] protected LerpedText lerpedText;
+        [SerializeField] protected StateManager stateManager;
+        [SerializeField] protected ExitListener exitListener;
+        [SerializeField] protected CheckeredButtonBoard board;
+        [SerializeField] protected InputListener inputListener;
+        [SerializeField] protected StateType stateType;
         
-        protected BlockBoardStorage storage;
-        private MenuActivator menuActivator = MenuActivator.GetInstance();
+        protected BlockBoardStorage boardStorage;
+        protected ControllerManager controllerManager;
+        protected BoardManager boardManager;
+        public BoardType ConfigurationType { get; set; }
+        private MenuActivator menuActivator = MenuActivator.Instance;
 
         private const int MAX_TURNS = 10000;
 
@@ -49,13 +49,16 @@ namespace Assets.Scripts
         public virtual void InvokeState()
         {
             SetupGame();
-            boardFactory.FillBoardStorageRandomly(storage);
+            boardFactory.FillBoardStorageRandomly(boardStorage);
             
             board.SetInputListener(inputListener);
-            controllerManager.firstController =
-                new UserController(PlayerType.FIRST, storage, boardFactory, this, armyText);
-            controllerManager.secondController =
-                new UserController(PlayerType.SECOND, storage, boardFactory, this, armyText);
+            var firstController =
+                new UserController(PlayerType.FIRST, boardStorage, boardFactory, this, armyText);
+            var secondController =
+                new UserController(PlayerType.SECOND, boardStorage, boardFactory, this, armyText);
+            
+            controllerManager = new ControllerManager(firstController, secondController);
+            inputListener.Initialize(controllerManager);
             
             InitNewGame();
         }
@@ -64,12 +67,9 @@ namespace Assets.Scripts
         {
             menuActivator.OpenMenu(playMenu);
 
-            uiManager.FinishedLerp += CloseGame;
+            lerpedText.FinishedLerp += CloseGame;
             
-            storage = boardFactory.CreateEmptyStorage(configurationType);
-
-            boardManager.Initialize(storage, boardFactory.Configuration.FirstStartBlock,
-                boardFactory.Configuration.SecondStartBlock);
+            boardStorage = boardFactory.CreateEmptyStorage(ConfigurationType, out boardManager);
             
             playedTurns = 0;
 
@@ -84,9 +84,9 @@ namespace Assets.Scripts
             menuActivator.CloseMenu();
             timer.OnFinish -= ChangeTurn;
             exitListener.OnExitClicked -= ExitGame;
-            uiManager.FinishedLerp -= CloseGame;
+            lerpedText.FinishedLerp -= CloseGame;
             exitListener.Disable();
-            storage.Reset();
+            boardStorage.Reset();
         }
 
         protected virtual void InitNewRound()
@@ -95,6 +95,8 @@ namespace Assets.Scripts
 
             armyText.Init();
 
+            playMenu.Initialize(boardManager, inputListener);
+            turnManager.Initialize(boardManager, controllerManager);
             turnManager.SetTurn(GetFirstTurn());
             timer.StartTimer();
 

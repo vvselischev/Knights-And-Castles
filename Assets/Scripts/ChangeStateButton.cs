@@ -4,7 +4,7 @@ namespace Assets.Scripts
 {
     public class ChangeStateButton : MonoBehaviour
     {
-        public StateType nextStateType;
+        [SerializeField] private StateType nextStateType;
 
         public void OnClick()
         {

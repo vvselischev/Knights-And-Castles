@@ -1,31 +1,30 @@
-
 using System.Threading;
 using UnityEngine;
 
 namespace Assets.Scripts
 {
-    public class BoardManager : MonoBehaviour
+    public class BoardManager
     {
         private IntVector2 firstPlayerBlockPosition;
         private IntVector2 secondPlayerBlockPosition;
-        public BlockBoardStorage BoardStorage { get; private set; }
+        private BlockBoardStorage boardStorage;
 
-        public void Initialize(BlockBoardStorage boardStorage, IntVector2 firstStartBlock, IntVector2 secondStartBlock)
+        public BoardManager(BlockBoardStorage boardStorage, IntVector2 firstStartBlock, IntVector2 secondStartBlock)
         {
-            BoardStorage = boardStorage;
+            this.boardStorage = boardStorage;
             firstPlayerBlockPosition = firstStartBlock;
             secondPlayerBlockPosition = secondStartBlock;
         }
 
         public SingleBoardStorage GetCurrentBlock()
         {
-            return BoardStorage.GetCurrentBlock();
+            return boardStorage.GetCurrentBlock();
         }
         
         public void SetActiveBlock(IntVector2 position)
         {
-            var currentBlockPosition = BoardStorage.GetCurrentBlockPosition();
-            BoardStorage.SetCurrentBlock(position);
+            var currentBlockPosition = boardStorage.GetCurrentBlockPosition();
+            boardStorage.SetCurrentBlock(position);
             if (currentBlockPosition != null && !currentBlockPosition.Equals(position))
             {
                 Thread.Sleep(500);
@@ -47,7 +46,7 @@ namespace Assets.Scripts
         {
             if (playerType == TurnType.FIRST)
             {
-                var position =  BoardStorage.GetCurrentBlockPosition();
+                var position =  boardStorage.GetCurrentBlockPosition();
                 if (position != null)
                 {
                     firstPlayerBlockPosition = position;
@@ -55,7 +54,7 @@ namespace Assets.Scripts
             }
             else if (playerType == TurnType.SECOND)
             {
-                var position =  BoardStorage.GetCurrentBlockPosition();
+                var position =  boardStorage.GetCurrentBlockPosition();
                 if (position != null)
                 {
                     secondPlayerBlockPosition = position;

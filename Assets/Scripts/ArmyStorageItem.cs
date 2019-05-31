@@ -14,8 +14,7 @@ namespace Assets.Scripts
             {
                 iconGO.AddComponent<Follower>();
                 ObjectMover mover = iconGO.AddComponent<ObjectMover>();
-                mover.parentTransform = iconGO.GetComponentInParent<Transform>();
-                //mover.follower = follower;
+                mover.ParentTransform = iconGO.GetComponentInParent<Transform>();
             }
         }
 

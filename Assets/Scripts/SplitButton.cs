@@ -1,24 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using UnityEngine.UI;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Assets.Scripts
 {
     //TODO: make it and start button children of common class
     public class SplitButton : MonoBehaviour
     {
-        public GameIcon icon;
-        public Color defaultColor = Color.white;
-        public Color lockColor = Color.red;
+        [SerializeField] private GameIcon icon;
+        [SerializeField] private Color defaultColor = Color.white;
+        [SerializeField] private Color lockColor = Color.red;
 
-        public InputListener inputListener;
+        public InputListener InputListener { get; set; }
 
         public void OnClick()
         {
             if (enabled)
             {
-                inputListener.ProcessSplitButtonClick();
+                InputListener.ProcessSplitButtonClick();
             }
         }
         

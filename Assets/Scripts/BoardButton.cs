@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.UI;
+﻿using UnityEngine;
 
 namespace Assets.Scripts
 {
@@ -10,9 +7,9 @@ namespace Assets.Scripts
         private int boardX;
         private int boardY;
 
-        public GameIcon frame;
+        [SerializeField] private GameIcon frame;
 
-        public InputListener inputListener;
+        public InputListener InputListener { get; set; }
 
         public void Initialize(int x, int y)
         {
@@ -24,8 +21,7 @@ namespace Assets.Scripts
         {
             if (enabled)
             {
-                Debug.Log("Board button clicked");
-                inputListener.ProcessBoardClick(boardX, boardY);
+                InputListener.ProcessBoardClick(boardX, boardY);
             }
         }
 

@@ -9,34 +9,34 @@ namespace Assets.Scripts
 {
     public class ArmyComposition
     {
-        public int spearmen;
-        public int archers;
-        public int cavalrymen;
-        public double experience;
+        public int Spearmen { get; private set; }
+        public int Archers { get; private set; }
+        public int Cavalrymen { get; private set; }
+        public double Experience { get; private set; }
 
         public ArmyComposition(int spearmen, int archers, int cavalrymen, double experience = 1)
         {
-            this.spearmen = spearmen;
-            this.archers = archers;
-            this.cavalrymen = cavalrymen;
-            this.experience = experience;
+            Spearmen = spearmen;
+            Archers = archers;
+            Cavalrymen = cavalrymen;
+            Experience = experience;
         }
 
         public override string ToString()
         {
-            return "Spearmen: " + spearmen + "\n" + "Archers:    " + archers + "\n" + "Cavalry:    " + cavalrymen + "\n" +
-                   "Experience: " + Math.Round(experience, 2);
+            return "Spearmen: " + Spearmen + "\n" + "Archers:    " + Archers + "\n" + "Cavalry:    " + Cavalrymen + "\n" +
+                   "Experience: " + Math.Round(Experience, 2);
         }
 
         public static ArmyComposition Merge(ArmyComposition first, ArmyComposition second)
         {
-            double newExperience = (first.TotalUnitQuantity() * first.experience +
-                                   second.TotalUnitQuantity() * second.experience) /
+            double newExperience = (first.TotalUnitQuantity() * first.Experience +
+                                   second.TotalUnitQuantity() * second.Experience) /
                                    (first.TotalUnitQuantity() + second.TotalUnitQuantity());
 
-            return new ArmyComposition(first.spearmen + second.spearmen,
-                                       first.archers + second.archers,
-                                       first.cavalrymen + second.cavalrymen,
+            return new ArmyComposition(first.Spearmen + second.Spearmen,
+                                       first.Archers + second.Archers,
+                                       first.Cavalrymen + second.Cavalrymen,
                                        newExperience);
         }
 
@@ -47,13 +47,13 @@ namespace Assets.Scripts
             double mortalityRate = Math.Sqrt(powerDifference / winnerArmyComposition.ArmyPower());
             double experienceIncrease = 1 + loserArmyComposition.ArmyPower() / winnerArmyComposition.ArmyPower();
             return winnerArmyComposition.ArmyCompositionAfterFight(mortalityRate, 
-                            winnerArmyComposition.experience * experienceIncrease);
+                            winnerArmyComposition.Experience * experienceIncrease);
         }
 
         private ArmyComposition ArmyCompositionAfterFight(double mortalityRate, double experience)
         {
-            return new ArmyComposition((int)Math.Ceiling(spearmen * mortalityRate),
-                (int)Math.Ceiling(archers * mortalityRate), (int)Math.Ceiling(cavalrymen * mortalityRate), experience);
+            return new ArmyComposition((int)Math.Ceiling(Spearmen * mortalityRate),
+                (int)Math.Ceiling(Archers * mortalityRate), (int)Math.Ceiling(Cavalrymen * mortalityRate), experience);
         }
 
         public static bool IsFirstWinner(ArmyComposition firstArmyComposition,
@@ -66,19 +66,19 @@ namespace Assets.Scripts
 
         public int TotalUnitQuantity()
         {
-            return spearmen + archers + cavalrymen;
+            return Spearmen + Archers + Cavalrymen;
         }
 
         public double ArmyPower()
         {
-            return TotalUnitQuantity() * experience;
+            return TotalUnitQuantity() * Experience;
         }
 
         public void DeleteArmyPart(int spearmen, int archers, int cavalrymen)
         {
-            this.spearmen = Math.Max(0, this.spearmen - spearmen);
-            this.archers = Math.Max(0, this.archers - archers);
-            this.cavalrymen = Math.Max(0, this.cavalrymen - cavalrymen);
+            Spearmen = Math.Max(0, Spearmen - spearmen);
+            Archers = Math.Max(0, Archers - archers);
+            Cavalrymen = Math.Max(0, Cavalrymen - cavalrymen);
         }
     }
 }
