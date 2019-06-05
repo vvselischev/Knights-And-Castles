@@ -23,6 +23,13 @@
             return PerformBattle(attackingArmy, this);
         }
 
+        protected override Army Split(int spearmen, int archers, int cavalrymen)
+        {
+            ArmyComposition.DeleteArmyPart(spearmen, archers, cavalrymen);
+            SetInactive();
+            return new UserArmy(PlayerType, new ArmyComposition(spearmen, archers, cavalrymen, ArmyComposition.Experience));
+        }
+
         public override Army CloneArmy()
         {
             var army = new UserArmy(PlayerType, ArmyComposition);

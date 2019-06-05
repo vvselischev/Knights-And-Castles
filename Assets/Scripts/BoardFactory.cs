@@ -228,7 +228,7 @@ namespace Assets.Scripts
             {
                 for (var row = 1; row <= blockHeight * blocksVertical; row++)
                 {
-                    byte currentType = array[currentInd];
+                    var currentType = array[currentInd];
                     currentInd++;
 
                     if (currentType == 0)

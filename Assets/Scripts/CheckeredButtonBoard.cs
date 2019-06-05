@@ -14,7 +14,7 @@ namespace Assets.Scripts
 
         public int Width { get; } = 8;
         public int Height { get; } = 10;
-        private const float SPACE_BETWEEN_BUTTONS = -2; //-2.44f; //buttonWidth/20;
+        private const float SPACE_BETWEEN_BUTTONS = -2; //buttonWidth/20;
 
         private static float ButtonWidth;
         private static float ButtonHeight;

@@ -87,7 +87,7 @@
 
         private static Army CalcResultArmies(Army winnerArmy, Army loserArmy)
         {
-            ArmyComposition resultArmyComposition = ArmyComposition.Fight(
+            var resultArmyComposition = ArmyComposition.Fight(
                 winnerArmy.ArmyComposition, loserArmy.ArmyComposition);
             if (winnerArmy.armyType == ArmyType.USER)
             {
@@ -100,21 +100,10 @@
             throw new Exception("PerformBattle: Inappropriate army types");
         }
 
-        private Army Split(int spearmen, int archers, int cavalrymen)
+        protected virtual Army Split(int spearmen, int archers, int cavalrymen)
         {
             ArmyComposition.DeleteArmyPart(spearmen, archers, cavalrymen);
-            
-            //TODO: move it to child class!!!
-            if (armyType == ArmyType.USER)
-            {
-                (this as UserArmy).SetInactive();
-                return new UserArmy(PlayerType, new ArmyComposition(spearmen,
-                    archers, cavalrymen, ArmyComposition.Experience));
-            }
-            else
-            {
-                return this;
-            }
+            return this;
         }
 
         public double ArmyPower()
