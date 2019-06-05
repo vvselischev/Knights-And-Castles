@@ -25,7 +25,7 @@ namespace Assets.Scripts
             StartCoroutine(ScaleTextCoroutine());
         }
 
-        IEnumerator ScaleTextCoroutine()
+        private IEnumerator ScaleTextCoroutine()
         {
             while (textClone.rectTransform.localScale.x < maxScale - EPS) //TODO: fix .x
             {

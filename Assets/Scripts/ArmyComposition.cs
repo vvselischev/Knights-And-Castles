@@ -30,7 +30,7 @@ namespace Assets.Scripts
 
         public static ArmyComposition Merge(ArmyComposition first, ArmyComposition second)
         {
-            double newExperience = (first.TotalUnitQuantity() * first.Experience +
+            var newExperience = (first.TotalUnitQuantity() * first.Experience +
                                    second.TotalUnitQuantity() * second.Experience) /
                                    (first.TotalUnitQuantity() + second.TotalUnitQuantity());
 
@@ -43,9 +43,9 @@ namespace Assets.Scripts
         public static ArmyComposition Fight(ArmyComposition winnerArmyComposition, 
                                             ArmyComposition loserArmyComposition)
         {
-            double powerDifference = winnerArmyComposition.ArmyPower() - loserArmyComposition.ArmyPower();
-            double mortalityRate = Math.Sqrt(powerDifference / winnerArmyComposition.ArmyPower());
-            double experienceIncrease = 1 + loserArmyComposition.ArmyPower() / winnerArmyComposition.ArmyPower();
+            var powerDifference = winnerArmyComposition.ArmyPower() - loserArmyComposition.ArmyPower();
+            var mortalityRate = Math.Sqrt(powerDifference / winnerArmyComposition.ArmyPower());
+            var experienceIncrease = 1 + loserArmyComposition.ArmyPower() / winnerArmyComposition.ArmyPower();
             return winnerArmyComposition.ArmyCompositionAfterFight(mortalityRate, 
                             winnerArmyComposition.Experience * experienceIncrease);
         }
@@ -59,8 +59,8 @@ namespace Assets.Scripts
         public static bool IsFirstWinner(ArmyComposition firstArmyComposition,
                                           ArmyComposition secondArmyComposition)
         {
-            double firstArmyPower = firstArmyComposition.ArmyPower();
-            double secondArmyPower = secondArmyComposition.ArmyPower();
+            var firstArmyPower = firstArmyComposition.ArmyPower();
+            var secondArmyPower = secondArmyComposition.ArmyPower();
             return firstArmyPower >= secondArmyPower;
         }
 

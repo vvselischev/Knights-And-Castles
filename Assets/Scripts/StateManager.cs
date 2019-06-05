@@ -15,10 +15,11 @@ namespace Assets.Scripts
         public LobbyGameState lobbyGameState;
         public ChooseBoardGameState chooseBoardGameState;
         public ResultGameState resultGameState;
+        public InfoGameState infoGameState;
         
         private Dictionary<StateType, IGameState> states;
 
-        void Awake()
+        private void Awake()
         {
             Screen.sleepTimeout = SleepTimeout.NeverSleep;
             Debug.Log("Start");
@@ -43,7 +44,8 @@ namespace Assets.Scripts
                 {StateType.NETWORK_GAME_STATE, networkPlayGameState},
                 {StateType.AI_GAME_STATE, aiPlayGameState},
                 {StateType.ONE_DEVICE_MULTIPLAYER_STATE, oneDeviceMultiplayerGameState},
-                {StateType.RESULT_GAME_STATE, resultGameState}
+                {StateType.RESULT_GAME_STATE, resultGameState},
+                {StateType.INFO_GAME_STATE, infoGameState}
             };
         }
 
@@ -56,7 +58,7 @@ namespace Assets.Scripts
                 CurrentState.CloseState();
             }
 
-            IGameState newState = states[newStateType];
+            var newState = states[newStateType];
             CurrentState = newState;
             Debug.Log("New state: " + CurrentState);
             newState.InvokeState();

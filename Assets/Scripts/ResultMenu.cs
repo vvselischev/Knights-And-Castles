@@ -25,17 +25,26 @@ namespace Assets.Scripts
 
         public void DisplayStatistics(Record record, UserResultType resultType)
         {
+            //TODO: maybe better to make colors serialized to setup in the editor.
             if (resultType == UserResultType.WIN)
             {
+                resultText.color = Color.red;
                 resultText.text = "You win!";
             }
             else if (resultType == UserResultType.LOSE)
             {
+                resultText.color = Color.red;
                 resultText.text = "You lose!";
+            }
+            else if (resultType == UserResultType.DRAW)
+            {
+                resultText.color = Color.black;
+                resultText.text = "Draw";
             }
             else
             {
-                resultText.text = "Draw";
+                resultText.color = Color.black;
+                resultText.text = "Statistics";
             }
             
             gamesWithBotText.text = record.GamesWithBot.ToString();

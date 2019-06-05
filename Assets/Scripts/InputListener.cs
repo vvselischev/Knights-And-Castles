@@ -4,9 +4,9 @@ namespace Assets.Scripts
 {
     public class InputListener : MonoBehaviour
     {
-        public ControllerManager controllerManager;
+        private ControllerManager controllerManager;
 
-        public virtual void Initialize(ControllerManager controllerManager)
+        public void Initialize(ControllerManager controllerManager)
         {
             this.controllerManager = controllerManager;
         }
@@ -15,7 +15,7 @@ namespace Assets.Scripts
         {
             if (controllerManager.HasActiveController())
             {
-                UserController currentController = controllerManager.CurrentController;
+                var currentController = controllerManager.CurrentController;
                 currentController.OnButtonClick(x, y);
             }
         }
@@ -24,7 +24,7 @@ namespace Assets.Scripts
         {
             if (controllerManager.HasActiveController())
             {
-                UserController currentController = controllerManager.CurrentController;
+                var currentController = controllerManager.CurrentController;
                 currentController.FinishTurn();
             }
         }

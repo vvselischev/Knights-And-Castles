@@ -16,7 +16,7 @@ namespace Assets.Scripts
             size = boardStorage.GetNumberOfCells();
             InitializeEdges();
 
-            int index = 0;
+            var index = 0;
             var cells = boardStorage.GetListOfCells();
             
             foreach (var cell in cells)
@@ -31,8 +31,8 @@ namespace Assets.Scripts
 
         public int GetDistance(Cell from, Cell to)
         {
-            int indexFrom = nodeIndexByCell[from];
-            int indexTo = nodeIndexByCell[to];
+            var indexFrom = nodeIndexByCell[from];
+            var indexTo = nodeIndexByCell[to];
 
             return distance[indexFrom, indexTo];
         }
@@ -40,7 +40,7 @@ namespace Assets.Scripts
         private void CalculateDistances()
         {
             distance = new int[size, size];
-            for (int i = 0; i < size; i++)
+            for (var i = 0; i < size; i++)
             {
                 CalculateDistancesFromVertex(i);
             }
@@ -48,7 +48,7 @@ namespace Assets.Scripts
 
         private void CalculateDistancesFromVertex(int startIndex) // 0-1 BFS
         {
-            for (int i = 0; i < size; i++)
+            for (var i = 0; i < size; i++)
             {
                 distance[startIndex, i] = size + 1; // Distance is always less than size + 1
             }
@@ -60,7 +60,7 @@ namespace Assets.Scripts
 
             while (bfsDequeue.Count > 0)
             {
-                int vertex = bfsDequeue.First.Value;
+                var vertex = bfsDequeue.First.Value;
                 bfsDequeue.RemoveFirst();
 
                 foreach (var neighbour in edges[vertex])
@@ -81,7 +81,7 @@ namespace Assets.Scripts
             }
         }
 
-        private void FillEdges(List<Cell> cells)
+        private void FillEdges(IEnumerable<Cell> cells)
         {
             foreach (var cell in cells)
             {
@@ -99,7 +99,7 @@ namespace Assets.Scripts
             }
         }
 
-        private void AddEdges(Cell cell, List<Cell> adjacent)
+        private void AddEdges(Cell cell, IEnumerable<Cell> adjacent)
         {
             foreach (var adjacentCell in adjacent)
             {
@@ -110,16 +110,15 @@ namespace Assets.Scripts
         
         private void AddEdge(Cell from, Cell to, int weight)
         {
-            
-            int indexFrom = nodeIndexByCell[from];
-            int indexTo = nodeIndexByCell[to];
+            var indexFrom = nodeIndexByCell[from];
+            var indexTo = nodeIndexByCell[to];
             
             edges[indexFrom].Add(new Edge(indexFrom, indexTo, weight));
         }
 
         private void InitializeEdges()
         {
-            for (int i = 0; i < size; i++)
+            for (var i = 0; i < size; i++)
             {
                 edges.Add(new List<Edge>());
             }

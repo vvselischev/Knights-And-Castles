@@ -12,8 +12,8 @@ namespace Assets.Scripts
         private GameObject parentObject;
         private Button patternButton;
 
-        [SerializeField] private int width = 8;
-        [SerializeField] private int height = 10;
+        public int Width { get; } = 8;
+        public int Height { get; } = 10;
         private const float SPACE_BETWEEN_BUTTONS = -2; //-2.44f; //buttonWidth/20;
 
         private static float ButtonWidth;
@@ -36,7 +36,7 @@ namespace Assets.Scripts
         public void Reset()
         {
             DeleteButtons();
-            boardButtons = new Button[width + 1, height + 1];
+            boardButtons = new Button[Width + 1, Height + 1];
             CreateButtons();
         }
 
@@ -48,7 +48,7 @@ namespace Assets.Scripts
         public void EnableBoard()
         {
             var buttons = FindObjectsOfType(typeof(Button));
-            foreach (Button button in buttons.Cast<Button>().Where(button => button.gameObject.name.Contains("Clone")))
+            foreach (var button in buttons.Cast<Button>().Where(button => button.gameObject.name.Contains("Clone")))
             {
                 button.gameObject.GetComponent<BoardButton>().Enable();
             }
@@ -57,7 +57,7 @@ namespace Assets.Scripts
         public void DisableBoard()
         {
             var buttons = FindObjectsOfType(typeof(Button));
-            foreach (Button button in buttons.Cast<Button>().Where(button => button.gameObject.name.Contains("Clone")))
+            foreach (var button in buttons.Cast<Button>().Where(button => button.gameObject.name.Contains("Clone")))
             {
                 button.gameObject.GetComponent<BoardButton>().Disable();
             }
@@ -66,7 +66,7 @@ namespace Assets.Scripts
         public void SetInputListener(InputListener inputListener)
         {
             var buttons = FindObjectsOfType(typeof(Button));
-            foreach (Button button in buttons.Cast<Button>().Where(button => button.gameObject.name.Contains("Clone")))
+            foreach (var button in buttons.Cast<Button>().Where(button => button.gameObject.name.Contains("Clone")))
             {
                 button.gameObject.GetComponent<BoardButton>().InputListener = inputListener;
             }
@@ -92,13 +92,13 @@ namespace Assets.Scripts
         private void CreateButtons()
         {
             Debug.Log("Creating buttons");
-            for (int currentRow = 1; currentRow <= height; currentRow++)
+            for (var currentRow = 1; currentRow <= Height; currentRow++)
             {
-                for (int currentColumn = 1; currentColumn <= width; currentColumn++)
+                for (var currentColumn = 1; currentColumn <= Width; currentColumn++)
                 {
-                    Vector3 offset = GetOffsetFromPattern(currentColumn, currentRow);
-                    Button newButton = Instantiate(patternButton);
-                    RectTransform rectTransform = newButton.GetComponent<RectTransform>();
+                    var offset = GetOffsetFromPattern(currentColumn, currentRow);
+                    var newButton = Instantiate(patternButton);
+                    var rectTransform = newButton.GetComponent<RectTransform>();
 
                     //This line seems to be useless (it doesn't change size)
                     rectTransform.rect.size.Set(ButtonWidth, ButtonHeight);
@@ -116,7 +116,7 @@ namespace Assets.Scripts
 
         private Button InitButton(Button newButton, int x, int y)
         {
-            BoardButton boardButton = newButton.GetComponent<BoardButton>();
+            var boardButton = newButton.GetComponent<BoardButton>();
             boardButton.Initialize(x, y);
             return boardButton.GetComponent<Button>();
         }

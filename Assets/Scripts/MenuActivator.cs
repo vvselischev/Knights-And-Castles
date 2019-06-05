@@ -7,18 +7,7 @@
         public static MenuActivator Instance = new MenuActivator();
 
         private MenuActivator()
-        {
-        }
-
-        public void ChangeMenu(IMenu newMenu)
-        {
-            if (currentMenu != null)
-            {
-                CloseMenu();
-            }
-            currentMenu = newMenu;
-            newMenu.Activate();
-        }
+        {}
 
         public void CloseMenu()
         {
@@ -29,7 +18,7 @@
         public void OpenMenu(IMenu newMenu)
         {
             currentMenu = newMenu;
-            newMenu.Activate();
+            newMenu?.Activate();
         }
     }
 }

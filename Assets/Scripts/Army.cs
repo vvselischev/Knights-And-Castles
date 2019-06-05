@@ -18,7 +18,7 @@
         protected Army(ArmyType armyType, PlayerType playerType, ArmyComposition armyComposition)
         {
             this.armyType = armyType;
-            this.PlayerType = playerType;
+            PlayerType = playerType;
             ArmyComposition = armyComposition;
             if (!CheckValidTypes())
             {
@@ -123,9 +123,9 @@
         }
 
         public Army SplitIntoEqualParts() {
-            int spearmen = ArmyComposition.Spearmen / 2;
-            int archers = ArmyComposition.Archers / 2;
-            int cavalrymen = ArmyComposition.Cavalrymen / 2;
+            var spearmen = ArmyComposition.Spearmen / 2;
+            var archers = ArmyComposition.Archers / 2;
+            var cavalrymen = ArmyComposition.Cavalrymen / 2;
 
             return Split(spearmen, archers, cavalrymen);
         }

@@ -1,3 +1,4 @@
+using UnityEngine;
 using UnityEngine.UI;
 
 namespace Assets.Scripts
@@ -5,11 +6,15 @@ namespace Assets.Scripts
     public class NetworkInputListener : InputListener
     {
         private MultiplayerController multiplayerController;
-        private Text logText;
+        [SerializeField] private Text logText;
+        private int blockWidth;
+        private int blockHeight;
 
-        public override void Initialize(ControllerManager controllerManager)
+        public void Initialize(ControllerManager controllerManager, int blockWidth, int blockHeight)
         {
             base.Initialize(controllerManager);
+            this.blockWidth = blockWidth;
+            this.blockHeight = blockHeight;
             multiplayerController = MultiplayerController.GetInstance();
             multiplayerController.OnMessageReceived += ProcessNetworkData;
         }
@@ -32,8 +37,8 @@ namespace Assets.Scripts
 
             if (message[1] == 'B')
             {
-                int x = message[2];
-                int y = message[3];
+                var x = blockWidth - message[2] + 1;
+                var y = blockHeight - message[3] + 1;
                 logText.text += "Receive:" + x + " " + y + "\n";
                 base.ProcessBoardClick(x, y);
             }

@@ -10,12 +10,13 @@ namespace Assets.Scripts
         public ArmyStorageItem(Army army, GameObject iconGO) : base(iconGO)
         {
             Army = army;
-            if (iconGO != null)
+            if (iconGO == null)
             {
-                iconGO.AddComponent<Follower>();
-                ObjectMover mover = iconGO.AddComponent<ObjectMover>();
-                mover.ParentTransform = iconGO.GetComponentInParent<Transform>();
+                return;
             }
+            iconGO.AddComponent<Follower>();
+            var mover = iconGO.AddComponent<ObjectMover>();
+            mover.ParentTransform = iconGO.GetComponentInParent<Transform>();
         }
 
         public ArmyStorageItem CloneWithoutIcon()

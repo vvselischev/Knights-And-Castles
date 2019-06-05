@@ -2,7 +2,6 @@
 
 namespace Assets.Scripts
 {
-    //TODO: change name?
     public enum TurnType
     {
         FIRST,
@@ -53,8 +52,7 @@ namespace Assets.Scripts
             }
             else if (turn == TurnType.RESULT)
             {
-                controllerManager.DisableController(TurnType.SECOND);
-                controllerManager.DisableController(TurnType.FIRST);
+                controllerManager.DeactivateAll();
             }
         }
 

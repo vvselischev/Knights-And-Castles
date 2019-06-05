@@ -24,8 +24,6 @@ namespace Assets.Scripts
 
             if (turnManager.CurrentTurn == TurnType.SECOND)
             {
-                //TODO: lock not only the board but also buttons (change turn, split)
-
                 //lock board and ui for user
                 playMenu.DisableUI();
 
@@ -62,7 +60,7 @@ namespace Assets.Scripts
 
         protected override void CloseGame()
         {
-            stateManager.resultGameState.Initialize(resultType, stateType);
+            stateManager.resultGameState.Initialize(resultType, playMode);
             stateManager.ChangeState(StateType.RESULT_GAME_STATE);
         }
 

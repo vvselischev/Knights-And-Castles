@@ -8,7 +8,8 @@ namespace Assets.Scripts
         NETWORK_GAME_STATE,
         AI_GAME_STATE,
         ONE_DEVICE_MULTIPLAYER_STATE,
-        RESULT_GAME_STATE
+        RESULT_GAME_STATE,
+        INFO_GAME_STATE
     }
 
 }

@@ -1,6 +1,7 @@
 ﻿﻿using System;
 using System.Collections.Generic;
-using UnityEngine.Experimental.PlayerLoop;
+ using System.Linq;
+ using UnityEngine.Experimental.PlayerLoop;
 using Object = UnityEngine.Object;
 
 namespace Assets.Scripts
@@ -35,9 +36,9 @@ namespace Assets.Scripts
 
         private void CreateCells()
         {
-            for (int i = 1; i <= width; i++)
+            for (var i = 1; i <= width; i++)
             {
-                for (int j = 1; j <= height; j++)
+                for (var j = 1; j <= height; j++)
                 {
                     var cell = new Cell();
                     indexByCell.Add(cell, new IntVector2(i, j));
@@ -58,9 +59,9 @@ namespace Assets.Scripts
 
         private void SetAllItemsActive(bool active)
         {
-            for (int col = 1; col <= width; col++)
+            for (var col = 1; col <= width; col++)
             {
-                for (int row = 1; row <= height; row++)
+                for (var row = 1; row <= height; row++)
                 {
                     boardTable[col, row]?.StoredObject.SetActive(active);
                     bonusTable[col, row]?.StoredObject.SetActive(active);
@@ -77,9 +78,9 @@ namespace Assets.Scripts
         {
             items = new BoardStorageItem[width + 1, height + 1];
             bonusItems = new BoardStorageItem[width + 1, height + 1];
-            for (int col = 1; col <= width; col++)
+            for (var col = 1; col <= width; col++)
             {
-                for (int row = 1; row <= height; row++)
+                for (var row = 1; row <= height; row++)
                 {
                     items[col, row] = boardTable[col, row];
                     bonusItems[col, row] = bonusItems[col, row];
@@ -125,7 +126,7 @@ namespace Assets.Scripts
         private void SetItem(int positionX, int positionY, BoardStorageItem item, BoardStorageItem[,] table)
         {
             table[positionX, positionY] = item;
-            BoardButton targetButton = GetBoardButton(positionX, positionY);
+            var targetButton = GetBoardButton(positionX, positionY);
             if (item != null && table[positionX, positionY].StoredObject != null)
             {
                 table[positionX, positionY].StoredObject.transform.position = 
@@ -174,12 +175,11 @@ namespace Assets.Scripts
 
         public void EnableArmies(PlayerType playerType)
         {
-            for (int i = 1; i <= GetBoardHeight(); i++)
+            for (var i = 1; i <= GetBoardHeight(); i++)
             {
-                for (int j = 1; j <= GetBoardWidth(); j++)
+                for (var j = 1; j <= GetBoardWidth(); j++)
                 {
-                    var item = GetItem(j, i) as ArmyStorageItem;
-                    if (item != null)
+                    if (GetItem(j, i) is ArmyStorageItem item)
                     {
                         var userArmy = item.Army as UserArmy;
                         if (item.Army.PlayerType == playerType)
@@ -197,9 +197,8 @@ namespace Assets.Scripts
             foreach (var dictionaryEntry in indexByCell)
             {
                 var boardItem = GetItem(dictionaryEntry.Value);
-                if (boardItem is ArmyStorageItem)
+                if (boardItem is ArmyStorageItem item)
                 {
-                    var item = boardItem as ArmyStorageItem;
                     if (item.Army.PlayerType == playerType)
                     {
                         cellsWithArmies.Add(dictionaryEntry.Key);
@@ -217,14 +216,13 @@ namespace Assets.Scripts
                 cells = cells, indexByCell = indexByCell, bonusTable = bonusTable
             };
 
-            for (int col = 1; col <= GetBoardWidth(); col++)
+            for (var col = 1; col <= GetBoardWidth(); col++)
             {
-                for (int row = 1; row <= GetBoardHeight(); row++)
+                for (var row = 1; row <= GetBoardHeight(); row++)
                 {
                     var item = boardTable[col, row];
-                    if (item is ArmyStorageItem)
+                    if (item is ArmyStorageItem storageItem)
                     {
-                        var storageItem = item as ArmyStorageItem;
                         simulationStorage.boardTable[col, row] = storageItem.CloneWithoutIcon();
                     }
                     else
@@ -309,7 +307,6 @@ namespace Assets.Scripts
             }
 
             return neighbours;
-
         }
 
         private bool IsValidPosition(IntVector2 position)
@@ -371,14 +368,12 @@ namespace Assets.Scripts
         
         public void InvertBoard()
         {
-            for (int col = 1; col <= width / 2 + Math.Sign(width % 2); col++)
+            for (var col = 1; col <= width / 2 + Math.Sign(width % 2); col++)
             {
-                for (int row = 1; row <= height; row++)
-
+                for (var row = 1; row <= height; row++)
                 {
-                    int newCol = width - col + 1;
-                    int newRow = height - row + 1;
-
+                    var newCol = width - col + 1;
+                    var newRow = height - row + 1;
                     SwapItems(col, row, newCol, newRow);
                 }
             }
@@ -386,9 +381,9 @@ namespace Assets.Scripts
 
         public void Fill(BoardStorageItem[,] items, BoardStorageItem[,] bonusItems)
         {
-            for (int col = 1; col <= width; col++)
+            for (var col = 1; col <= width; col++)
             {
-                for (int row = 1; row <= height; row++)
+                for (var row = 1; row <= height; row++)
                 {
                     boardTable[col, row] = items[col, row];
                     bonusTable[col, row] = bonusItems[col, row];
@@ -409,9 +404,9 @@ namespace Assets.Scripts
 
         public void Reset()
         {
-            for (int row = 1; row <= height; row++)
+            for (var row = 1; row <= height; row++)
             {
-                for (int col = 1; col <= width; col++)
+                for (var col = 1; col <= width; col++)
                 {
                     var oldItem = GetItem(col, row);
                     SetItem(col, row, null);
@@ -442,21 +437,12 @@ namespace Assets.Scripts
             return GetBoardWidth() * GetBoardHeight();
         }
 
-        public List<Cell> GetListOfCells()
+        public IEnumerable<Cell> GetListOfCells()
         {
-            var listOfCells = new List<Cell>();
-            foreach (var cell in cells)
-            {
-                if (cell != null)
-                {
-                    listOfCells.Add(cell);
-                }
-            }
-
-            return listOfCells;
+            return cells.Cast<Cell>().Where(cell => cell != null).ToList();
         }
 
-        public List<Pass> GetPasses()
+        public IEnumerable<Pass> GetPasses()
         {
             var passes = new List<Pass>();
             foreach (var bonus in bonusTable)

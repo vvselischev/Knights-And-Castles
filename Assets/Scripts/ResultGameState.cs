@@ -5,13 +5,13 @@ namespace Assets.Scripts
 {
     public class ResultGameState : MonoBehaviour, IGameState
     {
-        private DataService dataService;
+        private DataService dataService = new DataService("record_database.db");
         [SerializeField] private ResultMenu resultMenu;
-        private UserResultType resultType;
-        private StateType playStateType;
+        [SerializeField] private UserResultType resultType;
+        [SerializeField] private StateType playStateType;
         
         private MenuActivator menuActivator = MenuActivator.Instance;
-
+        
         public void Initialize(UserResultType resultType, StateType playStateType)
         {
             this.resultType = resultType;
@@ -22,7 +22,6 @@ namespace Assets.Scripts
         {
             menuActivator.OpenMenu(resultMenu);
 
-            dataService = new DataService("record_database.db");
             var records = dataService.GetRecords().ToList();
             Record record;
             if (records.Count > 0)
@@ -59,6 +58,8 @@ namespace Assets.Scripts
         public void CloseState()
         {
             menuActivator.CloseMenu();
+            playStateType = StateType.START_GAME_STATE;
+            resultType = UserResultType.NONE;
         }
     }
 }

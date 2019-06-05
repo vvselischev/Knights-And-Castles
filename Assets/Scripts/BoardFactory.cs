@@ -70,9 +70,9 @@ namespace Assets.Scripts
             InstantiateCastles(currentBonusTable);
             InstantiatePasses(currentBonusTable);
             
-            for (int col = 1; col <= blockWidth * blocksHorizontal; col++)
+            for (var col = 1; col <= blockWidth * blocksHorizontal; col++)
             {
-                for (int row = 1; row <= blockHeight * blocksVertical; row++)
+                for (var row = 1; row <= blockHeight * blocksVertical; row++)
                 {                    
                     Army currentArmy;
                     Sprite currentSprite;
@@ -96,7 +96,7 @@ namespace Assets.Scripts
                     else
                     {
                         //0 -- Empty, 1 -- Friendly, 2 -- Aggressive
-                        int randomValue = random.Next() % 3;
+                        var randomValue = random.Next() % 3;
                         if (randomValue == 0)
                         {
                             continue;
@@ -116,7 +116,7 @@ namespace Assets.Scripts
                         }
                     }
 
-                    GameObject iconGO = InstantiateIcon(currentSprite);
+                    var iconGO = InstantiateIcon(currentSprite);
                     iconGO.SetActive(false);
                     currentBoardTable[col, row] = new ArmyStorageItem(currentArmy, iconGO);
                 }
@@ -132,13 +132,8 @@ namespace Assets.Scripts
             if (playerType == PlayerType.FIRST)
             {
                 var startFirstPositions = configuration.StartFirstPositions;
-                if (startFirstPositions.Any(localPosition =>
-                    GetGlobalPosition(localPosition, configuration.FirstStartBlock).Equals(position)))
-                {
-                    return true;
-                }
-
-                return false;
+                return startFirstPositions.Any(localPosition =>
+                    GetGlobalPosition(localPosition, configuration.FirstStartBlock).Equals(position));
             }
 
             if (playerType == PlayerType.SECOND)
@@ -156,7 +151,7 @@ namespace Assets.Scripts
         private bool ExistsPass(int col, int row)
         {
             var position = new IntVector2(col, row);
-            for (int i = 0; i < configuration.PassesNumber; i++)
+            for (var i = 0; i < configuration.PassesNumber; i++)
             {
                 var globalFromPosition = GetGlobalPosition(configuration.PassesFromPositions[i],
                     configuration.PassesFromBlocks[i]);
@@ -172,14 +167,14 @@ namespace Assets.Scripts
 
         private IntVector2 GetGlobalPosition(IntVector2 localPosition, IntVector2 block)
         {
-            int globalX = (block.x - 1) * blockWidth + localPosition.x;
-            int globalY = (block.y - 1) * blockHeight + localPosition.y;  
+            var globalX = (block.x - 1) * blockWidth + localPosition.x;
+            var globalY = (block.y - 1) * blockHeight + localPosition.y;  
             return new IntVector2(globalX, globalY);
         }
         
         private void InstantiatePasses(BoardStorageItem[,] bonusTable)
         {
-            for (int i = 0; i < configuration.PassesNumber; i++)
+            for (var i = 0; i < configuration.PassesNumber; i++)
             {
                 var passObject = InstantiateIcon(passSprite);
                 passObject.SetActive(false);
@@ -202,7 +197,7 @@ namespace Assets.Scripts
         private void InstantiateCastlesFromList(IntVector2[] positions, IntVector2[] blocks, 
             PlayerType ownerType, BoardStorageItem[,] bonusTable)
         {
-            for (int i = 0; i < positions.Length; i++)
+            for (var i = 0; i < positions.Length; i++)
             {
                 var castleObject = InstantiateIcon(castleSprite);
                 castleObject.SetActive(false);
@@ -228,10 +223,10 @@ namespace Assets.Scripts
             InstantiateCastles(currentBonusTable);
             InstantiatePasses(currentBonusTable);
             
-            int currentInd = 0;
-            for (int col = 1; col <= blockWidth * blocksHorizontal; col++)
+            var currentInd = 0;
+            for (var col = 1; col <= blockWidth * blocksHorizontal; col++)
             {
-                for (int row = 1; row <= blockHeight * blocksVertical; row++)
+                for (var row = 1; row <= blockHeight * blocksVertical; row++)
                 {
                     byte currentType = array[currentInd];
                     currentInd++;
@@ -244,13 +239,13 @@ namespace Assets.Scripts
                     Army currentArmy = null;
                     Sprite currentSprite = null;
                     
-                    byte spearmen = array[currentInd];
+                    var spearmen = array[currentInd];
                     currentInd++;
-                    byte archers = array[currentInd];
+                    var archers = array[currentInd];
                     currentInd++;
-                    byte cavalrymen = array[currentInd];
+                    var cavalrymen = array[currentInd];
                     currentInd++;
-                    ArmyComposition armyComposition = new ArmyComposition(spearmen, archers, cavalrymen);
+                    var armyComposition = new ArmyComposition(spearmen, archers, cavalrymen);
 
                     if (currentType == 11)
                     {
@@ -273,7 +268,7 @@ namespace Assets.Scripts
                         currentSprite = neutralAggressiveSprite;
                     }
 
-                    GameObject iconGO = InstantiateIcon(currentSprite);
+                    var iconGO = InstantiateIcon(currentSprite);
                     iconGO.SetActive(false);
                     currentBoardTable[col, row] = new ArmyStorageItem(currentArmy, iconGO);
                 }
@@ -286,10 +281,10 @@ namespace Assets.Scripts
         {
             boardStorage.ConvertToArrays(out var items, out _);
             
-            List<byte> byteList = new List<byte>();
-            for (int col = 1; col <= blockWidth * blocksHorizontal; col++)
+            var byteList = new List<byte>();
+            for (var col = 1; col <= blockWidth * blocksHorizontal; col++)
             {
-                for (int row = 1; row <= blockHeight * blocksVertical; row++)
+                for (var row = 1; row <= blockHeight * blocksVertical; row++)
                 {
                     byte currentType = 0;
                     Army army = null;
@@ -320,7 +315,7 @@ namespace Assets.Scripts
                     
                     if (currentType != 0)
                     {
-                        ArmyComposition armyComposition = army.ArmyComposition;
+                        var armyComposition = army.ArmyComposition;
                         byteList.Add((byte)armyComposition.Spearmen);
                         byteList.Add((byte)armyComposition.Archers);
                         byteList.Add((byte)armyComposition.Cavalrymen);
@@ -333,18 +328,18 @@ namespace Assets.Scripts
 
         public GameObject CloneBoardIcon(IBoardStorage boardStorage, int fromX, int fromY)
         {
-            BoardStorageItem item = boardStorage.GetItem(fromX, fromY);
+            var item = boardStorage.GetItem(fromX, fromY);
             return InstantiateIcon(item.StoredObject.GetComponent<Image>().sprite);
         }
         
         private GameObject InstantiateIcon(Sprite sprite)
         {
-            Image patternImage = patternIcon.GetComponent<Image>();
+            var patternImage = patternIcon.GetComponent<Image>();
 
-            Image newImage = Instantiate(patternImage);
+            var newImage = Instantiate(patternImage);
             newImage.enabled = true;
 
-            RectTransform rectTransform = newImage.GetComponent<RectTransform>();
+            var rectTransform = newImage.GetComponent<RectTransform>();
             rectTransform.SetParent(parent.transform, false);
             newImage.GetComponent<Image>().sprite = sprite;
             
@@ -353,29 +348,29 @@ namespace Assets.Scripts
 
         private ArmyComposition GenerateArmyComposition(int from, int to)
         {
-            int randomMice = (from + random.Next() % (to - from)) % 100,
-                randomCats = (from + random.Next() % (to - from)) % 100,
-                randomElephants = (from + random.Next() % (to - from)) % 100;
-            return new ArmyComposition(randomMice, randomCats, randomElephants);
+            int randomSpearmen = (from + random.Next() % (to - from)) % 100,
+                randomArchers = (from + random.Next() % (to - from)) % 100,
+                randomCavalrymen = (from + random.Next() % (to - from)) % 100;
+            return new ArmyComposition(randomSpearmen, randomArchers, randomCavalrymen);
         }
 
-        /*
-         Field imbalance stores current imbalance of current game state.
-         Analyzing this information it can be added more or less units to the generated army.
-         For these purposes in this function multiplier is calculated which generated army composition multiplies on.
-         */
+        /// <summary>
+        /// Field imbalance stores current imbalance of current game state.
+        /// Analyzing this information it can be added more or less units to the generated army.
+        /// For these purposes in this function multiplier is calculated which generated army composition multiplies on.
+        /// </summary>
         private ArmyComposition GenerateBalancedArmyComposition(bool isFriendly, IntVector2 position)
         {
-            int boardWidthPlusHeight = blockWidth * blocksHorizontal + blockHeight * blocksVertical;
-            int balancePositionMultiplier = boardWidthPlusHeight - 2 * (position.x + position.y);
+            var boardWidthPlusHeight = blockWidth * blocksHorizontal + blockHeight * blocksVertical;
+            var balancePositionMultiplier = boardWidthPlusHeight - 2 * (position.x + position.y);
             if (!isFriendly)
             {
                 balancePositionMultiplier *= -1;
             }
 
-            double additional = Math.Abs(balancePositionMultiplier / (double)boardWidthPlusHeight);
+            var additional = Math.Abs(balancePositionMultiplier / (double)boardWidthPlusHeight);
 
-            double multiplier = 0;
+            double multiplier;
             if (HasSameSign(imbalance, balancePositionMultiplier))
             {
                 multiplier = 1 - additional + 0.05; // to avoid zero division
@@ -387,7 +382,7 @@ namespace Assets.Scripts
 
             Debug.Log("GenerateBalancedArmyComposition");
 
-            ArmyComposition resultArmyComposition = GenerateArmyComposition(
+            var resultArmyComposition = GenerateArmyComposition(
                 (int)(RandomNumberOfUnitsFrom * multiplier), (int)(RandomNumberOfUnitsTo * multiplier));
 
             if (imbalance < 0)

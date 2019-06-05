@@ -19,7 +19,7 @@ public class Timer : MonoBehaviour
     {
         secondsLeft = duration;
         started = true;
-        timeInStart = DateTime.Now.ToBinary() / 10000000;
+        timeInStart = GetCurrentTimeScaled();
         StartCoroutine(UpdateTimer());
     }
 
@@ -27,8 +27,9 @@ public class Timer : MonoBehaviour
     {
         while (started)
         {
-            timeText.text = (secondsLeft + timeInStart - DateTime.Now.ToBinary() / 10000000).ToString();
-            if (secondsLeft + timeInStart - DateTime.Now.ToBinary() / 10000000 <= 0)
+            var timeNow = GetCurrentTimeScaled();
+            timeText.text = (secondsLeft + timeInStart - timeNow).ToString();
+            if (secondsLeft + timeInStart - timeNow <= 0)
             {
                 StopTimer();
                 OnFinish?.Invoke();
@@ -38,6 +39,11 @@ public class Timer : MonoBehaviour
         }
     }
 
+    private long GetCurrentTimeScaled()
+    {
+        return DateTime.Now.ToBinary() / 10000000;
+    }
+    
     public void StopTimer()
     {
         started = false;

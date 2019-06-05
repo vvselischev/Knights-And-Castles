@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using GooglePlayGames.BasicApi.Multiplayer;
@@ -17,32 +18,42 @@ namespace Assets.Scripts
         private UserResultType currentUserResultType;
 
         [SerializeField] private Text logText;
+        private string myId;
 
         public override void InvokeState()
         {
             inputListener = networkInputListener;
+            logText.text += "Invoking... ";
             SetupGame();
             
-            logText.text = "";
+            logText.text += "Finishing setup... ";
             multiplayerController = MultiplayerController.GetInstance();
             multiplayerController.logText = logText;
-            
-            board.SetInputListener(networkInputListener);
-            
-            allPlayers = multiplayerController.GetAllPlayers();
-            
-            string hostID = ChooseHost();
-            string myId = multiplayerController.GetMyParticipantId();
-            
+            multiplayerController.OnPlayerLeft += ProcessPlayerLeft;
+
+            string hostId;
+            try
+            {
+                allPlayers = multiplayerController.GetAllPlayers();
+                hostId = ChooseHost();
+                myId = multiplayerController.GetMyParticipantId();
+            }
+            catch (Exception)
+            {
+                multiplayerController.LeaveRoom();
+                stateManager.ChangeState(StateType.LOBBY_GAME_STATE);
+                return;
+            }
+
             isHost = false;
             
             //Let the host set up the round.
-            if (hostID == myId)
+            if (hostId == myId)
             {
                 isHost = true;
                 SetupRoundHost();
                 myTurnType = TurnType.FIRST;
-                InitNewGame();
+                InitNewRound();
             }
             else
             {
@@ -62,17 +73,14 @@ namespace Assets.Scripts
             boardFactory.FillBoardStorageRandomly(boardStorage);
 
             logText.text += "Board created. Converting to bytes...";
-            List<byte> message = boardFactory.ConvertBoardStorageToBytes(boardStorage);
+            var message = boardFactory.ConvertBoardStorageToBytes(boardStorage);
             
             //Insert 'S' -- Setup message.
             message.Insert(0, (byte) 'S');
 
             multiplayerController.SendMessage(message.ToArray());
-            
-            var firstController = new UserController(PlayerType.FIRST, boardStorage, boardFactory,this, armyText);
-            var secondController = new UserController(PlayerType.SECOND, boardStorage, boardFactory,this, armyText);
-            controllerManager = new ControllerManager(firstController, secondController);
-            networkInputListener.Initialize(controllerManager);
+           
+            FinishSetup();
         }
         
         private void SetupRoundFromNetwork(byte[] message)
@@ -87,18 +95,26 @@ namespace Assets.Scripts
             logText.text += "Create board from network..." + "\n";
 
             boardFactory.FillBoardStorageFromArray(message.Skip(1).ToArray(), boardStorage);
-            
-            var firstController = new UserController(PlayerType.FIRST, boardStorage, boardFactory,this, armyText);
-            var secondController = new UserController(PlayerType.SECOND, boardStorage, boardFactory,this, armyText);
-            controllerManager = new ControllerManager(firstController, secondController);
-            networkInputListener.Initialize(controllerManager);
+            FinishSetup();
+                
             
             logText.text += "Finish setup listeners";
-            InitNewGame();
+            InitNewRound();
             
             //Because host is the first to move
             boardStorage.InvertBoard();
             playMenu.DisableUI();
+        }
+
+        private void FinishSetup()
+        {
+            board.SetInputListener(networkInputListener);
+            var firstController = new UserController(PlayerType.FIRST, boardStorage, boardFactory, this, armyText);
+            var secondController = new UserController(PlayerType.SECOND, boardStorage, boardFactory, this, armyText);
+            controllerManager = new ControllerManager(firstController, secondController);
+            networkInputListener.Initialize(controllerManager, board.Width, board.Height);
+            playMenu.Initialize(boardManager, inputListener);
+            turnManager.Initialize(boardManager, controllerManager);
         }
 
         protected override void ChangeTurn()
@@ -119,9 +135,26 @@ namespace Assets.Scripts
             //Host makes first turn (as PlayerType.First).
             return TurnType.FIRST;
         }
+
+        private void ProcessPlayerLeft(string message)
+        {
+            logText.text += message + "\n";
+            if (myId == message || message == "-1")
+            {
+                currentUserResultType = UserResultType.LOSE;
+            }
+            else
+            {
+                currentUserResultType = UserResultType.WIN;
+                multiplayerController.LeaveRoom();
+            }
+            CloseGame();
+        }
         
         public override void OnFinishGame(ResultType resultType)
         {
+            base.OnFinishGame(resultType);
+            
             multiplayerController.LeaveRoom();
             
             logText.text = "Result: " + resultType + '\n';
@@ -161,18 +194,19 @@ namespace Assets.Scripts
 
         protected override void CloseGame()
         {
-            stateManager.resultGameState.Initialize(currentUserResultType, stateType);
+            stateManager.resultGameState.Initialize(currentUserResultType, playMode);
             stateManager.ChangeState(StateType.RESULT_GAME_STATE);
         }
 
         protected override void ExitGame()
         {
             multiplayerController.LeaveRoom();
-            base.ExitGame();
+            //Further ProcessPlayerLeft will be invoked.
         }
 
         public override void CloseState()
         {
+            multiplayerController.OnPlayerLeft -= ProcessPlayerLeft;
             networkInputListener.Stop();
             base.CloseState();
         }

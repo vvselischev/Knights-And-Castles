@@ -6,7 +6,9 @@ namespace Assets.Scripts
 {
     //TODO: null -> empty object
 
-    //Performs game logic after button click
+    /// <summary>
+    /// Performs game logic after button click.
+    /// </summary>
     public class UserController
     {
         public event VoidHandler FinishedMove;
@@ -22,6 +24,8 @@ namespace Assets.Scripts
         private ObjectMover currentMover;
         private IntVector2 currentTargetPosition;
         private bool splitButtonClicked;
+
+        private const int MAX_ARMIES = 5;
 
         public UserController(PlayerType playerType, BlockBoardStorage storage, BoardFactory boardFactory, 
             PlayGameState playGameState, ArmyText armyText)
@@ -43,19 +47,19 @@ namespace Assets.Scripts
         //TODO: refactor and simplify checks
         private void ProcessAction(IntVector2 position)
         {
-            int positionX = position.x;
-            int positionY = position.y;
+            var positionX = position.x;
+            var positionY = position.y;
 
             SetActiveFrame(position);
             
-            GameObject buttonGO = boardStorage.GetBoardButton(position).gameObject;
+            var buttonGO = boardStorage.GetBoardButton(position).gameObject;
             
             //Turns off chosenArmyItem.Army activity if it was strange click.
-            bool chooseOrMoveClick = false; 
+            var chooseOrMoveClick = false; 
             
             if (boardStorage.GetItem(position) is ArmyStorageItem)
             {
-                ArmyStorageItem clickedArmyItem = boardStorage.GetItem(position) as ArmyStorageItem;
+                var clickedArmyItem = boardStorage.GetItem(position) as ArmyStorageItem;
                 
                 armyText.UpdateText(clickedArmyItem.Army);
                 
@@ -75,10 +79,12 @@ namespace Assets.Scripts
                 armyText.Clear();
                 if (chosenArmyItem != null && !(boardStorage.GetBonusItem(position) is Pass))
                 {
-                    if (ReachableFromChosen(position) && splitButtonClicked)
+                    if (ReachableFromChosen(position) && splitButtonClicked && 
+                        boardStorage.FindPlayerArmies(playerType).Count < MAX_ARMIES)
                     {
                         ProcessSplit(chosenArmyPosition.x, chosenArmyPosition.y, positionX, positionY);
                         splitButtonClicked = false;
+                        chosenArmyItem = null;
                         return;
                     }
                 }
@@ -125,8 +131,8 @@ namespace Assets.Scripts
 
         private void ProcessSplit(int chosenPositionX, int chosenPositionY, int positionX, int positionY)
         {
-            Army splittedArmyPart = chosenArmyItem.Army.SplitIntoEqualParts();
-            GameObject clonedIcon = boardFactory.CloneBoardIcon(boardStorage, chosenPositionX, chosenPositionY);
+            var splittedArmyPart = chosenArmyItem.Army.SplitIntoEqualParts();
+            var clonedIcon = boardFactory.CloneBoardIcon(boardStorage, chosenPositionX, chosenPositionY);
             boardStorage.SetItem(positionX, positionY, new ArmyStorageItem(splittedArmyPart, clonedIcon));
             splitButtonClicked = false;
             armyText.UpdateText(splittedArmyPart);
@@ -139,7 +145,7 @@ namespace Assets.Scripts
             
             boardStorage.SetItem(chosenArmyPosition, null);
             currentTargetPosition = targetPosition;
-            GameObject armyObject = chosenArmyItem.StoredObject;
+            var armyObject = chosenArmyItem.StoredObject;
             currentMover = armyObject.GetComponent<ObjectMover>();
             
             currentMover.PrepareMovement(armyObject);
@@ -153,7 +159,7 @@ namespace Assets.Scripts
 
             boardStorage.EnableBoardButtons();
 
-            ArmyStorageItem resultItem = GetResultItem(boardStorage.GetCurrentBlock(), currentTargetPosition);
+            var resultItem = GetResultItem(boardStorage.GetCurrentBlock(), currentTargetPosition);
             boardStorage.SetItem(currentTargetPosition, resultItem);
             
             //TODO: make castle, pass etc. implement interface IBonusItem so to process them in a common way
@@ -216,33 +222,34 @@ namespace Assets.Scripts
 
         private ArmyStorageItem GetResultItem(SingleBoardStorage targetBlock, IntVector2 targetPosition)
         {
-            if (targetBlock.GetItem(targetPosition) is ArmyStorageItem)
+            while (true)
             {
-                ArmyStorageItem clickedArmyItem = targetBlock.GetItem(targetPosition) as ArmyStorageItem;
-                Army resultArmy = clickedArmyItem.Army.PerformAction(chosenArmyItem.Army);
-                if (resultArmy.PlayerType == playerType)
+                if (targetBlock.GetItem(targetPosition) is ArmyStorageItem)
                 {
-                    clickedArmyItem.StoredObject.SetActive(false);
-                    targetBlock.SetItem(targetPosition, null);
-                    chosenArmyItem.Army = resultArmy;
-                    return chosenArmyItem;
-                }
-                else
-                {
+                    var clickedArmyItem = targetBlock.GetItem(targetPosition) as ArmyStorageItem;
+                    var resultArmy = clickedArmyItem.Army.PerformAction(chosenArmyItem.Army);
+                    if (resultArmy.PlayerType == playerType)
+                    {
+                        clickedArmyItem.StoredObject.SetActive(false);
+                        targetBlock.SetItem(targetPosition, null);
+                        chosenArmyItem.Army = resultArmy;
+                        return chosenArmyItem;
+                    }
+
                     chosenArmyItem.StoredObject.SetActive(false);
                     targetBlock.SetItem(targetPosition, null);
                     clickedArmyItem.Army = resultArmy;
                     return clickedArmyItem;
                 }
-            }
 
-            if (targetBlock.GetBonusItem(targetPosition) is Pass)
-            {
+                if (!(targetBlock.GetBonusItem(targetPosition) is Pass))
+                {
+                    return chosenArmyItem;
+                }
                 var pass = targetBlock.GetBonusItem(targetPosition) as Pass;
-                return GetResultItem(boardStorage.GetBlock(pass.ToBlock), pass.ToPosition);
+                targetBlock = boardStorage.GetBlock(pass.ToBlock);
+                targetPosition = pass.ToPosition;
             }
-
-            return chosenArmyItem;
         }
 
         private bool ReachableFromChosen(IntVector2 position)
@@ -269,7 +276,7 @@ namespace Assets.Scripts
         public void FinishTurn()
         {
             ClearMoveState();
-            playGameState.OnFinishTurn(playerType);
+            playGameState.OnFinishTurn();
         }
 
         public void OnSplitButtonClick()

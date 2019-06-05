@@ -12,27 +12,25 @@ namespace Assets.Scripts
     {
         private static MultiplayerController instance;
 
-        private uint minimumOpponents = 1;
-        private uint maximumOpponents = 1;
-        private uint gameVariation = 0;
-        
+        private const uint minimumOpponents = 1;
+        private const uint maximumOpponents = 1;
+        public event ByteArrayHandler OnMessageReceived;
+        public event VoidHandler OnRoomSetupCompleted;
+        public event VoidHandler OnRoomSetupError;
+        public event StringHandler OnPlayerLeft;
+
+        public static MultiplayerController GetInstance()
+        {
+            return instance ?? (instance = new MultiplayerController());
+        }
+
         private MultiplayerController()
         {
             PlayGamesPlatform.DebugLogEnabled = true;
             PlayGamesPlatform.Activate();
         }
 
-        public static MultiplayerController GetInstance()
-        {
-            if (instance == null)
-            {
-                instance = new MultiplayerController();
-            }
-
-            return instance;
-        }
-       
-        public void SignInAndStartMPGame()
+        public void SignInAndStartMPGame(uint variation)
         {
             Social.localUser.Authenticate(success =>
             {
@@ -40,48 +38,27 @@ namespace Assets.Scripts
                 ShowMPStatus(success.ToString());
                 if (!success)
                 {
-                    SignInAndStartMPGame();
+                    PlayGamesPlatform.Instance.SignOut();
+                    OnRoomSetupError?.Invoke();
                 }
                 else
                 {
-                    StartMatchMaking();
+                    StartMatchMaking(variation);
                 }
             });
         }
-        
-        public void TrySilentSignIn() 
+
+        private void StartMatchMaking(uint gameVariation) 
         {
-            if (!PlayGamesPlatform.Instance.localUser.authenticated) 
-            {
-                PlayGamesPlatform.Instance.Authenticate((bool success) =>
-                {
-                    if (success) 
-                    {
-                        Debug.Log("Silently signed in! Welcome " + PlayGamesPlatform.Instance.localUser.userName);
-                    } 
-                    else 
-                    {
-                        Debug.Log("We're not signed in.");
-                    }
-                }, true);
-            }
-            else 
-            {
-                Debug.Log("We're already signed in");
-            }
-        }
-       
-        private void StartMatchMaking() 
-        {
-            PlayGamesPlatform.Instance.RealTime.CreateQuickGame(minimumOpponents, maximumOpponents, gameVariation, this);
+            PlayGamesPlatform.Instance.RealTime.CreateQuickGame(minimumOpponents, maximumOpponents, 
+                gameVariation, this);
         }
 
         public void OnRoomSetupProgress(float percent)
         {
             ShowMPStatus("We are " + percent + "% done with setup");
         }
-
-        public event VoidHandler OnRoomSetupCompleted;
+        
         public void OnRoomConnected(bool success)
         {
             if (success) 
@@ -92,40 +69,44 @@ namespace Assets.Scripts
             else
             {
                 ShowMPStatus("Encountered some error connecting to the room.");
+                OnRoomSetupError?.Invoke();
             }
         }
 
         public void OnLeftRoom()
         {
-            ShowMPStatus("We have left the room.");
+            ShowMPStatus("We have left the room. ");
+            
+            //Because we do not know our id anymore.
+            OnPlayerLeft?.Invoke("-1");
+            OnRoomSetupError?.Invoke();
         }
-
-        public event StringHandler OnPlayerLeft;
+        
         public void OnParticipantLeft(Participant participant)
         {
-            OnPlayerLeft?.Invoke(participant.ParticipantId);   
+            ShowMPStatus("Participant left.");
+            OnRoomSetupError?.Invoke();
         }
 
         public void OnPeersConnected(string[] participantIds)
         {
-            foreach (string participantID in participantIds)
+            foreach (var participantId in participantIds)
             {
-                ShowMPStatus("Player " + participantID + " has joined.");
+                ShowMPStatus("Player " + participantId + " has joined.");
             }
         }
         
         public void OnPeersDisconnected(string[] participantIds)
         {
-            foreach (string participantID in participantIds)
+            foreach (var participantId in participantIds)
             {
-                ShowMPStatus("Player " + participantID + " has left.");
+                ShowMPStatus("Player " + participantId + " has left.");
+                OnPlayerLeft?.Invoke(participantId);   
             }
         }
-
-        public event ByteArrayHandler OnMessageReceived;
+        
         public void OnRealTimeMessageReceived(bool isReliable, string senderId, byte[] data)
         {
-            //ShowMPStatus("Received some gameplay messages from participant ID: " + senderId);
             OnMessageReceived?.Invoke(data);
         }
 
@@ -138,7 +119,6 @@ namespace Assets.Scripts
         }
         
         public void SendMessage(byte[] message) {
-            //Debug.Log ("Sending my update message  " + message + " to all players in the room");
             PlayGamesPlatform.Instance.RealTime.SendMessageToAll (true, message);
         }
 

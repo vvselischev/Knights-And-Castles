@@ -38,8 +38,8 @@ namespace Assets.Scripts
 
         private double AnalyzePosition(List<Cell> currentPlayerArmyCells, List<Cell> otherPlayerArmyCells)
         {
-            double currentPlayerPositionProfit = CalcPlayerPositionProfit(currentPlayerArmyCells);
-            double otherPlayerPositionProfit = CalcPlayerPositionProfit(otherPlayerArmyCells);
+            var currentPlayerPositionProfit = CalcPlayerPositionProfit(currentPlayerArmyCells);
+            var otherPlayerPositionProfit = CalcPlayerPositionProfit(otherPlayerArmyCells);
 
             return currentPlayerPositionProfit - otherPlayerPositionProfit;
         }
@@ -136,9 +136,7 @@ namespace Assets.Scripts
             }
 
             var possibleMoves = GetListOfMoves(currentPlayerArmyCells, isFirstTurn);
-            //var resultOnWaiting = AnalyzeStrategy(ChangePlayerType(playerType), false,depth - 1, 
-            //    otherPlayerArmyCells, currentPlayerArmyCells);
-            double resultBenefit = double.PositiveInfinity;
+            var resultBenefit = double.PositiveInfinity;
             MoveInformation bestMoveInformation = null; // not move
 
             if (possibleMoves == null)
@@ -318,7 +316,7 @@ namespace Assets.Scripts
             }
         }
 
-        private List<MoveInformation> GetListOfMoves(List<Cell> playerArmiesCells, bool isFirstTurn)
+        private List<MoveInformation> GetListOfMoves(IEnumerable<Cell> playerArmiesCells, bool isFirstTurn)
         {
             var possibleMoves = new List<MoveInformation>();
 
@@ -337,7 +335,7 @@ namespace Assets.Scripts
             return possibleMoves;
         }
         
-        private void AddPossibleMoves(List<MoveInformation> possibleMoves, Cell cell)
+        private void AddPossibleMoves(ICollection<MoveInformation> possibleMoves, Cell cell)
         {
             var adjacentCells = boardStorage.GetAdjacent(cell);
             foreach (var adjacentCell in adjacentCells)

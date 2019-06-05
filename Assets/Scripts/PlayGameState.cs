@@ -19,7 +19,8 @@ namespace Assets.Scripts
     {
         WIN,
         LOSE,
-        DRAW
+        DRAW,
+        NONE
     }
 
     public abstract class PlayGameState : MonoBehaviour, IGameState
@@ -34,7 +35,7 @@ namespace Assets.Scripts
         [SerializeField] protected ExitListener exitListener;
         [SerializeField] protected CheckeredButtonBoard board;
         [SerializeField] protected InputListener inputListener;
-        [SerializeField] protected StateType stateType;
+        [SerializeField] protected StateType playMode;
         
         protected BlockBoardStorage boardStorage;
         protected ControllerManager controllerManager;
@@ -60,7 +61,10 @@ namespace Assets.Scripts
             controllerManager = new ControllerManager(firstController, secondController);
             inputListener.Initialize(controllerManager);
             
-            InitNewGame();
+            playMenu.Initialize(boardManager, inputListener);
+            turnManager.Initialize(boardManager, controllerManager);            
+            
+            InitNewRound();
         }
 
         protected void SetupGame()
@@ -95,15 +99,13 @@ namespace Assets.Scripts
 
             armyText.Init();
 
-            playMenu.Initialize(boardManager, inputListener);
-            turnManager.Initialize(boardManager, controllerManager);
             turnManager.SetTurn(GetFirstTurn());
             timer.StartTimer();
 
             //Disable or enable UI in child classes!
         }
 
-        public void OnFinishTurn(PlayerType finishedType)
+        public void OnFinishTurn()
         {
             Debug.Log("Finished turn");
             timer.StopTimer();
@@ -151,14 +153,9 @@ namespace Assets.Scripts
             //Further behaviour should be specified in child classes.
         }
 
-        protected void InitNewGame()
-        {
-            InitNewRound();
-        }
-
         protected virtual TurnType GetFirstTurn()
         {
-            //TODO: make random
+            //Default:
             return TurnType.FIRST;
         }
     }

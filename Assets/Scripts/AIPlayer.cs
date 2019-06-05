@@ -12,7 +12,7 @@ namespace Assets.Scripts
         private PlayerType playerType;
         
         //Depth of tree for analyze. Should be odd!!!
-        private const int DEPTH = 5;
+        private const int DEPTH = 3;
 
         public AIPlayer(UserController controller, PlayerType playerType, BlockBoardStorage boardStorage, 
             BoardManager boardManager, InputListener inputListener)
@@ -40,7 +40,7 @@ namespace Assets.Scripts
                 return;
             }
 
-            MoveInformation bestMove = gameSimulation.FindBestMove(playerType, DEPTH);
+            var bestMove = gameSimulation.FindBestMove(playerType, DEPTH);
             
             // if it's better not to move for all armies
             if (bestMove == null) 
