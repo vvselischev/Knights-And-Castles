@@ -1,7 +1,4 @@
 using UnityEngine;
-using System.Collections;
-using Assets.Scripts;
-using UnityEngine.UI;
 
 namespace Assets.Scripts
 {

@@ -28,7 +28,7 @@ namespace Assets.Scripts
             //TODO: maybe better to make colors serialized to setup in the editor.
             if (resultType == UserResultType.WIN)
             {
-                resultText.color = Color.red;
+                resultText.color = Color.green;
                 resultText.text = "You win!";
             }
             else if (resultType == UserResultType.LOSE)

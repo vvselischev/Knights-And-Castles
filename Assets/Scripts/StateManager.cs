@@ -22,7 +22,6 @@ namespace Assets.Scripts
         private void Awake()
         {
             Screen.sleepTimeout = SleepTimeout.NeverSleep;
-            Debug.Log("Start");
 
             Instance = this;
             Initialize();
@@ -51,16 +50,13 @@ namespace Assets.Scripts
 
         public void ChangeState(StateType newStateType)
         {
-            Debug.Log("Current State: " + CurrentState);
             if (CurrentState != null)
             {
-                Debug.Log("Closing " + CurrentState);
                 CurrentState.CloseState();
             }
 
             var newState = states[newStateType];
             CurrentState = newState;
-            Debug.Log("New state: " + CurrentState);
             newState.InvokeState();
         }
     }

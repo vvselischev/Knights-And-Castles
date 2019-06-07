@@ -1,7 +1,6 @@
-﻿﻿using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine.Experimental.PlayerLoop;
 using Object = UnityEngine.Object;
 
 namespace Assets.Scripts
@@ -464,13 +463,12 @@ namespace Assets.Scripts
             return null;
         }
 
-
         /// <summary>
         /// Retuns cells which are one step away from given cell
         /// </summary>
         /// <param name="cell"></param>
         /// <returns></returns>
-        public List<Cell> GetAdjacent(Cell cell)
+        public IEnumerable<Cell> GetAdjacent(Cell cell)
         {
             var position = indexByCell[cell];
             var possibleNeighbours = new List<IntVector2>

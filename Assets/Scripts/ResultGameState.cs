@@ -9,6 +9,7 @@ namespace Assets.Scripts
         [SerializeField] private ResultMenu resultMenu;
         [SerializeField] private UserResultType resultType;
         [SerializeField] private StateType playStateType;
+        [SerializeField] private ExitListener exitListener;
         
         private MenuActivator menuActivator = MenuActivator.Instance;
         
@@ -20,6 +21,9 @@ namespace Assets.Scripts
 
         public void InvokeState()
         {
+            exitListener.Enable();
+            exitListener.OnExitClicked += OnExit;
+            
             menuActivator.OpenMenu(resultMenu);
 
             var records = dataService.GetRecords().ToList();
@@ -55,8 +59,16 @@ namespace Assets.Scripts
             resultMenu.DisplayStatistics(record, resultType);
         }
 
+        private void OnExit()
+        {
+            var stateManager = StateManager.Instance;
+            stateManager.ChangeState(StateType.START_GAME_STATE);
+        }
+
         public void CloseState()
         {
+            exitListener.OnExitClicked -= OnExit;
+            exitListener.Disable();
             menuActivator.CloseMenu();
             playStateType = StateType.START_GAME_STATE;
             resultType = UserResultType.NONE;

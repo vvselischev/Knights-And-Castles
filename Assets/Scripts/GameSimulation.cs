@@ -101,7 +101,7 @@ namespace Assets.Scripts
             return armyPower / distanceToEnemyCastle;
         }
 
-        private PlayerType ChangePlayerType(PlayerType playerType)
+        private PlayerType GetOppositePlayerType(PlayerType playerType)
         {
             if (playerType == PlayerType.FIRST)
             {
@@ -116,14 +116,24 @@ namespace Assets.Scripts
             throw new ArgumentException("such playerType is not allowed");
         }
 
-        public MoveInformation FindBestMove(PlayerType playerType, int depth)
+        public MoveInformation FindBestMove(PlayerType playerType)
         {
             //TODO: do it simultaneously.
             var currentPlayerArmyCells = FindPlayerArmies()[playerType];
-            var otherPlayerArmyCells = FindPlayerArmies()[ChangePlayerType(playerType)];
+            var otherPlayerArmyCells = FindPlayerArmies()[GetOppositePlayerType(playerType)];
+
+            int depth;
+            if (currentPlayerArmyCells.Count + otherPlayerArmyCells.Count >= 4)
+            {
+                depth = 3;
+            }
+            else
+            {
+                depth = 5;
+            }
             
-            return AnalyzeStrategy(playerType, true, 
-                depth, currentPlayerArmyCells, otherPlayerArmyCells).Item2;
+            return AnalyzeStrategy(playerType, true, depth, currentPlayerArmyCells, 
+                otherPlayerArmyCells).Item2;
         }
 
         private Tuple<double, MoveInformation> AnalyzeStrategy(PlayerType playerType, bool isFirstTurn,
@@ -213,27 +223,27 @@ namespace Assets.Scripts
             { 
                 if (playerType == PlayerType.FIRST) 
                 { 
-                    result = new Tuple<double, MoveInformation>(Double.PositiveInfinity, null); 
+                    result = new Tuple<double, MoveInformation>(double.PositiveInfinity, null); 
                 } 
                 else 
                 { 
-                    result = new Tuple<double, MoveInformation>(Double.NegativeInfinity, null); 
+                    result = new Tuple<double, MoveInformation>(double.NegativeInfinity, null); 
                 } 
             } 
             else if (currentPlayerArmyCells.Count == 0) 
             { 
                 if (playerType == PlayerType.FIRST) 
                 { 
-                    result = new Tuple<double, MoveInformation>(Double.NegativeInfinity, null); 
+                    result = new Tuple<double, MoveInformation>(double.NegativeInfinity, null); 
                 } 
                 else 
                 { 
-                    result = new Tuple<double, MoveInformation>(Double.PositiveInfinity, null); 
+                    result = new Tuple<double, MoveInformation>(double.PositiveInfinity, null); 
                 } 
             } 
             else 
             { 
-                result = AnalyzeStrategy(ChangePlayerType(playerType), false, 
+                result = AnalyzeStrategy(GetOppositePlayerType(playerType), false, 
                     depth - 1, otherPlayerArmyCells, 
                     currentPlayerArmyCells); 
             }
@@ -248,7 +258,7 @@ namespace Assets.Scripts
                     currentPlayerArmyCells.Add(moveInformation.From);
                 }
 
-                 if (memorizedFrom.Item.Army.PlayerType == ChangePlayerType(playerType))
+                 if (memorizedFrom.Item.Army.PlayerType == GetOppositePlayerType(playerType))
                  {
                     otherPlayerArmyCells.Add(moveInformation.From);
                  }
@@ -261,7 +271,7 @@ namespace Assets.Scripts
                     currentPlayerArmyCells.Add(moveInformation.To);
                 }
 
-                if (memorizedTo.Item.Army.PlayerType == ChangePlayerType(playerType))
+                if (memorizedTo.Item.Army.PlayerType == GetOppositePlayerType(playerType))
                 {
                     otherPlayerArmyCells.Add(moveInformation.To);
                 }
