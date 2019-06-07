@@ -2,12 +2,34 @@ using System.Collections.Generic;
 
 namespace Assets.Scripts
 {
+    /// <summary>
+    /// Stores graph of distances between all board cells
+    /// </summary>
     public class Graph
     {
+        /// <summary>
+        /// Enumerate board cells
+        /// </summary>
         private Dictionary<Cell, int> nodeIndexByCell = new Dictionary<Cell, int>();
+        
+        /// <summary>
+        /// Stores graph edges
+        /// </summary>
         private List<List<Edge>> edges = new List<List<Edge>>();
+        
+        /// <summary>
+        /// Stores board for which graph was built
+        /// </summary>
         private BlockBoardStorage boardStorage;
+        
+        /// <summary>
+        /// Graph size
+        /// </summary>
         private int size;
+        
+        /// <summary>
+        /// Stores distances between all cells 
+        /// </summary>
         private int[,] distance;
 
         public Graph(BlockBoardStorage boardStorage)
@@ -29,6 +51,12 @@ namespace Assets.Scripts
             CalculateDistances();
         }
 
+        /// <summary>
+        /// Returns distance between two cells
+        /// </summary>
+        /// <param name="from"></param>
+        /// <param name="to"></param>
+        /// <returns></returns>
         public int GetDistance(Cell from, Cell to)
         {
             var indexFrom = nodeIndexByCell[from];
@@ -37,6 +65,9 @@ namespace Assets.Scripts
             return distance[indexFrom, indexTo];
         }
 
+        /// <summary>
+        /// Calculates distances between all pairs of cells
+        /// </summary>
         private void CalculateDistances()
         {
             distance = new int[size, size];
@@ -46,6 +77,10 @@ namespace Assets.Scripts
             }
         }
 
+        /// <summary>
+        /// Calculates distance from given vertex to all others using 0-1 BFS
+        /// </summary>
+        /// <param name="startIndex"></param>
         private void CalculateDistancesFromVertex(int startIndex) // 0-1 BFS
         {
             for (var i = 0; i < size; i++)
@@ -81,6 +116,10 @@ namespace Assets.Scripts
             }
         }
 
+        /// <summary>
+        /// Add edges to graph
+        /// </summary>
+        /// <param name="cells"></param>
         private void FillEdges(IEnumerable<Cell> cells)
         {
             foreach (var cell in cells)
@@ -99,6 +138,11 @@ namespace Assets.Scripts
             }
         }
 
+        /// <summary>
+        /// Adds edges to graph which are incidental to given vertex
+        /// </summary>
+        /// <param name="cell"></param>
+        /// <param name="adjacent"></param>
         private void AddEdges(Cell cell, IEnumerable<Cell> adjacent)
         {
             foreach (var adjacentCell in adjacent)
@@ -107,7 +151,12 @@ namespace Assets.Scripts
             }
         }
 
-        
+        /// <summary>
+        /// Adds one edge
+        /// </summary>
+        /// <param name="from"></param>
+        /// <param name="to"></param>
+        /// <param name="weight"></param>
         private void AddEdge(Cell from, Cell to, int weight)
         {
             var indexFrom = nodeIndexByCell[from];
@@ -116,6 +165,9 @@ namespace Assets.Scripts
             edges[indexFrom].Add(new Edge(indexFrom, indexTo, weight));
         }
 
+        /// <summary>
+        /// For each vertex creates empty list of edges
+        /// </summary>
         private void InitializeEdges()
         {
             for (var i = 0; i < size; i++)

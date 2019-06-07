@@ -2,6 +2,9 @@
 
  namespace Assets.Scripts
 {
+    /// <summary>
+    /// Stores type of army
+    /// </summary>
     public enum ArmyType
     {
         USER,
@@ -9,10 +12,24 @@
         NEUTRAL_AGGRESSIVE
     }
 
+    /// <summary>
+    /// Implementation of army in a game
+    /// </summary>
     public abstract class Army
     {
+        /// <summary>
+        /// Stores owner type
+        /// </summary>
         public PlayerType PlayerType { get; }
+        
+        /// <summary>
+        /// Stores type of army
+        /// </summary>
         private ArmyType armyType;
+        
+        /// <summary>
+        /// Stores composition of army
+        /// </summary>
         public ArmyComposition ArmyComposition { get; }
         
         protected Army(ArmyType armyType, PlayerType playerType, ArmyComposition armyComposition)
@@ -26,6 +43,9 @@
             }
         }
 
+        /// <summary>
+        /// Activates army
+        /// </summary>
         public virtual void SetActive() {}
 
         private bool CheckValidTypes()
@@ -36,6 +56,11 @@
                                                              PlayerType == PlayerType.SECOND));
         }
 
+        /// <summary>
+        /// Performs fight or merge depends on army type
+        /// </summary>
+        /// <param name="attackingArmy"></param>
+        /// <returns></returns>
         public abstract Army PerformAction(Army attackingArmy);
 
         public static Army Merge(Army firstArmy, Army secondArmy)
@@ -76,6 +101,12 @@
             throw new Exception("MergeUserAndNeutralArmies: neutral army type is not NEUTRAL_FRIENDLY");
         }
 
+        /// <summary>
+        /// Perform armies fight
+        /// </summary>
+        /// <param name="firstArmy"></param>
+        /// <param name="secondArmy"></param>
+        /// <returns></returns>
         protected static Army PerformBattle(Army firstArmy, Army secondArmy)
         {
             if (ArmyComposition.IsFirstWinner(firstArmy.ArmyComposition, secondArmy.ArmyComposition))
@@ -106,11 +137,19 @@
             return this;
         }
 
+        /// <summary>
+        /// Calculates army power
+        /// </summary>
+        /// <returns></returns>
         public double ArmyPower()
         {
             return ArmyComposition.ArmyPower();
         }
 
+        /// <summary>
+        /// Splits army into two equal parts
+        /// </summary>
+        /// <returns> One of parts </returns>
         public Army SplitIntoEqualParts() {
             var spearmen = ArmyComposition.Spearmen / 2;
             var archers = ArmyComposition.Archers / 2;
@@ -119,6 +158,10 @@
             return Split(spearmen, archers, cavalrymen);
         }
 
+        /// <summary>
+        /// Clones army
+        /// </summary>
+        /// <returns></returns>
         public abstract Army CloneArmy();
     }
 }
