@@ -2,7 +2,10 @@ using UnityEngine;
 
 namespace Assets.Scripts
 {
-    public class AIPlayer
+	/// <summary>
+    /// Implementation of army in a game
+    /// </summary>
+	public class AIPlayer
     {
         private BoardManager boardManager;
         private BlockBoardStorage boardStorage;
@@ -23,7 +26,10 @@ namespace Assets.Scripts
             this.inputListener = inputListener;
             this.boardStorage = boardStorage;
         }
-
+		
+		/// <summary>
+    	/// Activates AI
+    	/// </summary>
         public void Activate()
         {
             MakeTurn();

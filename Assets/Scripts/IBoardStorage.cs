@@ -4,11 +4,42 @@ namespace Assets.Scripts
 {
     public interface IBoardStorage
     {
+        /// <summary>
+        /// Disables board buttons
+        /// </summary>
         void DisableBoardButtons();
+        
+        /// <summary>
+        /// Unables board buttons
+        /// </summary>
         void EnableBoardButtons();
+        
+        /// <summary>
+        /// Returns board width 
+        /// </summary>
+        /// <returns></returns>
         int GetBoardWidth();
+        
+        /// <summary>
+        /// Returns board height
+        /// </summary>
+        /// <returns></returns>
         int GetBoardHeight();
+        
+        /// <summary>
+        /// Returns army item by position
+        /// </summary>
+        /// <param name="positionX"></param>
+        /// <param name="positionY"></param>
+        /// <returns></returns>
         BoardStorageItem GetItem(int positionX, int positionY);
+        
+        /// <summary>
+        /// Sets army item by position
+        /// </summary>
+        /// <param name="col"></param>
+        /// <param name="row"></param>
+        /// <param name="item"></param>
         void SetItem(int col, int row, BoardStorageItem item);
         void SetItem(IntVector2 position, BoardStorageItem item);
         BoardButton GetBoardButton(IntVector2 position);

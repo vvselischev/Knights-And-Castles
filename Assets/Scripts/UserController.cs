@@ -11,6 +11,9 @@ namespace Assets.Scripts
     /// </summary>
     public class UserController
     {
+        /// <summary>
+        /// Stores event handler on finish move
+        /// </summary>
         public event VoidHandler FinishedMove;
         private BoardFactory boardFactory;
         private PlayGameState playGameState;
@@ -37,6 +40,11 @@ namespace Assets.Scripts
             this.armyText = armyText;
         }
 
+        /// <summary>
+        /// Processes right action after click on board cell with given coordinates  
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
         public void OnButtonClick(int x, int y)
         {
             Debug.Log($"Clicked: ({x}, {y})");
@@ -262,23 +270,35 @@ namespace Assets.Scripts
             return Math.Abs(chosenArmyPosition.x - position.x) + Math.Abs(chosenArmyPosition.y - position.y) == 1;
         }
 
+        /// <summary>
+        /// Disables user controller
+        /// </summary>
         public void Disable()
         {
             ClearMoveState();
         }
 
+        /// <summary>
+        /// Unables user controller
+        /// </summary>
         public void Enable()
         {
             Debug.Log("enable controller run");
             boardStorage.EnableArmies(playerType);
         }
 
+        /// <summary>
+        /// Finishes user turn
+        /// </summary>
         public void FinishTurn()
         {
             ClearMoveState();
             playGameState.OnFinishTurn();
         }
 
+        /// <summary>
+        /// Processes action after click on split button
+        /// </summary>
         public void OnSplitButtonClick()
         {
             if (chosenArmyItem != null)
