@@ -63,7 +63,7 @@
         /// <returns></returns>
         public abstract Army PerformAction(Army attackingArmy);
 
-        protected static Army Merge(Army firstArmy, Army secondArmy)
+        public static Army Merge(Army firstArmy, Army secondArmy)
         {
             if (firstArmy.armyType == ArmyType.USER && secondArmy.armyType == ArmyType.USER)
             {

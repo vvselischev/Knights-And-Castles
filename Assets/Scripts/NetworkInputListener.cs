@@ -23,7 +23,7 @@ namespace Assets.Scripts
         {
             multiplayerController.OnMessageReceived -= ProcessNetworkData;
         }
-
+        
         //'M' -- move (otherwise ignore this message), followed by one of:
         //'B' -- button click, followed by x and y
         //'F' -- finish turn
@@ -39,17 +39,14 @@ namespace Assets.Scripts
             {
                 var x = blockWidth - message[2] + 1;
                 var y = blockHeight - message[3] + 1;
-                logText.text += "Receive:" + x + " " + y + "\n";
                 base.ProcessBoardClick(x, y);
             }
             else if (message[1] == 'F')
             {
-                logText.text += "Receive finish turn" + "\n";
                 base.ProcessFinishTurnClick();
             }
             else if (message[1] == 'S')
             {
-                logText.text += "Receive split" + "\n";
                 base.ProcessSplitButtonClick();
             }
         }
@@ -57,7 +54,6 @@ namespace Assets.Scripts
         public override void ProcessBoardClick(int x, int y)
         {
             byte[] message = {(byte)'M', (byte)'B', (byte) x, (byte) y};
-            logText.text += "Send:" + x + " " + y + "\n";
             multiplayerController.SendMessage(message);
             base.ProcessBoardClick(x, y);
         }
@@ -65,7 +61,6 @@ namespace Assets.Scripts
         public override void ProcessSplitButtonClick()
         {
             byte[] message = {(byte) 'M', (byte) 'S'};
-            logText.text += "Send split" + "\n";
             multiplayerController.SendMessage(message);
             base.ProcessSplitButtonClick();
         }
@@ -73,7 +68,6 @@ namespace Assets.Scripts
         public override void ProcessFinishTurnClick()
         {
             byte[] message = {(byte) 'M', (byte) 'F'};
-            logText.text += "Send finish turn" + "\n";
             multiplayerController.SendMessage(message);
             base.ProcessFinishTurnClick();
         }

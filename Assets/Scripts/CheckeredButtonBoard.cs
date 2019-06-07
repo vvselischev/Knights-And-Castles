@@ -1,8 +1,6 @@
 ﻿using System.Linq;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
-using Object = UnityEngine.Object;
 
 namespace Assets.Scripts
 {
@@ -74,9 +72,8 @@ namespace Assets.Scripts
 
         private void DeleteButtons()
         {
-            Debug.Log("Deleting buttons");
             var buttons = FindObjectsOfType(typeof(Button));
-            foreach (Button button in buttons.Cast<Button>().Where(button => button.gameObject.name.Contains("Clone")))
+            foreach (var button in buttons.Cast<Button>().Where(button => button.gameObject.name.Contains("Clone")))
             {
                 DestroyImmediate(button.gameObject);
             }
@@ -91,7 +88,6 @@ namespace Assets.Scripts
         //PatternButton is placed in the bottom-left corner.
         private void CreateButtons()
         {
-            Debug.Log("Creating buttons");
             for (var currentRow = 1; currentRow <= Height; currentRow++)
             {
                 for (var currentColumn = 1; currentColumn <= Width; currentColumn++)

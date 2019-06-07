@@ -9,7 +9,6 @@ namespace Assets.Scripts
 
         public bool PerformAction(Army enteredArmy)
         {
-            Debug.Log("Entered: " + enteredArmy.PlayerType + "; Owner: " + ownerType);
             if (enteredArmy.PlayerType != ownerType)
             {
                 if (enteredArmy.PlayerType == PlayerType.FIRST)

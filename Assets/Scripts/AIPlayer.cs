@@ -13,9 +13,6 @@ namespace Assets.Scripts
 
         private UserController controller;
         private PlayerType playerType;
-        
-        //Depth of tree for analyze. Should be odd!!!
-        private const int DEPTH = 3;
 
         public AIPlayer(UserController controller, PlayerType playerType, BlockBoardStorage boardStorage, 
             BoardManager boardManager, InputListener inputListener)
@@ -40,13 +37,16 @@ namespace Assets.Scripts
             controller.FinishedMove -= MakeTurn;
             
             var gameSimulation = new GameSimulation(boardStorage);
-            if (gameSimulation.GetNumberOfActiveArmies(playerType) == 0)
+
+            var myArmiesNumber = gameSimulation.GetNumberOfActiveArmies(playerType);
+            
+            if (myArmiesNumber == 0)
             {
                 FinishTurn();
                 return;
             }
 
-            var bestMove = gameSimulation.FindBestMove(playerType, DEPTH);
+            var bestMove = gameSimulation.FindBestMove(playerType);
             
             // if it's better not to move for all armies
             if (bestMove == null) 
@@ -76,9 +76,6 @@ namespace Assets.Scripts
                 boardManager.SetActiveBlock(fromBlockPosition);
 
             }
-            
-            Debug.Log("AI move: fromBlock = " + fromBlockPosition);
-            Debug.Log("Current block is " + boardStorage.GetCurrentBlockPosition());
 
             var positionFrom = boardStorage.GetPositionOnBoard(from);
             var positionTo = boardStorage.GetPositionOnBoard(to);

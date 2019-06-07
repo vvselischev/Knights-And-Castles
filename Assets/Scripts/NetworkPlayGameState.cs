@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using GooglePlayGames.BasicApi.Multiplayer;
 using UnityEngine;
 using UnityEngine.UI;
@@ -17,18 +18,14 @@ namespace Assets.Scripts
         private TurnType myTurnType;
         private UserResultType currentUserResultType;
 
-        [SerializeField] private Text logText;
         private string myId;
 
         public override void InvokeState()
         {
             inputListener = networkInputListener;
-            logText.text += "Invoking... ";
             SetupGame();
             
-            logText.text += "Finishing setup... ";
             multiplayerController = MultiplayerController.GetInstance();
-            multiplayerController.logText = logText;
             multiplayerController.OnPlayerLeft += ProcessPlayerLeft;
 
             string hostId;
@@ -69,10 +66,8 @@ namespace Assets.Scripts
 
         private void SetupRoundHost()
         {
-            logText.text += "Creating board...";
             boardFactory.FillBoardStorageRandomly(boardStorage);
 
-            logText.text += "Board created. Converting to bytes...";
             var message = boardFactory.ConvertBoardStorageToBytes(boardStorage);
             
             //Insert 'S' -- Setup message.
@@ -91,19 +86,14 @@ namespace Assets.Scripts
             }
  
             multiplayerController.OnMessageReceived -= SetupRoundFromNetwork;
-            
-            logText.text += "Create board from network..." + "\n";
 
             boardFactory.FillBoardStorageFromArray(message.Skip(1).ToArray(), boardStorage);
             FinishSetup();
-                
             
-            logText.text += "Finish setup listeners";
             InitNewRound();
             
             //Because host is the first to move
             boardStorage.InvertBoard();
-            playMenu.DisableUI();
         }
 
         private void FinishSetup()
@@ -111,10 +101,25 @@ namespace Assets.Scripts
             board.SetInputListener(networkInputListener);
             var firstController = new UserController(PlayerType.FIRST, boardStorage, boardFactory, this, armyText);
             var secondController = new UserController(PlayerType.SECOND, boardStorage, boardFactory, this, armyText);
+
+            if (isHost)
+            {
+                secondController.FinishedMove += OnOpponentFinishedMove;
+            }
+            else
+            {
+                firstController.FinishedMove += OnOpponentFinishedMove;
+            }
+            
             controllerManager = new ControllerManager(firstController, secondController);
             networkInputListener.Initialize(controllerManager, board.Width, board.Height);
             playMenu.Initialize(boardManager, inputListener);
             turnManager.Initialize(boardManager, controllerManager);
+        }
+
+        private void OnOpponentFinishedMove()
+        {
+            boardStorage.DisableBoardButtons();
         }
 
         protected override void ChangeTurn()
@@ -136,9 +141,16 @@ namespace Assets.Scripts
             return TurnType.FIRST;
         }
 
+        private void OnApplicationPause(bool pause)
+        {
+            if (pause)
+            {
+                ProcessPlayerLeft("-1");
+            }
+        }
+
         private void ProcessPlayerLeft(string message)
         {
-            logText.text += message + "\n";
             if (myId == message || message == "-1")
             {
                 currentUserResultType = UserResultType.LOSE;
@@ -155,9 +167,6 @@ namespace Assets.Scripts
         {
             base.OnFinishGame(resultType);
             
-            multiplayerController.LeaveRoom();
-            
-            logText.text = "Result: " + resultType + '\n';
             if (resultType == ResultType.FIRST_WIN)
             {
                 if (isHost)
@@ -194,11 +203,22 @@ namespace Assets.Scripts
 
         protected override void CloseGame()
         {
+            if (isHost)
+            {
+                controllerManager.SecondController.FinishedMove -= OnOpponentFinishedMove;
+            }
+            else
+            {
+                controllerManager.FirstController.FinishedMove -= OnOpponentFinishedMove;
+            }
+            
+            multiplayerController.OnPlayerLeft -= ProcessPlayerLeft;
+            multiplayerController.LeaveRoom();
             stateManager.resultGameState.Initialize(currentUserResultType, playMode);
             stateManager.ChangeState(StateType.RESULT_GAME_STATE);
         }
 
-        protected override void ExitGame()
+        protected override void OnBackButtonPressed()
         {
             multiplayerController.LeaveRoom();
             //Further ProcessPlayerLeft will be invoked.
@@ -206,7 +226,6 @@ namespace Assets.Scripts
 
         public override void CloseState()
         {
-            multiplayerController.OnPlayerLeft -= ProcessPlayerLeft;
             networkInputListener.Stop();
             base.CloseState();
         }

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using GooglePlayGames;
 using GooglePlayGames.BasicApi.Multiplayer;
+using GooglePlayGames.Native.Cwrapper;
 using UnityEngine.UI;
 
 namespace Assets.Scripts
@@ -17,6 +18,8 @@ namespace Assets.Scripts
         public event ByteArrayHandler OnMessageReceived;
         public event VoidHandler OnRoomSetupCompleted;
         public event VoidHandler OnRoomSetupError;
+
+        public event VoidHandler OnOpponentDisconnected;
         public event StringHandler OnPlayerLeft;
 
         public static MultiplayerController GetInstance()
@@ -34,8 +37,6 @@ namespace Assets.Scripts
         {
             Social.localUser.Authenticate(success =>
             {
-                ShowMPStatus("I am + " + Social.localUser.userName);
-                ShowMPStatus(success.ToString());
                 if (!success)
                 {
                     PlayGamesPlatform.Instance.SignOut();
@@ -56,51 +57,40 @@ namespace Assets.Scripts
 
         public void OnRoomSetupProgress(float percent)
         {
-            ShowMPStatus("We are " + percent + "% done with setup");
         }
         
         public void OnRoomConnected(bool success)
         {
             if (success) 
             {
-                ShowMPStatus("We are connected to the room! Start our game now.");
                 OnRoomSetupCompleted?.Invoke();
             } 
             else
             {
-                ShowMPStatus("Encountered some error connecting to the room.");
                 OnRoomSetupError?.Invoke();
             }
         }
 
         public void OnLeftRoom()
-        {
-            ShowMPStatus("We have left the room. ");
-            
+        {           
             //Because we do not know our id anymore.
             OnPlayerLeft?.Invoke("-1");
-            OnRoomSetupError?.Invoke();
+            OnOpponentDisconnected?.Invoke();
         }
         
         public void OnParticipantLeft(Participant participant)
         {
-            ShowMPStatus("Participant left.");
-            OnRoomSetupError?.Invoke();
+            OnOpponentDisconnected?.Invoke();
         }
 
         public void OnPeersConnected(string[] participantIds)
         {
-            foreach (var participantId in participantIds)
-            {
-                ShowMPStatus("Player " + participantId + " has joined.");
-            }
         }
         
         public void OnPeersDisconnected(string[] participantIds)
         {
             foreach (var participantId in participantIds)
             {
-                ShowMPStatus("Player " + participantId + " has left.");
                 OnPlayerLeft?.Invoke(participantId);   
             }
         }
@@ -121,14 +111,6 @@ namespace Assets.Scripts
         public void SendMessage(byte[] message) {
             PlayGamesPlatform.Instance.RealTime.SendMessageToAll (true, message);
         }
-
-        public Text logText;
-        private void ShowMPStatus(string message)
-        {
-            Debug.Log(message);
-            logText.text += "\n" + message;
-        }
-
         public void LeaveRoom()
         {
             PlayGamesPlatform.Instance.RealTime.LeaveRoom();

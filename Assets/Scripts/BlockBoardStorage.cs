@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace Assets.Scripts
 {
@@ -142,8 +141,6 @@ namespace Assets.Scripts
             currentBlock = blocks[position.x, position.y];
             currentBlockPosition = position;
             currentBlock?.Activate();
-            
-            Debug.Log("Current block: " + position);
         }
 
         /// <summary>
@@ -502,7 +499,7 @@ namespace Assets.Scripts
             return graph.GetDistance(cell, castleCell);
         }
 
-        private PlayerType GetOpponentPlayerType(PlayerType playerType)
+        public static PlayerType GetOpponentPlayerType(PlayerType playerType)
         {
             if (playerType == PlayerType.FIRST)
             {
@@ -628,7 +625,7 @@ namespace Assets.Scripts
                     .Sum();
         }
 
-        public List<Cell> GetListOfCells()
+        public IEnumerable<Cell> GetListOfCells()
         {
             var listOfCells = new List<Cell>();
             foreach (var block in blocks)
@@ -694,6 +691,12 @@ namespace Assets.Scripts
             }
 
             return passesAsFromToCells;
+        }
+        
+        public void FillBlockForTesting(IntVector2 blockPosition, BoardStorageItem[,] items, BoardStorageItem[,] bonusItems) 
+        { 
+            blocks[blockPosition.x, blockPosition.y] = new SingleBoardStorage(2, 2, null); 
+            blocks[blockPosition.x, blockPosition.y].Fill(items, bonusItems); 
         }
     }
 }

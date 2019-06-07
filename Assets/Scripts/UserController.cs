@@ -1,6 +1,4 @@
 ﻿using System;
-using UnityEngine;
-using Debug = UnityEngine.Debug;
 
 namespace Assets.Scripts
 {
@@ -47,78 +45,121 @@ namespace Assets.Scripts
         /// <param name="y"></param>
         public void OnButtonClick(int x, int y)
         {
-            Debug.Log($"Clicked: ({x}, {y})");
             ProcessAction(new IntVector2(x, y));
         }
 
-        
-        //TODO: refactor and simplify checks
         private void ProcessAction(IntVector2 position)
         {
-            var positionX = position.x;
-            var positionY = position.y;
-
-            SetActiveFrame(position);
-            
-            var buttonGO = boardStorage.GetBoardButton(position).gameObject;
-            
-            //Turns off chosenArmyItem.Army activity if it was strange click.
             var chooseOrMoveClick = false; 
             
             if (boardStorage.GetItem(position) is ArmyStorageItem)
             {
-                var clickedArmyItem = boardStorage.GetItem(position) as ArmyStorageItem;
-                
-                armyText.UpdateText(clickedArmyItem.Army);
-                
-                if (clickedArmyItem.Army.PlayerType == playerType && ((UserArmy) clickedArmyItem.Army).IsActive())
+                if (ProcessClickOnSameCell(position))
                 {
-                    if (chosenArmyItem == null)
-                    {
-                        chosenArmyItem = clickedArmyItem;
-                        chosenArmyPosition = position;
-                    }
-
-                    chooseOrMoveClick = true;
+                    return;
                 }
+                
+                SetActiveFrame(position);
+                var clickedArmyItem = boardStorage.GetItem(position) as ArmyStorageItem;
+                armyText.UpdateText(clickedArmyItem.Army);
+
+                chooseOrMoveClick = ProcessChooseClick(position, clickedArmyItem);
             }
             else
             {
-                armyText.Clear();
-                if (chosenArmyItem != null && !(boardStorage.GetBonusItem(position) is Pass))
+                if (ProcessSplitClickOnAdjacent(position))
                 {
-                    if (ReachableFromChosen(position) && splitButtonClicked && 
-                        boardStorage.FindPlayerArmies(playerType).Count < MAX_ARMIES)
-                    {
-                        ProcessSplit(chosenArmyPosition.x, chosenArmyPosition.y, positionX, positionY);
-                        splitButtonClicked = false;
-                        chosenArmyItem = null;
-                        return;
-                    }
+                    return;
                 }
             }
 
-            if ((chosenArmyItem != null) && ReachableFromChosen(position) && (chosenArmyItem.Army as UserArmy).IsActive() &&
-                !splitButtonClicked)
+            if (ProcessMoveClickOnAdjacent(position))
             {
-                (chosenArmyItem.Army as UserArmy).SetInactive();
-                MoveChosen(position, buttonGO);
+                return;
             }
-            else if (!chooseOrMoveClick)
+            
+            if (!chooseOrMoveClick)
             {
                 chosenArmyItem = null;
                 if (boardStorage.GetBonusItem(position) is Pass)
                 {
                     var pass = boardStorage.GetBonusItem(position) as Pass;
                     pass.ChangeBlock();
-                    SetActiveFrame(null);
-                }
+                }    
+            }
+            splitButtonClicked = false;
+        }
+
+        private bool ProcessChooseClick(IntVector2 position, ArmyStorageItem clickedArmyItem)
+        {
+            if (clickedArmyItem.Army.PlayerType != playerType || !((UserArmy) clickedArmyItem.Army).IsActive())
+            {
+                return false;
             }
 
-            if (splitButtonClicked)
+            if (chosenArmyItem != null && ReachableFromChosen(position))
             {
-                splitButtonClicked = false;
+                return true;
             }
+            
+            chosenArmyItem = clickedArmyItem;
+            chosenArmyPosition = position;
+            return true;
+        }
+
+        private bool ProcessMoveClickOnAdjacent(IntVector2 position)
+        {
+            if ((chosenArmyItem == null) || !ReachableFromChosen(position) ||
+                !(chosenArmyItem.Army as UserArmy).IsActive() || splitButtonClicked)
+            {
+                return false;
+            }
+            
+            (chosenArmyItem.Army as UserArmy).SetInactive();
+            MoveChosen(position);
+            splitButtonClicked = false;
+            return true;
+
+        }
+
+        private bool ProcessSplitClickOnAdjacent(IntVector2 position)
+        {
+            armyText.Clear();
+            SetActiveFrame(null);
+            
+            if (chosenArmyItem == null || boardStorage.GetBonusItem(position) is Pass)
+            {
+                return false;
+            }
+
+            if (!ReachableFromChosen(position) || !splitButtonClicked ||
+                boardStorage.FindPlayerArmies(playerType).Count >= MAX_ARMIES)
+            {
+                return false;
+            }
+            
+            ProcessSplit(chosenArmyPosition.x, chosenArmyPosition.y, position.x, position.y);
+            SetActiveFrame(position);
+            splitButtonClicked = false;
+            chosenArmyItem = null;
+            return true;
+
+        }
+
+        private bool ProcessClickOnSameCell(IntVector2 position)
+        {
+            if (activeFramePosition == null || !activeFramePosition.Equals(position))
+            {
+                return false;
+            }
+            
+            SetActiveFrame(null);
+            chosenArmyItem = null;
+            chosenArmyPosition = null;
+            splitButtonClicked = false;
+            armyText.Clear();
+            return true;
+
         }
 
         private void SetActiveFrame(IntVector2 position)
@@ -146,11 +187,12 @@ namespace Assets.Scripts
             armyText.UpdateText(splittedArmyPart);
         }
 
-        private void MoveChosen(IntVector2 targetPosition, GameObject targetObject)
+        private void MoveChosen(IntVector2 targetPosition)
         {
             //TODO: maybe we should disable the whole menu here
             boardStorage.DisableBoardButtons();
             
+            var targetObject = boardStorage.GetBoardButton(targetPosition).gameObject;
             boardStorage.SetItem(chosenArmyPosition, null);
             currentTargetPosition = targetPosition;
             var armyObject = chosenArmyItem.StoredObject;
@@ -170,7 +212,7 @@ namespace Assets.Scripts
             var resultItem = GetResultItem(boardStorage.GetCurrentBlock(), currentTargetPosition);
             boardStorage.SetItem(currentTargetPosition, resultItem);
             
-            //TODO: make castle, pass etc. implement interface IBonusItem so to process them in a common way
+            //TODO: make castle, pass etc. implement interface IBonusItem so to process them in a common way.
             if (boardStorage.GetBonusItem(currentTargetPosition) is Pass)
             {
                 (boardStorage.GetBonusItem(currentTargetPosition) as Pass).PassArmy(resultItem);
@@ -283,7 +325,6 @@ namespace Assets.Scripts
         /// </summary>
         public void Enable()
         {
-            Debug.Log("enable controller run");
             boardStorage.EnableArmies(playerType);
         }
 

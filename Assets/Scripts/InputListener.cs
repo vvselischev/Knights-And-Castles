@@ -33,7 +33,7 @@ namespace Assets.Scripts
         {
             if (controllerManager.HasActiveController())
             {
-                UserController currentController = controllerManager.CurrentController;
+                var currentController = controllerManager.CurrentController;
                 currentController.OnSplitButtonClick();
             }
         }

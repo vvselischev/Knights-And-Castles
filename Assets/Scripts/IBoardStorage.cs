@@ -56,7 +56,7 @@ namespace Assets.Scripts
         BoardStorageItem GetItem(Cell cell);
         void SetItem(Cell cell, BoardStorageItem item);
         int GetDistanceToEnemyCastle(Cell cell, PlayerType playerType);
-        List<Cell> GetAdjacent(Cell cell);
+        IEnumerable<Cell> GetAdjacent(Cell cell);
         List<Cell> FindActivePlayerArmies(PlayerType playerType);
         IntVector2 GetPositionOnBoard(Cell cell);
         SingleBoardStorage GetBlock(Cell cell);
