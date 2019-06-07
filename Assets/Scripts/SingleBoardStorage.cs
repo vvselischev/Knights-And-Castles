@@ -1,6 +1,7 @@
-﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine.Experimental.PlayerLoop;
 using Object = UnityEngine.Object;
 
 namespace Assets.Scripts
@@ -142,7 +143,7 @@ namespace Assets.Scripts
         }
 
         /// <summary>
-        /// Retuns board width
+        /// Returns board width
         /// </summary>
         /// <returns></returns>
         public int GetBoardWidth()
@@ -255,7 +256,7 @@ namespace Assets.Scripts
         }
         
         /// <summary>
-        /// Retuns board button by given position
+        /// Returns board button by given position
         /// </summary>
         /// <param name="position"></param>
         /// <returns></returns>
@@ -418,7 +419,7 @@ namespace Assets.Scripts
 
         
         /// <summary>
-        /// Retuns distance from given cell to cell with enemy castle
+        /// Returns distance from given cell to cell with enemy castle
         /// </summary>
         /// <param name="cell"></param>
         /// <param name="playerType"></param>
@@ -463,12 +464,13 @@ namespace Assets.Scripts
             return null;
         }
 
+
         /// <summary>
-        /// Retuns cells which are one step away from given cell
+        /// Returns cells which are one step away from given cell
         /// </summary>
         /// <param name="cell"></param>
         /// <returns></returns>
-        public IEnumerable<Cell> GetAdjacent(Cell cell)
+        public List<Cell> GetAdjacent(Cell cell)
         {
             var position = indexByCell[cell];
             var possibleNeighbours = new List<IntVector2>
@@ -672,7 +674,7 @@ namespace Assets.Scripts
         }
 
         /// <summary>
-        /// Retuns all passes from block
+        /// Returns all passes from block
         /// </summary>
         /// <returns></returns>
         public IEnumerable<Pass> GetPasses()
