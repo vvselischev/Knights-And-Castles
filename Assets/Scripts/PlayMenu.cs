@@ -2,6 +2,9 @@
 
 namespace Assets.Scripts
 {
+    /// <summary>
+    /// Class of play UI. Activates and deactivates buttons.
+    /// </summary>
     public class PlayMenu : MonoBehaviour, IMenu
     {
         [SerializeField] private Canvas canvas;

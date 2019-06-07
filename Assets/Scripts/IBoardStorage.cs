@@ -147,8 +147,6 @@ namespace Assets.Scripts
         /// <summary>
         /// Returns adjacent cells
         /// </summary>
-        /// <param name="cell"></param>
-        /// <returns></returns>
         IEnumerable<Cell> GetAdjacent(Cell cell);
         
         /// <summary>

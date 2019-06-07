@@ -9,6 +9,12 @@ namespace Assets.Scripts
 {
     public delegate void ByteArrayHandler(byte[] data);
     public delegate void StringHandler(string data);
+    
+    /// <summary>
+    /// Class for interaction with Google Play Services.
+    /// Provides a set of events to subscribe.
+    /// Do not forget to call LeaveRoom when finish!
+    /// </summary>
     public class MultiplayerController : RealTimeMultiplayerListener
     {
         private static MultiplayerController instance;
@@ -108,6 +114,9 @@ namespace Assets.Scripts
            return PlayGamesPlatform.Instance.RealTime.GetSelf().ParticipantId;
         }
         
+        /// <summary>
+        /// Sends the given message to all in the current room reliably.
+        /// </summary>
         public void SendMessage(byte[] message) {
             PlayGamesPlatform.Instance.RealTime.SendMessageToAll (true, message);
         }

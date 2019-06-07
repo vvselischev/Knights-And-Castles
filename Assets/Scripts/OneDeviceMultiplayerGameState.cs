@@ -2,6 +2,10 @@ using UnityEngine;
 
 namespace Assets.Scripts
 {
+    /// <summary>
+    /// Play mode for 2 players on one device.
+    /// Simply inverts the board after each turn.
+    /// </summary>
     public class OneDeviceMultiplayerGameState : PlayGameState
     {
         public override void InvokeState()
@@ -16,6 +20,9 @@ namespace Assets.Scripts
             boardStorage.InvertBoard();
         }
         
+        /// <summary>
+        /// Displays the result text, increasing in size.
+        /// </summary>
         public override void OnFinishGame(ResultType resultType)
         {
             base.OnFinishGame(resultType);

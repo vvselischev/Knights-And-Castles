@@ -2,6 +2,9 @@ using UnityEngine;
 
 namespace Assets.Scripts
 {
+    /// <summary>
+    /// Represents a pass between blocks on board.
+    /// </summary>
     public class Pass : BoardStorageItem
     {
         public IntVector2 ToBlock { get; }
@@ -9,11 +12,17 @@ namespace Assets.Scripts
         public IntVector2 ToPosition { get; set; }
         private BoardManager boardManager;
 
+        /// <summary>
+        /// Changes block to the one, containing the exit of this pass.
+        /// </summary>
         public void ChangeBlock()
         {
             boardManager.SetActiveBlock(ToBlock);
         }
         
+        /// <summary>
+        /// Transfers the given army and changes block.
+        /// </summary>
         public void PassArmy(ArmyStorageItem army)
         {
             boardManager.GetCurrentBlock().SetItem(FromPosition, null);

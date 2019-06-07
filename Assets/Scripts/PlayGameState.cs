@@ -2,6 +2,9 @@
 
 namespace Assets.Scripts
 {
+    /// <summary>
+    /// Result type from the game point of view.
+    /// </summary>
     public enum ResultType
     {
         FIRST_WIN,
@@ -9,6 +12,9 @@ namespace Assets.Scripts
         DRAW
     }
 
+    /// <summary>
+    /// Result type from user's point of view.
+    /// </summary>
     public enum UserResultType
     {
         WIN,
@@ -61,6 +67,9 @@ namespace Assets.Scripts
             InitNewRound();
         }
 
+        /// <summary>
+        /// Common setup for all child classes.
+        /// </summary>
         protected void SetupGame()
         {
             menuActivator.OpenMenu(playMenu);
@@ -87,6 +96,9 @@ namespace Assets.Scripts
             boardStorage.Reset();
         }
 
+        /// <summary>
+        /// Actual start of the round.
+        /// </summary>
         protected virtual void InitNewRound()
         {
             playedTurns = 0;
@@ -99,6 +111,10 @@ namespace Assets.Scripts
             //Disable or enable UI in child classes!
         }
 
+        /// <summary>
+        /// Subscribed on the current controller.
+        /// Changed turn and resets timer.
+        /// </summary>
         public void OnFinishTurn()
         {
             timer.StopTimer();

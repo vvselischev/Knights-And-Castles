@@ -9,6 +9,12 @@ using UnityEngine.UI;
 namespace Assets.Scripts
 {
     //TODO: should we disable exit listener on setup?
+    /// <summary>
+    /// Play mode using network.
+    /// Host is chosen based on the Participant ID (said to be practically random).
+    /// Then host generates the board and sends it to the opponent.
+    /// Initialization never calls base methods, since it is completely different.
+    /// </summary>
     public class NetworkPlayGameState : PlayGameState
     {
         [SerializeField] private NetworkInputListener networkInputListener;
@@ -29,6 +35,7 @@ namespace Assets.Scripts
             multiplayerController.OnPlayerLeft += ProcessPlayerLeft;
 
             string hostId;
+            //Maybe we do not need this try/catch anymore
             try
             {
                 allPlayers = multiplayerController.GetAllPlayers();
@@ -96,6 +103,9 @@ namespace Assets.Scripts
             boardStorage.InvertBoard();
         }
 
+        /// <summary>
+        /// Common initialization after round setup.
+        /// </summary>
         private void FinishSetup()
         {
             board.SetInputListener(networkInputListener);

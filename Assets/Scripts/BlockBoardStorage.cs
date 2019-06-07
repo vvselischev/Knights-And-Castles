@@ -527,7 +527,7 @@ namespace Assets.Scripts
         /// </summary>
         /// <param name="cell"></param>
         /// <returns></returns>
-        public List<Cell> GetAdjacent(Cell cell)
+        public IEnumerable<Cell> GetAdjacent(Cell cell)
         {
             var block = GetBlock(cell);
             var adjacentInSingleBoard = block.GetAdjacent(cell);

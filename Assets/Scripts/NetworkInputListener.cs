@@ -3,6 +3,11 @@ using UnityEngine.UI;
 
 namespace Assets.Scripts
 {
+    /// <summary>
+    /// Receives the local input and transfers it to the network.
+    /// Receives the network input and transfers it to the current controller.
+    /// Inverts received coordinates.
+    /// </summary>
     public class NetworkInputListener : InputListener
     {
         private MultiplayerController multiplayerController;
