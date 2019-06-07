@@ -16,6 +16,8 @@ namespace Assets.Scripts
         [SerializeField] private ExitListener exitListener;
         private MultiplayerController multiplayerController;
 
+        private const int MAX_TIMEOUT_SECONDS = 15;
+
         public BoardType ConfigurationType { get; set; }
 
         public void InvokeState()
@@ -26,6 +28,7 @@ namespace Assets.Scripts
             multiplayerController.OnRoomSetupCompleted += OnOpponentFound;
             multiplayerController.OnRoomSetupError += DisplayRoomSetupError;
             multiplayerController.OnOpponentDisconnected += DisplayOpponentDisconnected;
+            multiplayerController.OnMessageReceived += ProcessMessage;
             
             (stateManager.GetState(StateType.NETWORK_GAME_STATE) as PlayGameState).ConfigurationType = ConfigurationType;
 
@@ -40,6 +43,15 @@ namespace Assets.Scripts
             
             exitListener.Enable();
             exitListener.OnExitClicked += OnExit;
+        }
+
+        private void ProcessMessage(byte[] data)
+        {
+            if (data[0] == (byte) 'P')
+            {  
+                StopCoroutine(WaitForOpponent());
+                ChangeToNetworkState();  
+            }
         }
 
         private void DisplayOpponentDisconnected()
@@ -59,18 +71,24 @@ namespace Assets.Scripts
         private void OnOpponentFound()
         {
             lobbyText.text = "Opponent found!";
-            StartCoroutine(PingOpponent());
+            StartCoroutine(WaitForOpponent());
         }
 
-        private IEnumerator PingOpponent()
+        private IEnumerator WaitForOpponent()
         {
-            const int pings = 50;
-            const float between = 0.1f;
-            for (int i = 0; i < pings; i++)
+            var secondsPassed = 0;
+            while (true)
             {
-                yield return new WaitForSeconds(between);
+                var message = new[] {(byte)'P'};
+                multiplayerController.SendMessage(message);
+                secondsPassed++;
+                if (secondsPassed > MAX_TIMEOUT_SECONDS)
+                {
+                    DisplayRoomSetupError();
+                    yield break;
+                }
+                yield return new WaitForSeconds(1);
             }
-            ChangeToNetworkState();
         }
 
         private void ChangeToNetworkState()
@@ -92,6 +110,7 @@ namespace Assets.Scripts
             multiplayerController.OnRoomSetupCompleted -= OnOpponentFound;
             multiplayerController.OnOpponentDisconnected -= DisplayOpponentDisconnected;
             multiplayerController.OnRoomSetupError -= DisplayRoomSetupError;
+            multiplayerController.OnMessageReceived -= ProcessMessage;
         }
     }
 }
