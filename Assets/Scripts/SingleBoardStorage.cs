@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Object = UnityEngine.Object;
@@ -234,7 +234,7 @@ namespace Assets.Scripts
         }
         
         /// <summary>
-        /// Retuns board button by given position
+        /// Returns board button by given position
         /// </summary>
         public BoardButton GetBoardButton(IntVector2 position)
         {
@@ -377,7 +377,7 @@ namespace Assets.Scripts
 
         
         /// <summary>
-        /// Retuns distance from given cell to cell with enemy castle
+        /// Returns distance from given cell to cell with enemy castle
         /// </summary>
         public int GetDistanceToEnemyCastle(Cell cell, PlayerType playerType)
         {
@@ -417,8 +417,9 @@ namespace Assets.Scripts
             return null;
         }
 
+
         /// <summary>
-        /// Retuns cells which are one step away from given cell
+        /// Returns cells which are one step away from given cell
         /// </summary>
         public IEnumerable<Cell> GetAdjacent(Cell cell)
         {
