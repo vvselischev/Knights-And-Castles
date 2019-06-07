@@ -52,8 +52,6 @@ namespace Assets.Scripts
         /// <summary>
         /// Creates tables with bonus items and army items
         /// </summary>
-        /// <param name="width"></param>
-        /// <param name="height"></param>
         private void Initialize(int width, int height)
         {
             this.width = width;
@@ -99,7 +97,6 @@ namespace Assets.Scripts
         /// <summary>
         /// Sets all items in tables active
         /// </summary>
-        /// <param name="active"></param>
         private void SetAllItemsActive(bool active)
         {
             for (var col = 1; col <= width; col++)
@@ -142,7 +139,7 @@ namespace Assets.Scripts
         }
 
         /// <summary>
-        /// Retuns board width
+        /// Returns board width
         /// </summary>
         /// <returns></returns>
         public int GetBoardWidth()
@@ -170,9 +167,6 @@ namespace Assets.Scripts
         /// <summary>
         /// Returns item from table with army items by given position
         /// </summary>
-        /// <param name="positionX"></param>
-        /// <param name="positionY"></param>
-        /// <returns></returns>
         public BoardStorageItem GetItem(int positionX, int positionY)
         {
             return boardTable[positionX, positionY];
@@ -181,9 +175,6 @@ namespace Assets.Scripts
         /// <summary>
         /// Sets item to table with army items by given position
         /// </summary>
-        /// <param name="positionX"></param>
-        /// <param name="positionY"></param>
-        /// <param name="item"></param>
         public void SetItem(int positionX, int positionY, BoardStorageItem item)
         {
             SetItem(positionX, positionY, item, boardTable);
@@ -192,9 +183,6 @@ namespace Assets.Scripts
         /// <summary>
         /// Returns bonus item by given position 
         /// </summary>
-        /// <param name="positionX"></param>
-        /// <param name="positionY"></param>
-        /// <returns></returns>
         public BoardStorageItem GetBonusItem(int positionX, int positionY)
         {
             return bonusTable[positionX, positionY];
@@ -203,9 +191,6 @@ namespace Assets.Scripts
         /// <summary>
         /// Sets item to table with bonus items by given position
         /// </summary>
-        /// <param name="positionX"></param>
-        /// <param name="positionY"></param>
-        /// <param name="item"></param>
         public void SetBonusItem(int positionX, int positionY, BoardStorageItem item)
         {
             SetItem(positionX, positionY, item, bonusTable);
@@ -235,9 +220,6 @@ namespace Assets.Scripts
         /// <summary>
         /// Sets item to table with army items by given position
         /// </summary>
-        /// <param name="positionX"></param>
-        /// <param name="positionY"></param>
-        /// <param name="item"></param>
         public void SetItem(IntVector2 position, BoardStorageItem item)
         {
             SetItem(position.x, position.y, item);
@@ -246,9 +228,6 @@ namespace Assets.Scripts
         /// <summary>
         /// Returns board button by given position
         /// </summary>
-        /// <param name="positionX"></param>
-        /// <param name="positionY"></param>
-        /// <returns></returns>
         public BoardButton GetBoardButton(int positionX, int positionY)
         {
             return GetBoardButton(new IntVector2(positionX, positionY));
@@ -257,8 +236,6 @@ namespace Assets.Scripts
         /// <summary>
         /// Retuns board button by given position
         /// </summary>
-        /// <param name="position"></param>
-        /// <returns></returns>
         public BoardButton GetBoardButton(IntVector2 position)
         {
             return board.GetBoardButton(position);
@@ -267,8 +244,6 @@ namespace Assets.Scripts
         /// <summary>
         /// Adds castle to table with bonus items by given position
         /// </summary>
-        /// <param name="position"></param>
-        /// <param name="castle"></param>
         public void AddCastle(IntVector2 position, Castle castle)
         {
             bonusTable[position.x, position.y] = castle;
@@ -277,8 +252,6 @@ namespace Assets.Scripts
         /// <summary>
         /// Returns castle by position
         /// </summary>
-        /// <param name="position"></param>
-        /// <returns></returns>
         public Castle GetCastle(IntVector2 position)
         {
             return bonusTable[position.x, position.y] as Castle;
@@ -287,8 +260,6 @@ namespace Assets.Scripts
         /// <summary>
         /// Returns item from bonus table by position
         /// </summary>
-        /// <param name="position"></param>
-        /// <returns></returns>
         public BoardStorageItem GetBonusItem(IntVector2 position)
         {
             return bonusTable[position.x, position.y];
@@ -297,8 +268,6 @@ namespace Assets.Scripts
         /// <summary>
         /// Checks that board contains at least one army with given player type
         /// </summary>
-        /// <param name="playerType"></param>
-        /// <returns></returns>
         public bool ContainsPlayerArmies(PlayerType playerType)
         {
             return FindPlayerArmies(playerType).Count > 0;
@@ -307,7 +276,6 @@ namespace Assets.Scripts
         /// <summary>
         /// Sets all user armies active
         /// </summary>
-        /// <param name="playerType"></param>
         public void EnableArmies(PlayerType playerType)
         {
             for (var i = 1; i <= GetBoardHeight(); i++)
@@ -330,8 +298,6 @@ namespace Assets.Scripts
         /// <summary>
         /// Returns list of cells with armies of given player
         /// </summary>
-        /// <param name="playerType"></param>
-        /// <returns></returns>
         public List<Cell> FindPlayerArmies(PlayerType playerType)
         {
             var cellsWithArmies = new List<Cell>();
@@ -353,7 +319,6 @@ namespace Assets.Scripts
         /// <summary>
         /// Creates copy of board for AI
         /// </summary>
-        /// <returns></returns>
         public IBoardStorage CreateSimulationStorage()
         {
             var simulationStorage = new SingleBoardStorage(GetBoardWidth(), GetBoardHeight(), board)
@@ -383,8 +348,6 @@ namespace Assets.Scripts
         /// <summary>
         /// Checks that board contains given cell
         /// </summary>
-        /// <param name="cell"></param>
-        /// <returns></returns>
         public bool ContainsCell(Cell cell)
         {
             return indexByCell.ContainsKey(cell);
@@ -394,8 +357,6 @@ namespace Assets.Scripts
         /// <summary>
         /// Returns item from table with army items by cell
         /// </summary>
-        /// <param name="cell"></param>
-        /// <returns></returns>
         public BoardStorageItem GetItem(Cell cell)
         {
             if (ContainsCell(cell))
@@ -409,8 +370,6 @@ namespace Assets.Scripts
         /// <summary>
         /// Sets item to table with army items by cell
         /// </summary>
-        /// <param name="cell"></param>
-        /// <param name="item"></param>
         public void SetItem(Cell cell, BoardStorageItem item)
         {
             SetItem(indexByCell[cell], item);
@@ -420,9 +379,6 @@ namespace Assets.Scripts
         /// <summary>
         /// Retuns distance from given cell to cell with enemy castle
         /// </summary>
-        /// <param name="cell"></param>
-        /// <param name="playerType"></param>
-        /// <returns></returns>
         public int GetDistanceToEnemyCastle(Cell cell, PlayerType playerType)
         {
             var position = indexByCell[cell];
@@ -449,8 +405,6 @@ namespace Assets.Scripts
         /// <summary>
         /// Finds player castles
         /// </summary>
-        /// <param name="playerType"></param>
-        /// <returns></returns>
         public List<Cell> FindCastle(PlayerType playerType)
         {
             var castlePosition = GetCastlePosition(playerType);
@@ -466,8 +420,6 @@ namespace Assets.Scripts
         /// <summary>
         /// Retuns cells which are one step away from given cell
         /// </summary>
-        /// <param name="cell"></param>
-        /// <returns></returns>
         public IEnumerable<Cell> GetAdjacent(Cell cell)
         {
             var position = indexByCell[cell];
@@ -494,8 +446,6 @@ namespace Assets.Scripts
         /// <summary>
         /// Finds cells with active player armies
         /// </summary>
-        /// <param name="playerType"></param>
-        /// <returns></returns>
         public List<Cell> FindActivePlayerArmies(PlayerType playerType)
         {
             var cellsWithArmies = FindPlayerArmies(playerType);
@@ -515,8 +465,6 @@ namespace Assets.Scripts
         /// <summary>
         /// Returns position on a board by cell
         /// </summary>
-        /// <param name="cell"></param>
-        /// <returns></returns>
         public IntVector2 GetPositionOnBoard(Cell cell)
         {
             if (indexByCell.ContainsKey(cell))
@@ -530,8 +478,6 @@ namespace Assets.Scripts
         /// <summary>
         /// Returns board block which contains given cell 
         /// </summary>
-        /// <param name="cell"></param>
-        /// <returns></returns>
         public SingleBoardStorage GetBlock(Cell cell)
         {
             return this;
@@ -546,8 +492,6 @@ namespace Assets.Scripts
         /// <summary>
         /// Checks that in table with bonus items by given position is castle
         /// </summary>
-        /// <param name="position"></param>
-        /// <returns></returns>
         public bool IsCastle(IntVector2 position)
         {
             return bonusTable[position.x, position.y] is Castle;
@@ -556,16 +500,14 @@ namespace Assets.Scripts
         /// <summary>
         /// Disables frame by position
         /// </summary>
-        /// <param name="position"></param>
         public void DisableFrame(IntVector2 position)
         {
             board.GetBoardButton(position).DisableFrame();
         }
         
         /// <summary>
-        /// Enables frameby position
+        /// Enables frame by position
         /// </summary>
-        /// <param name="position"></param>
         public void EnableFrame(IntVector2 position)
         {
             board.GetBoardButton(position).EnableFrame();
@@ -646,8 +588,6 @@ namespace Assets.Scripts
         /// <summary>
         /// Returns cell by position
         /// </summary>
-        /// <param name="position"></param>
-        /// <returns></returns>
         public Cell GetCellByPosition(IntVector2 position)
         {
             return cells[position.x, position.y];
@@ -656,7 +596,6 @@ namespace Assets.Scripts
         /// <summary>
         /// Returns number of cells
         /// </summary>
-        /// <returns></returns>
         public int GetNumberOfCells()
         {
             return GetBoardWidth() * GetBoardHeight();
@@ -665,16 +604,14 @@ namespace Assets.Scripts
         /// <summary>
         /// Returns list of board cells
         /// </summary>
-        /// <returns></returns>
         public IEnumerable<Cell> GetListOfCells()
         {
             return cells.Cast<Cell>().Where(cell => cell != null).ToList();
         }
 
         /// <summary>
-        /// Retuns all passes from block
+        /// Returns all passes from block
         /// </summary>
-        /// <returns></returns>
         public IEnumerable<Pass> GetPasses()
         {
             var passes = new List<Pass>();

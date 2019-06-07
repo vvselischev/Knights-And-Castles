@@ -3,6 +3,9 @@ using UnityEngine;
 
 namespace Assets.Scripts
 {
+    /// <summary>
+    /// Receives game results from PlayGameState, updates the database and displays on canvas.
+    /// </summary>
     public class ResultGameState : MonoBehaviour, IGameState
     {
         private DataService dataService = new DataService("record_database.db");
@@ -13,6 +16,9 @@ namespace Assets.Scripts
         
         private MenuActivator menuActivator = MenuActivator.Instance;
         
+        /// <summary>
+        /// Must be called by PlayGameState.
+        /// </summary>
         public void Initialize(UserResultType resultType, StateType playStateType)
         {
             this.resultType = resultType;

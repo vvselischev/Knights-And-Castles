@@ -1,5 +1,8 @@
 namespace  Assets.Scripts
 {
+    /// <summary>
+    /// Board settings for small board mode.
+    /// </summary>
     public class SmallBoardConfiguration : BoardConfiguration
     {
         public override int BlocksHorizontal { get; } = 1;

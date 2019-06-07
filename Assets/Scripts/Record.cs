@@ -1,5 +1,9 @@
 using SQLite4Unity3d;
 
+/// <summary>
+/// Stores user statistics.
+/// Stored in database.
+/// </summary>
 public class Record  {
 
     [PrimaryKey, AutoIncrement]

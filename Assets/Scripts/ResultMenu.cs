@@ -3,6 +3,9 @@ using UnityEngine.UI;
 
 namespace Assets.Scripts
 {
+    /// <summary>
+    /// Displays the statistics.
+    /// </summary>
     public class ResultMenu : MonoBehaviour, IMenu
     {
         [SerializeField] private Text gamesWithBotText;
@@ -23,6 +26,10 @@ namespace Assets.Scripts
             gameObject.SetActive(false);
         }
 
+        /// <summary>
+        /// Displays the given statistics.
+        /// </summary>
+        /// <param name="resultType">Result type for the title.</param>
         public void DisplayStatistics(Record record, UserResultType resultType)
         {
             //TODO: maybe better to make colors serialized to setup in the editor.

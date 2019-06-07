@@ -3,11 +3,17 @@ using UnityEngine;
 
 namespace Assets.Scripts
 {
+    /// <summary>
+    /// Class for convenient change between game states.
+    /// Automatically calls Invoke and Close methods.
+    /// Singleton, because unique and could be called from different places.
+    /// </summary>
     public class StateManager : MonoBehaviour
     {
         public IGameState CurrentState { get; private set; }
         public static StateManager Instance { get; private set; }
 
+        // Made public for convenient DI in the editor and since some objects need them to initialize.
         public StartGameState startGameState;
         public NetworkPlayGameState networkPlayGameState;
         public AIPlayGameState aiPlayGameState;
@@ -19,6 +25,10 @@ namespace Assets.Scripts
         
         private Dictionary<StateType, IGameState> states;
 
+        /// <summary>
+        /// Like an entry point of application.
+        /// Moves to the start state.
+        /// </summary>
         private void Awake()
         {
             Screen.sleepTimeout = SleepTimeout.NeverSleep;
@@ -28,6 +38,10 @@ namespace Assets.Scripts
             ChangeState(StateType.START_GAME_STATE);
         }
 
+        /// <summary>
+        /// Returns the game state by its type.
+        /// Returned value is packed in IGameState. However, the correspondence is guaranteed.
+        /// </summary>
         public IGameState GetState(StateType stateType)
         {
             return states[stateType];
@@ -48,12 +62,12 @@ namespace Assets.Scripts
             };
         }
 
+        /// <summary>
+        /// Closes current state (if exists) and invokes the given state.
+        /// </summary>
         public void ChangeState(StateType newStateType)
         {
-            if (CurrentState != null)
-            {
-                CurrentState.CloseState();
-            }
+            CurrentState?.CloseState();
 
             var newState = states[newStateType];
             CurrentState = newState;

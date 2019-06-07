@@ -3,6 +3,10 @@
 namespace Assets.Scripts
 {
     //TODO: make it and start button children of common class
+    /// <summary>
+    /// Simple button. Notifies InputListener, when pressed. Can be locked.
+    /// When locked, color is changed to red.
+    /// </summary>
     public class SplitButton : MonoBehaviour
     {
         [SerializeField] private GameIcon icon;

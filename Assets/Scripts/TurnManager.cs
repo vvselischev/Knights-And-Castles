@@ -2,6 +2,9 @@
 
 namespace Assets.Scripts
 {
+    /// <summary>
+    /// Determines the current state of the Turn Manager
+    /// </summary>
     public enum TurnType
     {
         FIRST,
@@ -9,6 +12,11 @@ namespace Assets.Scripts
         RESULT
     }
 
+    /// <summary>
+    /// A class for a convenient turn change.
+    /// Changes active controllers, player icons in the left-up corner.
+    /// Performs logic to save and restore player active blocks via BoardManager.
+    /// </summary>
     public class TurnManager : MonoBehaviour
     {
         private ControllerManager controllerManager;
@@ -16,14 +24,23 @@ namespace Assets.Scripts
         [SerializeField] private GameObject firstIcon;
         [SerializeField] private GameObject secondIcon;
 
+        /// <summary>
+        /// Returns the current turn.
+        /// </summary>
         public TurnType CurrentTurn { get; private set; }
 
+        /// <summary>
+        /// Should be called anytime when boardManager or controllerManager are changed.
+        /// </summary>
         public void Initialize(BoardManager boardManager, ControllerManager controllerManager)
         {
             this.boardManager = boardManager;
             this.controllerManager = controllerManager;
         }
         
+        /// <summary>
+        /// Sets new turn.
+        /// </summary>
         public void SetTurn(TurnType turn)
         {
             CurrentTurn = turn;
@@ -56,6 +73,9 @@ namespace Assets.Scripts
             }
         }
 
+        /// <summary>
+        /// Sets new turn, opposite to current. If current is none, sets First.
+        /// </summary>
         public void SetNextTurn()
         {
             if (CurrentTurn == TurnType.FIRST)

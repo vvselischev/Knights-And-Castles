@@ -4,6 +4,10 @@ using UnityEngine.UI;
 using System;
 using Assets.Scripts;
 
+/// <summary>
+/// Simple custom timer, updating associated text every second.
+/// Raises OnFinish event when finishes.
+/// </summary>
 public class Timer : MonoBehaviour
 {
     [SerializeField] protected Text timeText;
@@ -15,6 +19,9 @@ public class Timer : MonoBehaviour
     private bool started;
     private long timeInStart;
 
+    /// <summary>
+    /// Starts the timer. Duration now is set in the editor.
+    /// </summary>
     public void StartTimer()
     {
         secondsLeft = duration;
@@ -44,6 +51,9 @@ public class Timer : MonoBehaviour
         return DateTime.Now.ToBinary() / 10000000;
     }
     
+    /// <summary>
+    /// Stops the timer immediately.
+    /// </summary>
     public void StopTimer()
     {
         started = false;
