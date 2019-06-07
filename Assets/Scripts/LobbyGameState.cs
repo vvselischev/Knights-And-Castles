@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -7,22 +8,24 @@ namespace Assets.Scripts
     {
         private MenuActivator menuActivator = MenuActivator.Instance;
         [SerializeField] private SimpleMenu lobbyMenu;
+        
+        //TODO: move it to lobbyMenu
+        [SerializeField] private Text lobbyText;
+        
         [SerializeField] private StateManager stateManager;
         [SerializeField] private ExitListener exitListener;
         private MultiplayerController multiplayerController;
 
-        [SerializeField] private Text lobbyLogText;
         public BoardType ConfigurationType { get; set; }
 
         public void InvokeState()
         {
+            lobbyText.text = "Searching for opponent...";
             menuActivator.OpenMenu(lobbyMenu);
             multiplayerController = MultiplayerController.GetInstance();
-            multiplayerController.OnRoomSetupCompleted += ChangeStateToNetworkGameState;
-            multiplayerController.OnRoomSetupError += DisplayError;
-            multiplayerController.logText = lobbyLogText;
-
-            lobbyLogText.text = "Logging... ";
+            multiplayerController.OnRoomSetupCompleted += OnOpponentFound;
+            multiplayerController.OnRoomSetupError += DisplayRoomSetupError;
+            multiplayerController.OnOpponentDisconnected += DisplayOpponentDisconnected;
             
             (stateManager.GetState(StateType.NETWORK_GAME_STATE) as PlayGameState).ConfigurationType = ConfigurationType;
 
@@ -39,16 +42,39 @@ namespace Assets.Scripts
             exitListener.OnExitClicked += OnExit;
         }
 
-        private void DisplayError()
+        private void DisplayOpponentDisconnected()
         {
             multiplayerController.LeaveRoom();
             stateManager.infoGameState.SetInfoText("Opponent disconnected!\nPlease, try again.");
             stateManager.ChangeState(StateType.INFO_GAME_STATE);
         }
 
-        private void ChangeStateToNetworkGameState()
+        private void DisplayRoomSetupError()
         {
-            lobbyLogText.text = "Changing to network... ";
+            multiplayerController.LeaveRoom();
+            stateManager.infoGameState.SetInfoText("Something went wrong!\nPlease, try again.");
+            stateManager.ChangeState(StateType.INFO_GAME_STATE);
+        }
+
+        private void OnOpponentFound()
+        {
+            lobbyText.text = "Opponent found!";
+            StartCoroutine(PingOpponent());
+        }
+
+        private IEnumerator PingOpponent()
+        {
+            const int pings = 50;
+            const float between = 0.1f;
+            for (int i = 0; i < pings; i++)
+            {
+                yield return new WaitForSeconds(between);
+            }
+            ChangeToNetworkState();
+        }
+
+        private void ChangeToNetworkState()
+        {
             stateManager.ChangeState(StateType.NETWORK_GAME_STATE);
         }
 
@@ -63,9 +89,9 @@ namespace Assets.Scripts
             exitListener.OnExitClicked -= OnExit;
             exitListener.Disable();
             menuActivator.CloseMenu();
-            multiplayerController.OnRoomSetupCompleted -= ChangeStateToNetworkGameState;
-            multiplayerController.OnRoomSetupError -= DisplayError;
-            lobbyLogText.text = "Closing... ";
+            multiplayerController.OnRoomSetupCompleted -= OnOpponentFound;
+            multiplayerController.OnOpponentDisconnected -= DisplayOpponentDisconnected;
+            multiplayerController.OnRoomSetupError -= DisplayRoomSetupError;
         }
     }
 }

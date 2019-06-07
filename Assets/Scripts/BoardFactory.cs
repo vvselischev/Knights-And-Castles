@@ -25,8 +25,8 @@ namespace Assets.Scripts
 
         private int imbalance = startImbalance; // first is always in better position
         private const int startImbalance = 100;
-        private const int RandomNumberOfUnitsFrom = 500;
-        private const int RandomNumberOfUnitsTo = 1000;
+        private const int RandomNumberOfUnitsFrom = 10;
+        private const int RandomNumberOfUnitsTo = 30;
         
 
         [SerializeField] private Sprite neutralFriendlySprite;
@@ -95,8 +95,8 @@ namespace Assets.Scripts
                     }
                     else
                     {
-                        //0 -- Empty, 1 -- Friendly, 2 -- Aggressive
-                        var randomValue = random.Next() % 3;
+                        //0 -- Empty, 1 -- Friendly, 2, 3 -- Aggressive
+                        var randomValue = random.Next() % 4;
                         if (randomValue == 0)
                         {
                             continue;
@@ -121,7 +121,6 @@ namespace Assets.Scripts
                     currentBoardTable[col, row] = new ArmyStorageItem(currentArmy, iconGO);
                 }
             }
-            Debug.Log("current imbalance:" + imbalance);
             
             boardStorage.Fill(currentBoardTable, currentBonusTable);
         }
@@ -379,8 +378,6 @@ namespace Assets.Scripts
             {
                 multiplier = 1 + additional + 0.05; // to avoid zero division
             }
-
-            Debug.Log("GenerateBalancedArmyComposition");
 
             var resultArmyComposition = GenerateArmyComposition(
                 (int)(RandomNumberOfUnitsFrom * multiplier), (int)(RandomNumberOfUnitsTo * multiplier));

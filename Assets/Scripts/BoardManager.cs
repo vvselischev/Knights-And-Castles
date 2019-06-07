@@ -1,6 +1,3 @@
-using System.Threading;
-using UnityEngine;
-
 namespace Assets.Scripts
 {
     public class BoardManager
@@ -23,12 +20,7 @@ namespace Assets.Scripts
         
         public void SetActiveBlock(IntVector2 position)
         {
-            var currentBlockPosition = boardStorage.GetCurrentBlockPosition();
             boardStorage.SetCurrentBlock(position);
-            if (currentBlockPosition != null && !currentBlockPosition.Equals(position))
-            {
-                Thread.Sleep(500);
-            }
         }
         public void SetPlayerBlockActive(TurnType playerType)
         {

@@ -1,7 +1,6 @@
-﻿﻿using System;
+﻿using System;
 using System.Collections.Generic;
- using System.Linq;
- using UnityEngine.Experimental.PlayerLoop;
+using System.Linq;
 using Object = UnityEngine.Object;
 
 namespace Assets.Scripts
@@ -291,7 +290,7 @@ namespace Assets.Scripts
         }
 
 
-        public List<Cell> GetAdjacent(Cell cell)
+        public IEnumerable<Cell> GetAdjacent(Cell cell)
         {
             var position = indexByCell[cell];
             var possibleNeighbours = new List<IntVector2>

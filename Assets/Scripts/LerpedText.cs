@@ -33,7 +33,6 @@ namespace Assets.Scripts
                     new Vector3(maxScale, maxScale, maxScale), Time.deltaTime * fraction);
                 yield return null;
             }
-            Debug.Log("Lerp finished");
             textClone.enabled = false;
             FinishedLerp?.Invoke();
         }

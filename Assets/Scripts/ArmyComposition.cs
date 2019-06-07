@@ -1,9 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using UnityEngine;
-using UnityEngine.UI;
 
 namespace Assets.Scripts
 {
@@ -45,7 +40,7 @@ namespace Assets.Scripts
         {
             var powerDifference = winnerArmyComposition.ArmyPower() - loserArmyComposition.ArmyPower();
             var mortalityRate = Math.Sqrt(powerDifference / winnerArmyComposition.ArmyPower());
-            var experienceIncrease = 1 + loserArmyComposition.ArmyPower() / winnerArmyComposition.ArmyPower();
+            var experienceIncrease = 1 + Math.Pow(loserArmyComposition.ArmyPower() / winnerArmyComposition.ArmyPower(), 2);
             return winnerArmyComposition.ArmyCompositionAfterFight(mortalityRate, 
                             winnerArmyComposition.Experience * experienceIncrease);
         }

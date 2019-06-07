@@ -1,10 +1,4 @@
 ﻿using UnityEngine;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using Assets.Scripts;
-using UnityEngine.Serialization;
-using UnityEngine.UI;
 
 namespace Assets.Scripts
 {
@@ -12,7 +6,7 @@ namespace Assets.Scripts
     {
         FIRST_WIN,
         SECOND_WIN,
-        DRAW,
+        DRAW
     }
 
     public enum UserResultType
@@ -80,14 +74,14 @@ namespace Assets.Scripts
             timer.OnFinish += ChangeTurn;
 
             exitListener.Enable();
-            exitListener.OnExitClicked += ExitGame;
+            exitListener.OnExitClicked += OnBackButtonPressed;
         }
 
         public virtual void CloseState()
         {
             menuActivator.CloseMenu();
             timer.OnFinish -= ChangeTurn;
-            exitListener.OnExitClicked -= ExitGame;
+            exitListener.OnExitClicked -= OnBackButtonPressed;
             lerpedText.FinishedLerp -= CloseGame;
             exitListener.Disable();
             boardStorage.Reset();
@@ -107,7 +101,6 @@ namespace Assets.Scripts
 
         public void OnFinishTurn()
         {
-            Debug.Log("Finished turn");
             timer.StopTimer();
             ChangeTurn();
         }
@@ -129,7 +122,7 @@ namespace Assets.Scripts
         /// </summary>
         protected abstract void CloseGame();
 
-        protected virtual void ExitGame()
+        protected virtual void OnBackButtonPressed()
         {
             timer.StopTimer();
             turnManager.SetTurn(TurnType.RESULT);
