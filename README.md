@@ -1,4 +1,6 @@
 # Knights-And-Castles
 Currently under development
 
-You can find the source code in Assets/Scripts
+Source code is in Assets/Scripts.
+
+Tests are in Assets/Editor.
