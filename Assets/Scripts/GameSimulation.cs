@@ -4,6 +4,10 @@ using UnityEngine;
 
 namespace Assets.Scripts
 {
+    /// <summary>
+    /// Implementation of AI algorithm.
+    /// Analyzes recursive tree of moves
+    /// </summary>
     public class GameSimulation
     {
         private class ItemAndPosition
@@ -91,6 +95,12 @@ namespace Assets.Scripts
             throw new ArgumentException("Not ArmyStorageItem");
         }
 
+        /// <summary>
+        /// Calculates position profit for given position
+        /// </summary>
+        /// <param name="armyPower"></param>
+        /// <param name="distanceToEnemyCastle"></param>
+        /// <returns></returns>
         private double CalcArmyPositionProfit(double armyPower, int distanceToEnemyCastle)
         {
             if (distanceToEnemyCastle == 0)
