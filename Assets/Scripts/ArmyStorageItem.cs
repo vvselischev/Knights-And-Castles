@@ -2,6 +2,11 @@
 
 namespace Assets.Scripts
 {
+    /// <summary>
+    /// Base class for an army on board.
+    /// Contains its icon game object.
+    /// Object mover component is attached in the constructor.
+    /// </summary>
     public class ArmyStorageItem : BoardStorageItem
     {
         public Army Army

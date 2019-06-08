@@ -1,31 +1,39 @@
 ﻿using UnityEngine;
 using System.Collections;
-using Assets.Scripts;
 
-public class ExitListener : MonoBehaviour
+namespace Assets.Scripts
 {
-    public event VoidHandler OnExitClicked;
-
-    public void Enable()
+    /// <summary>
+    /// Tracks the back button (escape on keyboard) input when enabled.
+    /// </summary>
+    public class ExitListener : MonoBehaviour
     {
-        StartCoroutine(BackButtonListener());
-    }
+        /// <summary>
+        /// Rises this event when back button is pressed.
+        /// </summary>
+        public event VoidHandler OnExitClicked;
 
-    public void Disable()
-    {
-        StopCoroutine(BackButtonListener());
-    }
-
-    private IEnumerator BackButtonListener()
-    {
-        while (true)
+        public void Enable()
         {
-            if (Input.GetKeyDown(KeyCode.Escape))
-            {
-               OnExitClicked?.Invoke();
-            }
+            StartCoroutine(BackButtonListener());
+        }
 
-            yield return null;
+        public void Disable()
+        {
+            StopCoroutine(BackButtonListener());
+        }
+
+        private IEnumerator BackButtonListener()
+        {
+            while (true)
+            {
+                if (Input.GetKeyDown(KeyCode.Escape))
+                {
+                    OnExitClicked?.Invoke();
+                }
+
+                yield return null;
+            }
         }
     }
 }

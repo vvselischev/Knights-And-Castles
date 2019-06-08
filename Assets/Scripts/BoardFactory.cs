@@ -6,6 +6,9 @@ using UnityEngine.UI;
 
 namespace Assets.Scripts
 {
+    /// <summary>
+    /// Class for board storage creation.
+    /// </summary>
     public class BoardFactory : MonoBehaviour
     {
         private System.Random random = new System.Random();
@@ -41,6 +44,9 @@ namespace Assets.Scripts
 
         [SerializeField] private Sprite passSprite;
 
+        /// <summary>
+        /// Creates an empty storage of the given type and boardManager associated with it.
+        /// </summary>
         public BlockBoardStorage CreateEmptyStorage(BoardType configurationType, out BoardManager boardManager)
         {
             if (configurationType == BoardType.SMALL)
@@ -62,6 +68,12 @@ namespace Assets.Scripts
             return storage;
         }
         
+        /// <summary>
+        /// Fills the given storage randomly.
+        /// 25% empty cell
+        /// 25% neutral friendly cell
+        /// 50% neutral enemy cell
+        /// </summary>
         public void FillBoardStorageRandomly(IBoardStorage boardStorage)
         {
             var currentBoardTable = new BoardStorageItem[blockWidth * blocksHorizontal + 1, blockHeight * blocksVertical + 1];
@@ -207,13 +219,16 @@ namespace Assets.Scripts
         }
 
 
-        //From left to right, from bottom to up.
-        //x == 0 => Empty
-        //x == 1 => NeutralFriendly
-        //x == 2 => NeutralAggressive
-        //x == 11 => FirstPlayer
-        //x == 12 => SecondPlayer
-        //x = 1, 2, 11, 12 => after x goes (v1, v2, v3) -- spearmen, archers, cavalrymen
+        /// <summary>
+        /// Converts the given array of bytes to the board storage by the following convention:
+        /// From left to right, from bottom to up.
+        /// x == 0 => Empty
+        /// x == 1 => NeutralFriendly
+        /// x == 2 => NeutralAggressive
+        /// x == 11 => FirstPlayer
+        /// x == 12 => SecondPlayer
+        /// x = 1, 2, 11, 12 => after x goes (v1, v2, v3) -- spearmen, archers, cavalrymen
+        /// </summary>
         public void FillBoardStorageFromArray(byte[] array, IBoardStorage boardStorage)
         {            
             var currentBoardTable = new BoardStorageItem[blockWidth * blocksHorizontal + 1, blockHeight * blocksVertical + 1];
@@ -276,6 +291,9 @@ namespace Assets.Scripts
             boardStorage.Fill(currentBoardTable, currentBonusTable);
         }
 
+        /// <summary>
+        /// Converts the given storage to the list of bytes by the same convention as in FillBoardStorageFromArray.
+        /// </summary>
         public List<byte> ConvertBoardStorageToBytes(BlockBoardStorage boardStorage)
         {
             boardStorage.ConvertToArrays(out var items, out _);
@@ -325,6 +343,10 @@ namespace Assets.Scripts
             return byteList;
         }
 
+        /// <summary>
+        /// Returns a copy of boardIcon on the given position of the storage.
+        /// Icon is placed on the same position.
+        /// </summary>
         public GameObject CloneBoardIcon(IBoardStorage boardStorage, int fromX, int fromY)
         {
             var item = boardStorage.GetItem(fromX, fromY);

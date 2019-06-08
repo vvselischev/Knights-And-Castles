@@ -4,6 +4,9 @@ using UnityEngine.UI;
 
 namespace Assets.Scripts
 {
+    /// <summary>
+    /// Rectangle board with buttons on the screen.
+    /// </summary>
     [ExecuteInEditMode]
     public class CheckeredButtonBoard : MonoBehaviour
     {
@@ -12,11 +15,11 @@ namespace Assets.Scripts
 
         public int Width { get; } = 8;
         public int Height { get; } = 10;
+        
         private const float SPACE_BETWEEN_BUTTONS = -2; //buttonWidth/20;
 
-        private static float ButtonWidth;
-        private static float ButtonHeight;
-        
+        private static float buttonWidth;
+        private static float buttonHeight;
 
         private Button[,] boardButtons;
 
@@ -25,12 +28,15 @@ namespace Assets.Scripts
             patternButton = GameObject.Find("PatternButton").GetComponent<Button>();
             parentObject = GameObject.Find("Board");
 
-            ButtonWidth = patternButton.GetComponent<RectTransform>().rect.width;
-            ButtonHeight = patternButton.GetComponent<RectTransform>().rect.height;
+            buttonWidth = patternButton.GetComponent<RectTransform>().rect.width;
+            buttonHeight = patternButton.GetComponent<RectTransform>().rect.height;
 
             Reset();
         }
 
+        /// <summary>
+        /// Recreates the board.
+        /// </summary>
         public void Reset()
         {
             DeleteButtons();
@@ -43,6 +49,9 @@ namespace Assets.Scripts
             return boardButtons[position.x, position.y].gameObject.GetComponent<BoardButton>();
         }
         
+        /// <summary>
+        /// Activates all buttons.
+        /// </summary>
         public void EnableBoard()
         {
             var buttons = FindObjectsOfType(typeof(Button));
@@ -52,6 +61,9 @@ namespace Assets.Scripts
             }
         }
 
+        /// <summary>
+        /// Deactivates all buttons.
+        /// </summary>
         public void DisableBoard()
         {
             var buttons = FindObjectsOfType(typeof(Button));
@@ -61,6 +73,10 @@ namespace Assets.Scripts
             }
         }
 
+        /// <summary>
+        /// Sets an input listener to all buttons.
+        /// </summary>
+        /// <param name="inputListener"></param>
         public void SetInputListener(InputListener inputListener)
         {
             var buttons = FindObjectsOfType(typeof(Button));
@@ -81,11 +97,14 @@ namespace Assets.Scripts
 
         private Vector3 GetOffsetFromPattern(int currentColumn, int currentRow)
         {
-            return new Vector3((currentColumn - 1) * (ButtonWidth + SPACE_BETWEEN_BUTTONS),
-                                                 (currentRow - 1) * (ButtonHeight + SPACE_BETWEEN_BUTTONS));
+            return new Vector3((currentColumn - 1) * (buttonWidth + SPACE_BETWEEN_BUTTONS),
+                                                 (currentRow - 1) * (buttonHeight + SPACE_BETWEEN_BUTTONS));
         }
-
-        //PatternButton is placed in the bottom-left corner.
+        
+        /// <summary>
+        /// Creates the board of buttons -- copies of the patternButton (must be set in the editor).
+        /// PatternButton is placed in the bottom-left corner, however, it won't be used later.
+        /// </summary>
         private void CreateButtons()
         {
             for (var currentRow = 1; currentRow <= Height; currentRow++)
@@ -97,7 +116,7 @@ namespace Assets.Scripts
                     var rectTransform = newButton.GetComponent<RectTransform>();
 
                     //This line seems to be useless (it doesn't change size)
-                    rectTransform.rect.size.Set(ButtonWidth, ButtonHeight);
+                    rectTransform.rect.size.Set(buttonWidth, buttonHeight);
 
                     rectTransform.position = patternButton.transform.localPosition + offset;
                     rectTransform.SetParent(parentObject.transform, false);

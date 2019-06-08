@@ -10,6 +10,10 @@ using System.Linq;
 
 namespace Assets.Scripts
 {
+	/// <summary>
+	/// Service for interaction with game database.
+	/// Creates database and table in it if not exist.
+	/// </summary>
 	public class DataService
 	{
 
@@ -85,11 +89,17 @@ namespace Assets.Scripts
 			}
 		}
 
+		/// <summary>
+		/// Returns the iterator to the table with records.
+		/// </summary>
 		public IEnumerable<Record> GetRecords()
 		{
 			return connection.Table<Record>();
 		}
 
+		/// <summary>
+		/// Updates the given record if it exists in table or inserts otherwise.
+		/// </summary>
 		public void UpdateRecord(Record record)
 		{
 			if (GetRecords().Any(r => r.Id == record.Id))

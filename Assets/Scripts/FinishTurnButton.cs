@@ -2,6 +2,10 @@
 
 namespace Assets.Scripts
 {
+    /// <summary>
+    /// Simple button. Notifies InputListener, when pressed. Can be locked.
+    /// When locked, color is changed to red.
+    /// </summary>
     public class FinishTurnButton : MonoBehaviour
     {
         [SerializeField] private GameIcon icon;

@@ -4,6 +4,9 @@ using UnityEngine.UI;
 
 namespace Assets.Scripts
 {
+    /// <summary>
+    /// State of searching for opponents and crating a room.
+    /// </summary>
     public class LobbyGameState : MonoBehaviour, IGameState
     {
         private MenuActivator menuActivator = MenuActivator.Instance;
@@ -16,6 +19,10 @@ namespace Assets.Scripts
         [SerializeField] private ExitListener exitListener;
         private MultiplayerController multiplayerController;
 
+        /// <summary>
+        /// If a ping message from the opponent is not received during this time,
+        /// display an error.
+        /// </summary>
         private const int MAX_TIMEOUT_SECONDS = 15;
 
         public BoardType ConfigurationType { get; set; }
@@ -74,6 +81,11 @@ namespace Assets.Scripts
             StartCoroutine(WaitForOpponent());
         }
 
+        /// <summary>
+        /// Pings the opponent.
+        /// 'P' -- ping message.
+        /// </summary>
+        /// <returns></returns>
         private IEnumerator WaitForOpponent()
         {
             var secondsPassed = 0;

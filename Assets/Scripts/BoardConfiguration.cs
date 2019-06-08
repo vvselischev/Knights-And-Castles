@@ -1,5 +1,8 @@
 namespace Assets.Scripts
 {
+    /// <summary>
+    /// Base class for board settings.
+    /// </summary>
     public abstract class BoardConfiguration
     {
         public abstract int BlocksHorizontal { get; }

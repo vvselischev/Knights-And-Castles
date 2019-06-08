@@ -1,5 +1,8 @@
 namespace Assets.Scripts
 {
+    /// <summary>
+    /// Stores the move for AI.
+    /// </summary>
     public class MoveInformation
     {
         public Cell From { get; }

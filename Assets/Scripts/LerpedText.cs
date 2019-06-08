@@ -4,6 +4,10 @@ using UnityEngine.UI;
 
 namespace Assets.Scripts
 {
+    /// <summary>
+    /// Represents a text, that is scaled in real time.
+    /// Text object must be set in the editor.
+    /// </summary>
     public class LerpedText : MonoBehaviour
     {
         [SerializeField] public Text text;
@@ -15,6 +19,9 @@ namespace Assets.Scripts
 
         public event VoidHandler FinishedLerp;
 
+        /// <summary>
+        /// Starts displaying the given text, written with the given color.
+        /// </summary>
         public void PerformLerpString(string s, Color color)
         {
             textClone = text;

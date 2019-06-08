@@ -2,11 +2,18 @@ using UnityEngine;
 
 namespace Assets.Scripts
 {
+    /// <summary>
+    /// Represents a castle in the game.
+    /// </summary>
     public class Castle : BoardStorageItem
     {
         private PlayerType ownerType;
         private PlayGameState playGameState;
 
+        /// <summary>
+        /// Returns true and notifies playGameState if an enemy army enters the castle and false otherwise.
+        /// 
+        /// </summary>
         public bool PerformAction(Army enteredArmy)
         {
             if (enteredArmy.PlayerType != ownerType)

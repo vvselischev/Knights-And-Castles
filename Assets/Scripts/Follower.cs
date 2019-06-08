@@ -3,8 +3,11 @@ using UnityEngine;
 
 namespace Assets.Scripts
 {
-    public delegate void VoidHandler();
-
+    /// <summary>
+    /// Script for moving an object from one position to another.
+    /// Velocity is set in the editor.
+    /// Must be attached to game object with RectTransform component.
+    /// </summary>
     public class Follower : MonoBehaviour
     {
         [SerializeField] private float velocity = 120;

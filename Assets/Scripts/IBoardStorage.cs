@@ -137,7 +137,7 @@ namespace Assets.Scripts
         void SetItem(Cell cell, BoardStorageItem item);
         
         /// <summary>
-        /// Returns distane to enemy castle
+        /// Returns distance to enemy castle
         /// </summary>
         /// <param name="cell"></param>
         /// <param name="playerType"></param>

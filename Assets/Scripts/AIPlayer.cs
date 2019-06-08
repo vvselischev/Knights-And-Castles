@@ -1,5 +1,3 @@
-using UnityEngine;
-
 namespace Assets.Scripts
 {
 	/// <summary>

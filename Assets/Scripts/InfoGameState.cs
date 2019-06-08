@@ -3,6 +3,10 @@ using UnityEngine.UI;
 
 namespace Assets.Scripts
 {
+    /// <summary>
+    /// State for displaying messages.
+    /// Text object for message must be set in the editor.
+    /// </summary>
     public class InfoGameState : MonoBehaviour, IGameState
     {
         private MenuActivator menuActivator = MenuActivator.Instance;
@@ -21,7 +25,10 @@ namespace Assets.Scripts
             var stateManager = StateManager.Instance;
             stateManager.ChangeState(StateType.START_GAME_STATE);
         }
-
+        
+        /// <summary>
+        /// Displays the given text.
+        /// </summary>
         public void SetInfoText(string text)
         {
             infoText.text = text;

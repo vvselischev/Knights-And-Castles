@@ -15,6 +15,9 @@ namespace Assets.Scripts
         private int blockWidth;
         private int blockHeight;
 
+        /// <summary>
+        /// Must be called before usage.
+        /// </summary>
         public void Initialize(ControllerManager controllerManager, int blockWidth, int blockHeight)
         {
             base.Initialize(controllerManager);
@@ -29,10 +32,13 @@ namespace Assets.Scripts
             multiplayerController.OnMessageReceived -= ProcessNetworkData;
         }
         
-        //'M' -- move (otherwise ignore this message), followed by one of:
-        //'B' -- button click, followed by x and y
-        //'F' -- finish turn
-        //'S' -- split
+        /// <summary>
+        /// Processes incoming messages by the given convention:
+        /// 'M' -- move (otherwise ignore this message), followed by one of:
+        /// 'B' -- button click, followed by x and y
+        /// 'F' -- finish turn
+        /// 'S' -- split
+        /// </summary>
         private void ProcessNetworkData(byte[] message)
         {
             if (message[0] != 'M')

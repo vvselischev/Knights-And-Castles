@@ -2,10 +2,16 @@
 
 namespace Assets.Scripts
 {
+    /// <summary>
+    /// Receives the local input and transfers it to the current controller.
+    /// </summary>
     public class InputListener : MonoBehaviour
     {
         private ControllerManager controllerManager;
 
+        /// <summary>
+        /// Must be called before usage.
+        /// </summary>
         public void Initialize(ControllerManager controllerManager)
         {
             this.controllerManager = controllerManager;

@@ -2,6 +2,9 @@ using UnityEngine;
 
 namespace Assets.Scripts
 {
+    /// <summary>
+    /// Play mode with bot.
+    /// </summary>
     public class AIPlayGameState : PlayGameState
     {
         private AIPlayer aiPlayer;

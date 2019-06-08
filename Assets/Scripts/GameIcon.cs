@@ -3,6 +3,9 @@ using UnityEngine.UI;
 
 namespace Assets.Scripts
 {
+    /// <summary>
+    /// Simple icon. Can be changed in color and enabled/disabled.
+    /// </summary>
     public class GameIcon : MonoBehaviour
     {
         private Sprite defaultSprite;

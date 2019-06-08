@@ -2,17 +2,18 @@ using System.Collections.Generic;
 using UnityEngine;
 using GooglePlayGames;
 using GooglePlayGames.BasicApi.Multiplayer;
-using GooglePlayGames.Native.Cwrapper;
-using UnityEngine.UI;
 
 namespace Assets.Scripts
 {
+    // Let them be here.
+    public delegate void VoidHandler();
     public delegate void ByteArrayHandler(byte[] data);
     public delegate void StringHandler(string data);
     
     /// <summary>
     /// Class for interaction with Google Play Services.
     /// Provides a set of events to subscribe.
+    /// Room is created for 2 players.
     /// Do not forget to call LeaveRoom when finish!
     /// </summary>
     public class MultiplayerController : RealTimeMultiplayerListener
