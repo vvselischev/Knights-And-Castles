@@ -1,9 +1,9 @@
 namespace Assets.Scripts
 {
-	/// <summary>
+    /// <summary>
     /// Implementation of army in a game
     /// </summary>
-	public class AIPlayer
+    public class AIPlayer
     {
         private BoardManager boardManager;
         private BlockBoardStorage boardStorage;
@@ -21,10 +21,10 @@ namespace Assets.Scripts
             this.inputListener = inputListener;
             this.boardStorage = boardStorage;
         }
-		
-		/// <summary>
-    	/// Activates AI
-    	/// </summary>
+
+        /// <summary>
+        /// Activates AI
+        /// </summary>
         public void Activate()
         {
             MakeTurn();
