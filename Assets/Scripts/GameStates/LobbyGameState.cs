@@ -19,6 +19,8 @@ namespace Assets.Scripts
         [SerializeField] private ExitListener exitListener;
         private MultiplayerController multiplayerController;
 
+        private bool waiting;
+
         /// <summary>
         /// If a ping message from the opponent is not received during this time,
         /// display an error.
@@ -55,7 +57,8 @@ namespace Assets.Scripts
         private void ProcessMessage(byte[] data)
         {
             if (data[0] == (byte) 'P')
-            {  
+            {
+                waiting = false;
                 StopCoroutine(WaitForOpponent());
                 ChangeToNetworkState();  
             }
@@ -77,6 +80,7 @@ namespace Assets.Scripts
 
         private void OnOpponentFound()
         {
+            exitListener.Disable();
             lobbyText.text = "Opponent found!";
             StartCoroutine(WaitForOpponent());
         }
@@ -88,9 +92,14 @@ namespace Assets.Scripts
         /// <returns></returns>
         private IEnumerator WaitForOpponent()
         {
+            waiting = true;
             var secondsPassed = 0;
             while (true)
             {
+                if (!waiting)
+                {
+                    yield break;
+                }
                 var message = new[] {(byte)'P'};
                 multiplayerController.SendMessage(message);
                 secondsPassed++;
@@ -116,6 +125,8 @@ namespace Assets.Scripts
         
         public void CloseState()
         {
+            waiting = false;
+            StopCoroutine(WaitForOpponent());
             exitListener.OnExitClicked -= OnExit;
             exitListener.Disable();
             menuActivator.CloseMenu();

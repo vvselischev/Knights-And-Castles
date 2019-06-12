@@ -153,7 +153,7 @@ namespace Assets.Scripts
 
         private void OnApplicationPause(bool pause)
         {
-            if (pause)
+            if (pause && stateManager.CurrentState is NetworkPlayGameState)
             {
                 ProcessPlayerLeft("-1");
             }

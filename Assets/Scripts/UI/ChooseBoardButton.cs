@@ -16,7 +16,14 @@ namespace Assets.Scripts
             var stateManager = StateManager.Instance;
             var nextStateType = chooseBoardGameState.NextStateType;
 
-            (stateManager.GetState(nextStateType) as PlayGameState).ConfigurationType = boardType;
+            if (nextStateType == StateType.LOBBY_GAME_STATE)
+            {
+                stateManager.networkPlayGameState.ConfigurationType = boardType;
+            }
+            else
+            {
+                (stateManager.GetState(nextStateType) as PlayGameState).ConfigurationType = boardType;
+            }
 
             stateManager.ChangeState(nextStateType);
         }
