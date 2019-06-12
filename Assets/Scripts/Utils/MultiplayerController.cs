@@ -25,6 +25,9 @@ namespace Assets.Scripts
         public event ByteArrayHandler OnMessageReceived;
         public event VoidHandler OnRoomSetupCompleted;
         public event VoidHandler OnRoomSetupError;
+        public event VoidHandler OnAuthenticated;
+
+        public event VoidHandler OnAuthenticationError;
 
         public event VoidHandler OnOpponentDisconnected;
         public event StringHandler OnPlayerLeft;
@@ -46,11 +49,11 @@ namespace Assets.Scripts
             {
                 if (!success)
                 {
-                    PlayGamesPlatform.Instance.SignOut();
-                    OnRoomSetupError?.Invoke();
+                    OnAuthenticationError?.Invoke();
                 }
                 else
                 {
+                    OnAuthenticated?.Invoke();
                     StartMatchMaking(variation);
                 }
             });

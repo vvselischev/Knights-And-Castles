@@ -31,15 +31,17 @@ namespace Assets.Scripts
 
         public void InvokeState()
         {
-            lobbyText.text = "Searching for opponent...";
+            lobbyText.text = "Authentication...";
             menuActivator.OpenMenu(lobbyMenu);
             multiplayerController = MultiplayerController.GetInstance();
             multiplayerController.OnRoomSetupCompleted += OnOpponentFound;
             multiplayerController.OnRoomSetupError += DisplayRoomSetupError;
             multiplayerController.OnOpponentDisconnected += DisplayOpponentDisconnected;
             multiplayerController.OnMessageReceived += ProcessMessage;
+            multiplayerController.OnAuthenticated += DisplayAfterAuthenticatedMessage;
+            multiplayerController.OnAuthenticationError += DisplayAuthenticationError;
             
-            (stateManager.GetState(StateType.NETWORK_GAME_STATE) as PlayGameState).ConfigurationType = ConfigurationType;
+            stateManager.networkPlayGameState.ConfigurationType = ConfigurationType;
 
             if (ConfigurationType == BoardType.SMALL)
             {
@@ -52,6 +54,18 @@ namespace Assets.Scripts
             
             exitListener.Enable();
             exitListener.OnExitClicked += OnExit;
+        }
+
+        private void DisplayAuthenticationError()
+        {
+            multiplayerController.LeaveRoom();
+            stateManager.infoGameState.SetInfoText("Authentication failed!\nPlease, try again.");
+            stateManager.ChangeState(StateType.INFO_GAME_STATE);
+        }
+
+        private void DisplayAfterAuthenticatedMessage()
+        {
+            lobbyText.text = "Searching for opponent...";
         }
 
         private void ProcessMessage(byte[] data)
@@ -134,6 +148,7 @@ namespace Assets.Scripts
             multiplayerController.OnOpponentDisconnected -= DisplayOpponentDisconnected;
             multiplayerController.OnRoomSetupError -= DisplayRoomSetupError;
             multiplayerController.OnMessageReceived -= ProcessMessage;
+            multiplayerController.OnAuthenticated -= DisplayAfterAuthenticatedMessage;
         }
     }
 }
