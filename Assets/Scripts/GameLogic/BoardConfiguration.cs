@@ -30,7 +30,7 @@ namespace Assets.Scripts
         
         public abstract IntVector2[] PassesFromPositions { get; }
         
-        //It is be more convenient for user to be placed next to the pass, but not on the same cell.
+        //It will be more convenient for user to be placed next to the pass, but not on the same cell.
         public abstract IntVector2[] PassesToPositions { get; }
     }
 }
