@@ -2,7 +2,7 @@
 
 namespace Assets.Scripts
 {
-	/// <summary>
+    /// <summary>
     /// Implementation of army composition a game
     /// </summary>
     public class ArmyComposition

@@ -12,7 +12,6 @@ namespace Assets.Scripts
 
         /// <summary>
         /// Returns true and notifies playGameState if an enemy army enters the castle and false otherwise.
-        /// 
         /// </summary>
         public bool PerformAction(Army enteredArmy)
         {
