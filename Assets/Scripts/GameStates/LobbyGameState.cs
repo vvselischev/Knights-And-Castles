@@ -41,7 +41,7 @@ namespace Assets.Scripts
             multiplayerController.OnAuthenticated += DisplayAfterAuthenticatedMessage;
             multiplayerController.OnAuthenticationError += DisplayAuthenticationError;
             
-            stateManager.networkPlayGameState.ConfigurationType = ConfigurationType;
+            stateManager.NetworkPlayGameState.ConfigurationType = ConfigurationType;
 
             if (ConfigurationType == BoardType.SMALL)
             {
@@ -59,7 +59,7 @@ namespace Assets.Scripts
         private void DisplayAuthenticationError()
         {
             multiplayerController.LeaveRoom();
-            stateManager.infoGameState.SetInfoText("Authentication failed!\nPlease, try again.");
+            stateManager.InfoGameState.SetInfoText("Authentication failed!\nPlease, try again.");
             stateManager.ChangeState(StateType.INFO_GAME_STATE);
         }
 
@@ -81,14 +81,14 @@ namespace Assets.Scripts
         private void DisplayOpponentDisconnected()
         {
             multiplayerController.LeaveRoom();
-            stateManager.infoGameState.SetInfoText("Opponent disconnected!\nPlease, try again.");
+            stateManager.InfoGameState.SetInfoText("Opponent disconnected!\nPlease, try again.");
             stateManager.ChangeState(StateType.INFO_GAME_STATE);
         }
 
         private void DisplayRoomSetupError()
         {
             multiplayerController.LeaveRoom();
-            stateManager.infoGameState.SetInfoText("Something went wrong!\nPlease, try again.");
+            stateManager.InfoGameState.SetInfoText("Something went wrong!\nPlease, try again.");
             stateManager.ChangeState(StateType.INFO_GAME_STATE);
         }
 

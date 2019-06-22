@@ -10,21 +10,30 @@ namespace Assets.Scripts
     /// </summary>
     public class StateManager : MonoBehaviour
     {
-        public IGameState CurrentState { get; private set; }
-        public static StateManager Instance { get; private set; }
-
-        // Made public for convenient DI in the editor and since some objects need them to initialize.
-        public StartGameState startGameState;
-        public NetworkPlayGameState networkPlayGameState;
-        public AIPlayGameState aiPlayGameState;
-        public OneDeviceMultiplayerGameState oneDeviceMultiplayerGameState;
-        public LobbyGameState lobbyGameState;
-        public ChooseBoardGameState chooseBoardGameState;
-        public ResultGameState resultGameState;
-        public InfoGameState infoGameState;
-        
         private Dictionary<StateType, IGameState> states;
 
+        [SerializeField] private StartGameState startGameState;
+        [SerializeField] private NetworkPlayGameState networkPlayGameState;
+        [SerializeField] private AIPlayGameState aiPlayGameState;
+        [SerializeField] private OneDeviceMultiplayerGameState oneDeviceMultiplayerGameState;
+        [SerializeField] private LobbyGameState lobbyGameState;
+        [SerializeField] private ChooseBoardGameState chooseBoardGameState;
+        [SerializeField] private ResultGameState resultGameState;
+        [SerializeField] private InfoGameState infoGameState;
+        
+        //For convenient DI in the editor and since some objects need them to initialize.
+        public StartGameState StartGameState => startGameState;
+        public NetworkPlayGameState NetworkPlayGameState => networkPlayGameState;
+        public AIPlayGameState AIPlayGameState => aiPlayGameState;
+        public OneDeviceMultiplayerGameState OneDeviceMultiplayerGameState => oneDeviceMultiplayerGameState;
+        public LobbyGameState LobbyGameState => lobbyGameState;
+        public ChooseBoardGameState ChooseBoardGameState => chooseBoardGameState;
+        public ResultGameState ResultGameState => resultGameState;
+        public InfoGameState InfoGameState => infoGameState;
+
+        public IGameState CurrentState { get; private set; }
+        public static StateManager Instance { get; private set; }
+        
         /// <summary>
         /// Like an entry point of application.
         /// Moves to the start state.
@@ -51,14 +60,14 @@ namespace Assets.Scripts
         {
             states = new Dictionary<StateType, IGameState>
             {
-                {StateType.START_GAME_STATE, startGameState},
-                {StateType.CHOOSE_BOARD_GAME_STATE, chooseBoardGameState},
-                {StateType.LOBBY_GAME_STATE, lobbyGameState},
-                {StateType.NETWORK_GAME_STATE, networkPlayGameState},
-                {StateType.AI_GAME_STATE, aiPlayGameState},
-                {StateType.ONE_DEVICE_MULTIPLAYER_STATE, oneDeviceMultiplayerGameState},
-                {StateType.RESULT_GAME_STATE, resultGameState},
-                {StateType.INFO_GAME_STATE, infoGameState}
+                {StateType.START_GAME_STATE, StartGameState},
+                {StateType.CHOOSE_BOARD_GAME_STATE, ChooseBoardGameState},
+                {StateType.LOBBY_GAME_STATE, LobbyGameState},
+                {StateType.NETWORK_GAME_STATE, NetworkPlayGameState},
+                {StateType.AI_GAME_STATE, AIPlayGameState},
+                {StateType.ONE_DEVICE_MULTIPLAYER_STATE, OneDeviceMultiplayerGameState},
+                {StateType.RESULT_GAME_STATE, ResultGameState},
+                {StateType.INFO_GAME_STATE, InfoGameState}
             };
         }
 

@@ -18,7 +18,7 @@ namespace Assets.Scripts
 
             if (nextStateType == StateType.LOBBY_GAME_STATE)
             {
-                stateManager.networkPlayGameState.ConfigurationType = boardType;
+                stateManager.NetworkPlayGameState.ConfigurationType = boardType;
             }
             else
             {

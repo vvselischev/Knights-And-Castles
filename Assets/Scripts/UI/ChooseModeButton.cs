@@ -14,7 +14,7 @@ namespace Assets.Scripts
         {
             var stateManager = StateManager.Instance;
 
-            stateManager.chooseBoardGameState.NextStateType = nextState;
+            stateManager.ChooseBoardGameState.NextStateType = nextState;
             stateManager.ChangeState(StateType.CHOOSE_BOARD_GAME_STATE);
         }
     }

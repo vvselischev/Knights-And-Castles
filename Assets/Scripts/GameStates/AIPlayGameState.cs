@@ -60,7 +60,7 @@ namespace Assets.Scripts
 
         protected override void CloseGame()
         {
-            stateManager.resultGameState.Initialize(resultType, playMode);
+            stateManager.ResultGameState.Initialize(resultType, playMode);
             stateManager.ChangeState(StateType.RESULT_GAME_STATE);
         }
 

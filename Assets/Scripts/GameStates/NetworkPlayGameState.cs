@@ -224,7 +224,7 @@ namespace Assets.Scripts
             
             multiplayerController.OnPlayerLeft -= ProcessPlayerLeft;
             multiplayerController.LeaveRoom();
-            stateManager.resultGameState.Initialize(currentUserResultType, playMode);
+            stateManager.ResultGameState.Initialize(currentUserResultType, playMode);
             stateManager.ChangeState(StateType.RESULT_GAME_STATE);
         }
 
