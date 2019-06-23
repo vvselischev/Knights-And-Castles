@@ -54,16 +54,10 @@ namespace Assets.Scripts
             
             if (boardStorage.GetItem(position) is ArmyStorageItem)
             {
-                if (ProcessClickOnSameCell(position))
+                if (ProcessClickOnArmy(position, ref chooseOrMoveClick))
                 {
                     return;
                 }
-                
-                SetActiveFrame(position);
-                var clickedArmyItem = boardStorage.GetItem(position) as ArmyStorageItem;
-                armyText.UpdateText(clickedArmyItem.Army);
-
-                chooseOrMoveClick = ProcessChooseClick(position, clickedArmyItem);
             }
             else
             {
@@ -88,6 +82,21 @@ namespace Assets.Scripts
                 }    
             }
             splitButtonClicked = false;
+        }
+
+        private bool ProcessClickOnArmy(IntVector2 position, ref bool chooseOrMoveClick)
+        {
+            if (ProcessClickOnSameCell(position))
+            {
+                return true;
+            }
+
+            SetActiveFrame(position);
+            var clickedArmyItem = boardStorage.GetItem(position) as ArmyStorageItem;
+            armyText.UpdateText(clickedArmyItem.Army);
+
+            chooseOrMoveClick = ProcessChooseClick(position, clickedArmyItem);
+            return false;
         }
 
         private bool ProcessChooseClick(IntVector2 position, ArmyStorageItem clickedArmyItem)

@@ -16,8 +16,7 @@ namespace Assets.Scripts
 	/// </summary>
 	public class DataService
 	{
-
-		private SQLiteConnection connection;
+		private readonly SQLiteConnection connection;
 
 		public DataService(string databaseName)
 		{

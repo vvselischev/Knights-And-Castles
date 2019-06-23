@@ -40,6 +40,10 @@ namespace Assets.Scripts
         
         /// <summary>
         /// Sets new turn.
+        /// Saves the current player block and disables its controller.
+        /// Restores the next-player's block and enables its controller.
+        /// Activates the corresponding icon.
+        /// If next turn if Result, deactivates both controllers.
         /// </summary>
         public void SetTurn(TurnType turn)
         {

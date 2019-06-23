@@ -6,22 +6,52 @@ using UnityEngine;
 namespace Assets.Scripts
 {
     /// <summary>
-    /// Implementation of multiblocked board
+    /// Implementation of multiblocked board.
+    /// Blocked board is represented as a two-dimension array.
+    /// Each block is SingleBoardStorage.
+    /// One block must be set as current. All operations of IBoardStorage are performed  with this block.
+    /// Note: 1-indexation everywhere.
     /// </summary>
     public class BlockBoardStorage : IBoardStorage
     {
+        /// <summary>
+        /// Number of blocks horizontally.
+        /// </summary>
         private int width;
+        /// <summary>
+        /// Number of blocks vertically.
+        /// </summary>
         private int height;
 
+        /// <summary>
+        /// Array of blocks.
+        /// </summary>
         private SingleBoardStorage[,] blocks;
+        
+        //Just to transfer it to blocks and to simulation.
         private CheckeredButtonBoard board;
 
+        /// <summary>
+        /// The current block. All operations of the IBoardStorage interface are performed with it.
+        /// </summary>
         private SingleBoardStorage currentBlock;
+        /// <summary>
+        /// The position of the current block.
+        /// </summary>
         private IntVector2 currentBlockPosition;
         
-        private Dictionary<PlayerType, List<Cell>> castles; // Where should be initialized?
-        private Graph graph;  // Where should be initialized?
+        /// <summary>
+        /// The cells of players castles.
+        /// </summary>
+        private Dictionary<PlayerType, List<Cell>> castles;
+        /// <summary>
+        /// The graph based on the board.
+        /// </summary>
+        private Graph graph;
 
+        /// <summary>
+        /// Constructs an empty storage. Fill method is supposed to be called after.
+        /// </summary>
         public BlockBoardStorage(int width, int height, CheckeredButtonBoard board)
         {
             this.width = width;
@@ -34,9 +64,6 @@ namespace Assets.Scripts
         /// <summary>
         /// Fills block at given position with given arrays of army and bonus items
         /// </summary>
-        /// <param name="items"></param>
-        /// <param name="bonusItems"></param>
-        /// <param name="blockPosition"></param>
         public void FillBlock(BoardStorageItem[,] items, BoardStorageItem[,] bonusItems, IntVector2 blockPosition)
         {
             var blockWidth = items.GetLength(0) - 1;
@@ -44,14 +71,19 @@ namespace Assets.Scripts
             FillBlock(items, bonusItems, blockPosition, 1, blockWidth, 1,blockHeight);
         }
 
+        /// <summary>
+        /// Receives the global tables of items and the segment in them to fill the new block at the given position.
+        /// </summary>
         private void FillBlock(BoardStorageItem[,] items, BoardStorageItem[,] bonusItems,
             IntVector2 blockPosition, int fromX, int toX, int fromY, int toY)
         {
+            //Calculates the size of the block to fill.
             var blockWidth = toX - fromX + 1;
             var blockHeight = toY - fromY + 1;
             blocks[blockPosition.x, blockPosition.y] = new SingleBoardStorage(blockWidth, blockHeight, board);
 
             var targetBlock = blocks[blockPosition.x, blockPosition.y];
+            //Copy the items from the global tables to the target block.
             for (var col = fromX; col <= toX; col++)
             {
                 for (var row = fromY; row <= toY; row++)
@@ -65,20 +97,17 @@ namespace Assets.Scripts
         }
 
         /// <summary>
-        /// Returns block by position
+        /// Returns the block by its position.
         /// </summary>
-        /// <param name="position"></param>
-        /// <returns></returns>
         public SingleBoardStorage GetBlock(IntVector2 position)
         {
             return blocks[position.x, position.y];
         }
 
         /// <summary>
-        /// Fills whole board with items from arrays given from arguments
+        /// Fills the whole board with items from arrays given from arguments.
+        /// Every block is assumed to have the same size.
         /// </summary>
-        /// <param name="items"></param>
-        /// <param name="bonusItems"></param>
         public void Fill(BoardStorageItem[,] items, BoardStorageItem[,] bonusItems)
         {
             var blockWidth = (items.GetLength(0) - 1) / width;
@@ -95,22 +124,25 @@ namespace Assets.Scripts
                     FillBlock(items, bonusItems, new IntVector2(col, row), fromX, toX, fromY, toY);
                 }
             }
+            
+            CompleteBoardInitialization();
         }
 
         /// <summary>
-        /// Gets all army and bonus items from board and puts them to arrays given as arguments
+        /// Gets all army and bonus items from board and puts them to arrays given as arguments.
+        /// Assuming that all blocks have the same size.
         /// </summary>
-        /// <param name="items"></param>
-        /// <param name="bonusItems"></param>
         public void ConvertToArrays(out BoardStorageItem[,] items, out BoardStorageItem[,] bonusItems)
         {
-            //TODO: stupid solution, assuming that all blocks have equal size...
+            //Blocks have the same size, so take this size of the first block
             var blockWidth = blocks[1, 1].GetBoardWidth();
             var blockHeight = blocks[1, 1].GetBoardHeight();
 
+            //Create global arrays
             items = new BoardStorageItem[width * blockWidth + 1, height * blockHeight + 1];
             bonusItems = new BoardStorageItem[width * blockWidth + 1, height * blockHeight + 1];
             
+            //Enumerate all blocks, calculate the corresponding segment in the global arrays and copy items to it.
             for (var col = 1; col <= width; col++)
             {
                 for (var row = 1; row <= height; row++)
@@ -132,7 +164,8 @@ namespace Assets.Scripts
         }
 
         /// <summary>
-        /// Changes current block to block at given position
+        /// Changes the current block to block at the given position.
+        /// Calls activate and deactivate methods.
         /// </summary>
         /// <param name="position"></param>
         public void SetCurrentBlock(IntVector2 position)
@@ -144,7 +177,7 @@ namespace Assets.Scripts
         }
 
         /// <summary>
-        /// Returns position of current block
+        /// Returns the position of current block
         /// </summary>
         /// <returns></returns>
         public IntVector2 GetCurrentBlockPosition()
@@ -153,7 +186,7 @@ namespace Assets.Scripts
         }
         
         /// <summary>
-        /// Returns current block
+        /// Returns the current block.
         /// </summary>
         /// <returns></returns>
         public SingleBoardStorage GetCurrentBlock()
@@ -162,7 +195,7 @@ namespace Assets.Scripts
         }
         
         /// <summary>
-        /// Disables all board butons in current block
+        /// Disables all board buttons in the current block
         /// </summary>
         public void DisableBoardButtons()
         {
@@ -178,14 +211,39 @@ namespace Assets.Scripts
         }
 
         /// <summary>
-        /// Rotates board on 180 angles
+        /// Rotates the board on 180 angles
         /// </summary>
         public void InvertBoard()
         {
-            //Loops are completely separated, because after swapping blocks we cannot determine dimensions of
-            //the target block for pass (actually, we can, but it is very painful)
+            //The following inversions are completely separated, because after swapping blocks we cannot determine dimensions of
+            //the target block for pass (actually, we can, but it is very painful).
             
             //Loop through blocks and invert passes
+            InvertPasses();
+
+            //Invert all blocks
+            InvertBlocks();
+        }
+
+        /// <summary>
+        /// Invert every block. However, the blocks do not change their position.
+        /// </summary>
+        private void InvertBlocks()
+        {
+            for (var col = 1; col <= width; col++)
+            {
+                for (var row = 1; row <= height; row++)
+                {
+                    blocks[col, row].InvertBoard();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Inverts all passes.
+        /// </summary>
+        private void InvertPasses()
+        {
             for (var col = 1; col <= width / 2 + Math.Sign(width % 2); col++)
             {
                 for (var row = 1; row <= height / 2 + Math.Sign(height % 2); row++)
@@ -193,7 +251,7 @@ namespace Assets.Scripts
                     var invertedPosition = GetInvertedPosition(width, height, col, row);
                     var invertedCol = invertedPosition.x;
                     var invertedRow = invertedPosition.y;
-                    
+
                     var firstBlock = blocks[col, row];
                     var secondBlock = blocks[invertedCol, invertedRow];
                     var firstPasses = firstBlock.GetPasses();
@@ -210,17 +268,11 @@ namespace Assets.Scripts
                     }
                 }
             }
-            
-            //Invert all blocks
-            for (var col = 1; col <= width; col++)
-            {
-                for (var row = 1; row <= height; row++)
-                {
-                    blocks[col, row].InvertBoard();
-                }
-            }
         }
 
+        /// <summary>
+        /// Inverts the pass: its start position, destination block and position.
+        /// </summary>
         private void InvertPass(Pass pass, int oldBlockX, int oldBlockY)
         {
             var oldBlock = blocks[oldBlockX, oldBlockY];
@@ -234,13 +286,16 @@ namespace Assets.Scripts
             pass.ToPosition = GetInvertedPosition(toBlock.GetBoardWidth(), toBlock.GetBoardHeight(),toPosition.x, toPosition.y);
         }
 
+        /// <summary>
+        /// Returns an inverted position on the board with given size.
+        /// </summary>
         private IntVector2 GetInvertedPosition(int width, int height, int col, int row)
         {
             return new IntVector2(width - col + 1, height - row + 1);
         }
 
         /// <summary>
-        /// Returns number of blocks in width 
+        /// Returns number of blocks horizontally.
         /// </summary>
         /// <returns></returns>
         public int GetBoardWidth()
@@ -249,7 +304,7 @@ namespace Assets.Scripts
         }
 
         /// <summary>
-        /// Returns number of blocks in height
+        /// Returns number of blocks vertically.
         /// </summary>
         /// <returns></returns>
         public int GetBoardHeight()
@@ -257,6 +312,9 @@ namespace Assets.Scripts
             return currentBlock.GetBoardHeight();
         }
 
+        /// <summary>
+        /// Resets all blocks.
+        /// </summary>
         public void Reset()
         {
             for (var col = 1; col <= width; col++)
@@ -269,63 +327,48 @@ namespace Assets.Scripts
         }
 
         /// <summary>
-        /// Returns item by given position in current block
+        /// Returns an item by the given position in the current block.
         /// </summary>
-        /// <param name="positionX"></param>
-        /// <param name="positionY"></param>
-        /// <returns></returns>
         public BoardStorageItem GetItem(int positionX, int positionY)
         {
             return GetItem(new IntVector2(positionX, positionY));
         }
         
         /// <summary>
-        /// Returns item by given position in current block
+        /// Returns an item by the given position in the current block.
         /// </summary>
-        /// <param name="position"></param>
-        /// <returns></returns>
         public BoardStorageItem GetItem(IntVector2 position)
         {
             return currentBlock.GetItem(position);
         }
 
         /// <summary>
-        /// Returns bonus item by given position in current block
+        /// Returns a bonus item by the given position in the current block.
         /// </summary>
-        /// <param name="positionX"></param>
-        /// <param name="positionY"></param>
-        /// <returns></returns>
         public BoardStorageItem GetBonusItem(int positionX, int positionY)
         {
             return currentBlock.GetBonusItem(positionX, positionY);
         }
 
         /// <summary>
-        /// Sets item by given position in current block
+        /// Sets an item by the given position in the current block.
         /// </summary>
-        /// <param name="col"></param>
-        /// <param name="row"></param>
-        /// <param name="item"></param>
         public void SetItem(int col, int row, BoardStorageItem item)
         {
             SetItem(new IntVector2(col, row), item);
         }
         
         /// <summary>
-        /// Sets item by given position in current block
+        /// Sets an item by the given position in the current block.
         /// </summary>
-        /// <param name="position"></param>
-        /// <param name="item"></param>
         public void SetItem(IntVector2 position, BoardStorageItem item)
         {
             currentBlock.SetItem(position, item);
         }
 
         /// <summary>
-        /// Returns board button by given position in current block
+        /// Returns a board button by the given position in the current block.
         /// </summary>
-        /// <param name="position"></param>
-        /// <returns></returns>
         public BoardButton GetBoardButton(IntVector2 position)
         {
             return currentBlock.GetBoardButton(position);
@@ -493,9 +536,7 @@ namespace Assets.Scripts
         /// <returns></returns>
         public int GetDistanceToEnemyCastle(Cell cell, PlayerType playerType)
         {
-            InitializeGraphAndListOfCastlesIfNot();
             var castleCell = castles[GetOpponentPlayerType(playerType)][0];
-
             return graph.GetDistance(cell, castleCell);
         }
 
@@ -509,7 +550,10 @@ namespace Assets.Scripts
             return PlayerType.FIRST;
         }
 
-        private void InitializeGraphAndListOfCastlesIfNot()
+        /// <summary>
+        /// Initializes the graph and fills the dictionary of players castles.
+        /// </summary>
+        private void CompleteBoardInitialization()
         {
             if (graph == null)
             {
@@ -523,10 +567,9 @@ namespace Assets.Scripts
         }
 
         /// <summary>
-        /// Returns cells which are one step away from given cell
+        /// Returns cells which are one step away from given cell.
+        /// Move through the pass is not counted as a step.
         /// </summary>
-        /// <param name="cell"></param>
-        /// <returns></returns>
         public IEnumerable<Cell> GetAdjacent(Cell cell)
         {
             var block = GetBlock(cell);
@@ -617,6 +660,9 @@ namespace Assets.Scripts
             return null;
         }
         
+        /// <summary>
+        /// Returns the total number of cells on the whole board.
+        /// </summary>
         public int GetNumberOfCells()
         {
             return (from SingleBoardStorage block in blocks 
@@ -625,6 +671,9 @@ namespace Assets.Scripts
                     .Sum();
         }
 
+        /// <summary>
+        /// Returns the list of all cells on the whole board.
+        /// </summary>
         public IEnumerable<Cell> GetListOfCells()
         {
             var listOfCells = new List<Cell>();
@@ -639,6 +688,9 @@ namespace Assets.Scripts
             return listOfCells;
         }
 
+        /// <summary>
+        /// Fills the dictionary of players' castles.
+        /// </summary>
         private void FillCastles()
         {
             castles = new Dictionary<PlayerType, List<Cell>>
@@ -693,9 +745,13 @@ namespace Assets.Scripts
             return passesAsFromToCells;
         }
         
-        public void FillBlockForTesting(IntVector2 blockPosition, BoardStorageItem[,] items, BoardStorageItem[,] bonusItems) 
+        /// <summary>
+        /// Method is used specifically for testing.
+        /// </summary>
+        public void FillBlockForTesting(IntVector2 blockPosition, BoardStorageItem[,] items, BoardStorageItem[,] bonusItems, 
+            int width = 2, int height = 2) 
         { 
-            blocks[blockPosition.x, blockPosition.y] = new SingleBoardStorage(2, 2, null); 
+            blocks[blockPosition.x, blockPosition.y] = new SingleBoardStorage(width, height, null); 
             blocks[blockPosition.x, blockPosition.y].Fill(items, bonusItems); 
         }
     }

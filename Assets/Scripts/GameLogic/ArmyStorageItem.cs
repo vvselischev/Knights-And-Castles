@@ -19,11 +19,17 @@ namespace Assets.Scripts
             {
                 return;
             }
+            
+            //Add necessary components for this army to move on the board.
             iconGO.AddComponent<Follower>();
             var mover = iconGO.AddComponent<ObjectMover>();
             mover.ParentTransform = iconGO.GetComponentInParent<Transform>();
         }
 
+        /// <summary>
+        /// Returns a new army, similar to this one, but without (null) icon game object.
+        /// </summary>
+        /// <returns></returns>
         public ArmyStorageItem CloneWithoutIcon()
         {
             return new ArmyStorageItem(Army.CloneArmy(), null);

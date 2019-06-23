@@ -33,7 +33,6 @@ namespace Assets.Scripts
         public Castle(GameObject targetObject, PlayerType ownerType) : base(targetObject)
         {
             this.ownerType = ownerType;
-            //TODO: awful solution...
             playGameState = StateManager.Instance.CurrentState as PlayGameState;
         }
     }

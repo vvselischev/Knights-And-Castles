@@ -46,11 +46,9 @@ namespace Assets.Scripts
         }
 
         /// <summary>
-        /// Merges two armycompositions
+        /// Merges two army compositions.
+        /// The old experience is uniformly distributed among the total number of units in each army.
         /// </summary>
-        /// <param name="first"></param>
-        /// <param name="second"></param>
-        /// <returns></returns>
         public static ArmyComposition Merge(ArmyComposition first, ArmyComposition second)
         {
             var newExperience = (first.TotalUnitQuantity() * first.Experience +
@@ -64,7 +62,8 @@ namespace Assets.Scripts
         }
 
         /// <summary>
-        /// Perform fight between two army compositions
+        /// Performs a fight between two army compositions.
+        /// Updates the experience of the winner army.
         /// </summary>
         /// <param name="winnerArmyComposition"></param>
         /// <param name="loserArmyComposition"></param>
@@ -73,12 +72,22 @@ namespace Assets.Scripts
                                             ArmyComposition loserArmyComposition)
         {
             var powerDifference = winnerArmyComposition.ArmyPower() - loserArmyComposition.ArmyPower();
+            
+            //The losses have the square root dependency.
             var mortalityRate = Math.Sqrt(powerDifference / winnerArmyComposition.ArmyPower());
+            
+            //The experience increased quadratically, based on the relative power of armies.
+            //Quadratic dependency mainly to decrease the huge role of the experience at the final part of the game.
             var experienceIncrease = 1 + Math.Pow(loserArmyComposition.ArmyPower() / winnerArmyComposition.ArmyPower(), 2);
             return winnerArmyComposition.ArmyCompositionAfterFight(mortalityRate, 
                             winnerArmyComposition.Experience * experienceIncrease);
         }
 
+        /// <summary>
+        /// Returns a new army composition based on given units alive part and new experience.
+        /// </summary>
+        /// <param name="mortalityRate"> The relative part of units that remain alive. </param>
+        /// <param name="experience"> The new experience. </param>
         private ArmyComposition ArmyCompositionAfterFight(double mortalityRate, double experience)
         {
             return new ArmyComposition((int)Math.Ceiling(Spearmen * mortalityRate),
@@ -86,11 +95,8 @@ namespace Assets.Scripts
         }
 
         /// <summary>
-        /// Checks that first army is more powerful than second
+        /// Checks that first army is more powerful than second.
         /// </summary>
-        /// <param name="firstArmyComposition"></param>
-        /// <param name="secondArmyComposition"></param>
-        /// <returns></returns>
         public static bool IsFirstWinner(ArmyComposition firstArmyComposition,
                                           ArmyComposition secondArmyComposition)
         {
@@ -100,7 +106,7 @@ namespace Assets.Scripts
         }
 
         /// <summary>
-        /// Calculates total number of units in army
+        /// Calculates total number of units in the army composition.
         /// </summary>
         /// <returns></returns>
         public int TotalUnitQuantity()
@@ -109,7 +115,7 @@ namespace Assets.Scripts
         }
 
         /// <summary>
-        /// Calculates army power
+        /// Calculates the army power as the product of total number of units and the experience.
         /// </summary>
         /// <returns></returns>
         public double ArmyPower()
@@ -118,11 +124,9 @@ namespace Assets.Scripts
         }
 
         /// <summary>
-        /// Removes army part
+        /// Removes the given army part.
+        /// If the number of units to remove is greater than in this army, then zero units of that type remain.
         /// </summary>
-        /// <param name="spearmen"></param>
-        /// <param name="archers"></param>
-        /// <param name="cavalrymen"></param>
         public void DeleteArmyPart(int spearmen, int archers, int cavalrymen)
         {
             Spearmen = Math.Max(0, Spearmen - spearmen);

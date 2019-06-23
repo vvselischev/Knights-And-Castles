@@ -17,6 +17,10 @@ namespace Assets.Scripts
             this.controllerManager = controllerManager;
         }
         
+        /// <summary>
+        /// Method is called when one of the board buttons is clicked.
+        /// Receives the button position and transfers it to the current controller if it exists.
+        /// </summary>
         public virtual void ProcessBoardClick(int x, int y)
         {
             if (controllerManager.HasActiveController())
@@ -26,6 +30,10 @@ namespace Assets.Scripts
             }
         }
 
+        /// <summary>
+        /// Method is called when the finish turn button is clicked.
+        /// Notifies the current controller if it exists.
+        /// </summary>
         public virtual void ProcessFinishTurnClick()
         {
             if (controllerManager.HasActiveController())
@@ -35,6 +43,10 @@ namespace Assets.Scripts
             }
         }
 
+        /// <summary>
+        /// Method is called when the split button is clicked.
+        /// Notifies the current controller if it exists.
+        /// </summary>
         public virtual void ProcessSplitButtonClick()
         {
             if (controllerManager.HasActiveController())
