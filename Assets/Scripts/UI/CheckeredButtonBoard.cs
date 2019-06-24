@@ -16,8 +16,7 @@ namespace Assets.Scripts
         public int Width { get; } = 8;
         public int Height { get; } = 10;
         
-        private const float SPACE_BETWEEN_BUTTONS = -2; //buttonWidth/20;
-
+        private const float spaceBetweenButtons = -2; //experimentally this value is the best
         private static float buttonWidth;
         private static float buttonHeight;
 
@@ -97,8 +96,8 @@ namespace Assets.Scripts
 
         private Vector3 GetOffsetFromPattern(int currentColumn, int currentRow)
         {
-            return new Vector3((currentColumn - 1) * (buttonWidth + SPACE_BETWEEN_BUTTONS),
-                                                 (currentRow - 1) * (buttonHeight + SPACE_BETWEEN_BUTTONS));
+            return new Vector3((currentColumn - 1) * (buttonWidth + spaceBetweenButtons),
+                                                 (currentRow - 1) * (buttonHeight + spaceBetweenButtons));
         }
         
         /// <summary>

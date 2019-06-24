@@ -33,7 +33,7 @@ namespace Assets.Scripts
 
         public GameSimulation(IBoardStorage boardStorage)
         {
-            this.boardStorage = boardStorage.CreateSimulationStorage();
+            this.boardStorage = boardStorage.CloneBoardStorage();
         }
 
         private Dictionary<PlayerType, List<Cell>> FindPlayerArmies()

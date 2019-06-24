@@ -318,7 +318,7 @@ namespace Assets.Scripts
         /// <summary>
         /// Creates copy of board for AI
         /// </summary>
-        public IBoardStorage CreateSimulationStorage()
+        public IBoardStorage CloneBoardStorage()
         {
             var simulationStorage = new SingleBoardStorage(GetBoardWidth(), GetBoardHeight(), board)
             {

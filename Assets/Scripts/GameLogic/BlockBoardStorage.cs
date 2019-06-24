@@ -7,9 +7,9 @@ namespace Assets.Scripts
 {
     /// <summary>
     /// Implementation of multiblocked board.
-    /// Blocked board is represented as a two-dimension array.
-    /// Each block is SingleBoardStorage.
-    /// One block must be set as current. All operations of IBoardStorage are performed  with this block.
+    /// Blocked board is represented as a two-dimensional array.
+    /// Each block is an instance of a SingleBoardStorage.
+    /// One block must be set as current. All operations of IBoardStorage are performed with this block.
     /// Note: 1-indexation everywhere.
     /// </summary>
     public class BlockBoardStorage : IBoardStorage
@@ -63,16 +63,6 @@ namespace Assets.Scripts
         }
 
         /// <summary>
-        /// Fills block at given position with given arrays of army and bonus items
-        /// </summary>
-        public void FillBlock(BoardStorageItem[,] items, BoardStorageItem[,] bonusItems, IntVector2 blockPosition)
-        {
-            var blockWidth = items.GetLength(0) - 1;
-            var blockHeight = items.GetLength(1) - 1;
-            FillBlock(items, bonusItems, blockPosition, 1, blockWidth, 1,blockHeight);
-        }
-
-        /// <summary>
         /// Receives the global tables of items and the segment in them to fill the new block at the given position.
         /// </summary>
         private void FillBlock(BoardStorageItem[,] items, BoardStorageItem[,] bonusItems,
@@ -112,6 +102,9 @@ namespace Assets.Scripts
         /// </summary>
         public void Fill(BoardStorageItem[,] items, BoardStorageItem[,] bonusItems)
         {
+            //Get the length and height of the given array.
+            //Subtract 1 because arrays are 1-indexed.
+            //Divide by the number of blocks in the corresponding dimension.
             var blockWidth = (items.GetLength(0) - 1) / width;
             var blockHeight = (items.GetLength(1) - 1) / height;
 
@@ -119,6 +112,7 @@ namespace Assets.Scripts
             {
                 for (var row = 1; row <= height; row++)
                 {
+                    //Get the segment in the given array that corresponds to the current block.
                     var fromX = (col - 1) * blockWidth + 1;
                     var toX = fromX + blockWidth - 1;
                     var fromY = (row - 1) * blockHeight + 1;
@@ -247,6 +241,9 @@ namespace Assets.Scripts
         /// </summary>
         private void InvertPasses()
         {
+            //Enumerate cells from left to right, from down to up, until reach the centre cell.
+            //In each iteration invert passes (if exist) on the current cell and on the cell on the inverted position.
+            //This prevents the passes to be inverted twice.
             for (var col = 1; col <= width / 2 + Math.Sign(width % 2); col++)
             {
                 for (var row = 1; row <= height / 2 + Math.Sign(height % 2); row++)
@@ -309,7 +306,6 @@ namespace Assets.Scripts
         /// <summary>
         /// Returns number of blocks vertically.
         /// </summary>
-        /// <returns></returns>
         public int GetBoardHeight()
         {
             return currentBlock.GetBoardHeight();
@@ -346,14 +342,6 @@ namespace Assets.Scripts
         }
 
         /// <summary>
-        /// Returns a bonus item by the given position in the current block.
-        /// </summary>
-        public BoardStorageItem GetBonusItem(int positionX, int positionY)
-        {
-            return currentBlock.GetBonusItem(positionX, positionY);
-        }
-
-        /// <summary>
         /// Sets an item by the given position in the current block.
         /// </summary>
         public void SetItem(int col, int row, BoardStorageItem item)
@@ -378,58 +366,32 @@ namespace Assets.Scripts
         }
 
         /// <summary>
-        /// Disables from by given position in current block
+        /// Disables a frame on the given position in the current block.
         /// </summary>
-        /// <param name="position"></param>
         public void DisableFrame(IntVector2 position)
         {
             currentBlock.DisableFrame(position);
         }
 
         /// <summary>
-        /// Enables frame by given position in current block
+        /// Enables a frame on the given position in the current block.
         /// </summary>
-        /// <param name="position"></param>
         public void EnableFrame(IntVector2 position)
         {
             currentBlock.EnableFrame(position);
         }
 
         /// <summary>
-        /// Checks that in current block by given position castle is located
+        /// Returns a bonus item by the given position from the current block.
         /// </summary>
-        /// <param name="position"></param>
-        /// <returns></returns>
-        public bool IsCastle(IntVector2 position)
-        {
-            return currentBlock.IsCastle(position);
-        }
-
-        /// <summary>
-        /// Returns castle by given position from current block
-        /// </summary>
-        /// <param name="position"></param>
-        /// <returns></returns>
-        public Castle GetCastle(IntVector2 position)
-        {
-            return currentBlock.GetCastle(position);
-        }
-
-        /// <summary>
-        /// Returns bonus item by given position from current block 
-        /// </summary>
-        /// <param name="position"></param>
-        /// <returns></returns>
         public BoardStorageItem GetBonusItem(IntVector2 position)
         {
             return currentBlock.GetBonusItem(position);
         }
 
         /// <summary>
-        /// Checks that boards contains at least one cell with army of given player type
+        /// Checks that the board contains at least one cell with army of given player type.
         /// </summary>
-        /// <param name="playerType"></param>
-        /// <returns></returns>
         public bool ContainsPlayerArmies(PlayerType playerType)
         {
             for (var col = 1; col <= width; col++)
@@ -447,9 +409,8 @@ namespace Assets.Scripts
         }
 
         /// <summary>
-        /// Sets all armies of given user active
+        /// Sets all armies of the given user active.
         /// </summary>
-        /// <param name="playerType"></param>
         public void EnableArmies(PlayerType playerType)
         {
             for (var col = 1; col <= width; col++)
@@ -462,10 +423,8 @@ namespace Assets.Scripts
         }
 
         /// <summary>
-        /// Finds cells, which contains given player armies
+        /// Finds cells, which contains given player armies.
         /// </summary>
-        /// <param name="playerType"></param>
-        /// <returns></returns>
         public List<Cell> FindPlayerArmies(PlayerType playerType)
         {
             var playerArmies = new List<Cell>();
@@ -481,12 +440,11 @@ namespace Assets.Scripts
         }
 
         /// <summary>
-        /// Creates copy of board for AI
+        /// Creates the copy of the board storage.
         /// </summary>
-        /// <returns></returns>
-        public IBoardStorage CreateSimulationStorage()
+        public IBoardStorage CloneBoardStorage()
         {
-            var simulation = new BlockBoardStorage(width, height, board)
+            var clonedStorage = new BlockBoardStorage(width, height, board)
             {
                 currentBlockPosition = currentBlockPosition.CloneVector()
             };
@@ -494,20 +452,18 @@ namespace Assets.Scripts
             {
                 for (var j = 1; j <= height; j++)
                 {
-                    simulation.blocks[i, j] = blocks[i, j].CreateSimulationStorage() as SingleBoardStorage;
+                    clonedStorage.blocks[i, j] = blocks[i, j].CloneBoardStorage() as SingleBoardStorage;
                 }
             }
 
-            simulation.currentBlock = simulation.blocks[currentBlockPosition.x, currentBlockPosition.y];
-            simulation.CompleteBoardInitialization();
-            return simulation;
+            clonedStorage.currentBlock = clonedStorage.blocks[currentBlockPosition.x, currentBlockPosition.y];
+            clonedStorage.CompleteBoardInitialization();
+            return clonedStorage;
         }
 
         /// <summary>
-        /// Returns army item by cell
+        /// Returns an army item by cell.
         /// </summary>
-        /// <param name="cell"></param>
-        /// <returns></returns>
         public BoardStorageItem GetItem(Cell cell)
         {
             return (from SingleBoardStorage block in blocks 
@@ -517,12 +473,11 @@ namespace Assets.Scripts
         }
 
         /// <summary>
-        /// Sets army item by cell
+        /// Sets army item by cell.
         /// </summary>
-        /// <param name="cell"></param>
-        /// <param name="item"></param>
         public void SetItem(Cell cell, BoardStorageItem item)
         {
+            //Find the block that contains the given cell.
             var blockWithCell =
                 (from SingleBoardStorage block in blocks
                     where block != null && block.ContainsCell(cell) 
@@ -542,8 +497,11 @@ namespace Assets.Scripts
             var castleCell = castles[enemyType][0];
             return graph.GetDistance(cell, castleCell);
         }
-
-        public static PlayerType GetOpponentPlayerType(PlayerType playerType)
+        
+        /// <summary>
+        /// Returns an opponent player type.
+        /// </summary>
+        private PlayerType GetOpponentPlayerType(PlayerType playerType)
         {
             if (playerType == PlayerType.FIRST)
             {
@@ -590,10 +548,8 @@ namespace Assets.Scripts
         }
 
         /// <summary>
-        /// Returns cells with active armies of given players
+        /// Returns cells with active armies of given players.
         /// </summary>
-        /// <param name="playerType"></param>
-        /// <returns></returns>
         public List<Cell> FindActivePlayerArmies(PlayerType playerType)
         {
             var activePlayerArmies = new List<Cell>();
@@ -607,22 +563,17 @@ namespace Assets.Scripts
             return activePlayerArmies;
         }
 
-        // Function is called in MakeMove and cell must be in current block
         /// <summary>
-        /// Returns position of cell in current block
+        /// Returns the position of the cell in the current block or null if it does not exist there.
         /// </summary>
-        /// <param name="cell"></param>
-        /// <returns></returns>
         public IntVector2 GetPositionOnBoard(Cell cell)
         {
             return currentBlock.GetPositionOnBoard(cell);
         }
 
         /// <summary>
-        /// Get block containing given cell
+        /// Returns the block containing the given cell.
         /// </summary>
-        /// <param name="cell"></param>
-        /// <returns></returns>
         public SingleBoardStorage GetBlock(Cell cell)
         {
             var blockPosition = GetBlockPosition(cell);

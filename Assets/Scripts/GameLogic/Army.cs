@@ -186,7 +186,6 @@
             var spearmen = ArmyComposition.Spearmen / 2;
             var archers = ArmyComposition.Archers / 2;
             var cavalrymen = ArmyComposition.Cavalrymen / 2;
-
             return Split(spearmen, archers, cavalrymen);
         }
 

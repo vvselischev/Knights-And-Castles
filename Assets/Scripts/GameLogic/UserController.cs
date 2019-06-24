@@ -71,10 +71,11 @@ namespace Assets.Scripts
         /// </summary>
         private void ProcessAction(IntVector2 position)
         {
+            var chooseOrMoveClick = false;
             if (boardStorage.GetItem(position) is ArmyStorageItem)
             {
                 //Click on a cell with an army.
-                if (!ProcessClickOnArmy(position))
+                if (!ProcessClickOnArmy(position, ref chooseOrMoveClick))
                 {
                     //Nothing to do, repeated click on the same army.
                     return;
@@ -99,15 +100,24 @@ namespace Assets.Scripts
                 //That is why we have this condition separate with the previous one.
                 return;
             }
-            
-            if (boardStorage.GetBonusItem(position) is Pass)
+
+            if (!chooseOrMoveClick)
             {
-                //It was a simple click on a pass since we have already processed any army move.
-                //So just change the current block.
-                var pass = boardStorage.GetBonusItem(position) as Pass;
-                pass.ChangeBlock();
+                //It was not click to choose or move an army.
+                //So drop the current state.
+                chosenArmyItem = null;
+                chosenArmyPosition = null;
+                
+                 //We process the pass only if it was not move click on it.
+                if (boardStorage.GetBonusItem(position) is Pass)
+                {
+                    //It was a simple click on a pass since we have already processed any army move.
+                    //So just change the current block.
+                    var pass = boardStorage.GetBonusItem(position) as Pass;
+                    pass.ChangeBlock();
+                }
             }
-            
+
             //Split mode is active only during the next click.
             splitButtonClicked = false;
         }
@@ -117,8 +127,9 @@ namespace Assets.Scripts
         /// If it was a repeated click, clears the move state and returns false.
         /// Otherwise activates the frame across the chosen army icon, updates the army description text
         /// and updates the move state appropriately (see ProcessChooseClick), and returns true.
+        /// Determines, whether it was choose or move click;
         /// </summary>
-        private bool ProcessClickOnArmy(IntVector2 position)
+        private bool ProcessClickOnArmy(IntVector2 position, ref bool chooseOrMoveClick)
         {
             if (ProcessClickOnSameCell(position))
             {
@@ -129,7 +140,7 @@ namespace Assets.Scripts
             var clickedArmyItem = boardStorage.GetItem(position) as ArmyStorageItem;
             armyText.UpdateText(clickedArmyItem.Army);
 
-            ProcessChooseClick(position, clickedArmyItem);
+            chooseOrMoveClick = ProcessChooseClick(position, clickedArmyItem);
             return true;
         }
 
@@ -138,26 +149,26 @@ namespace Assets.Scripts
         /// and if this army belongs to the player and is active.
         /// If it was an enemy army or an inactive army, drops the possibly previously chosen army.
         /// If it was not a choose click, nothing changes.
+        /// Returns true if it was choose or move click.
         /// </summary>
-        private void ProcessChooseClick(IntVector2 position, ArmyStorageItem clickedArmyItem)
+        private bool ProcessChooseClick(IntVector2 position, ArmyStorageItem clickedArmyItem)
         {
             if (clickedArmyItem.Army.PlayerType != playerType || !((UserArmy) clickedArmyItem.Army).IsActive())
             {
                 //A clicked army does not belong to the player or is inactive. 
-                chosenArmyItem = null;
-                chosenArmyPosition = null;
-                return;
+                return false;
             }
 
             if (chosenArmyItem != null && ReachableFromChosen(position))
             {
                 //It was a move click. Will be processed further.
-                return;
+                return true;
             }
             
-            //Remember the clicked army.
+            //Remember the clicked army, it was a choose click.
             chosenArmyItem = clickedArmyItem;
             chosenArmyPosition = position;
+            return true;
         }
 
         /// <summary>
@@ -383,11 +394,12 @@ namespace Assets.Scripts
         /// </summary>
         private bool ProcessCastle(Army enteredArmy)
         {
-            if (!boardStorage.IsCastle(currentTargetPosition))
+            if (!(boardStorage.GetBonusItem(currentTargetPosition) is Castle))
             {
                 return false;
             }
-            var castle = boardStorage.GetCastle(currentTargetPosition);
+
+            var castle = boardStorage.GetBonusItem(currentTargetPosition) as Castle;
             return castle.PerformAction(enteredArmy);
         }
 

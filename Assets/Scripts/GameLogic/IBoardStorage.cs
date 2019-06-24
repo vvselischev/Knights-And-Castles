@@ -10,7 +10,7 @@ namespace Assets.Scripts
         void DisableBoardButtons();
         
         /// <summary>
-        /// Unables board buttons
+        /// Enables board buttons
         /// </summary>
         void EnableBoardButtons();
         
@@ -74,21 +74,7 @@ namespace Assets.Scripts
         /// </summary>
         /// <param name="position"></param>
         void EnableFrame(IntVector2 position);
-        
-        /// <summary>
-        /// Checks that on given position castle is located
-        /// </summary>
-        /// <param name="position"></param>
-        /// <returns></returns>
-        bool IsCastle(IntVector2 position);
-        
-        /// <summary>
-        /// Returns castle by position
-        /// </summary>
-        /// <param name="position"></param>
-        /// <returns></returns>
-        Castle GetCastle(IntVector2 position);
-        
+
         /// <summary>
         /// Returns bonus item by position
         /// </summary>
@@ -120,7 +106,7 @@ namespace Assets.Scripts
         /// Creates copy of board for UI
         /// </summary>
         /// <returns></returns>
-        IBoardStorage CreateSimulationStorage();
+        IBoardStorage CloneBoardStorage();
         
         /// <summary>
         /// Returns army item by cell
