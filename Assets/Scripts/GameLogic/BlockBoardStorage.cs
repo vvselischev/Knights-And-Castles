@@ -43,7 +43,7 @@ namespace Assets.Scripts
         /// <summary>
         /// The cells of players castles.
         /// </summary>
-        private Dictionary<PlayerType, List<Cell>> castles;
+        private Dictionary<PlayerType, List<Cell>> castles = new Dictionary<PlayerType, List<Cell>>();
         /// <summary>
         /// The graph based on the board.
         /// </summary>
@@ -496,6 +496,7 @@ namespace Assets.Scripts
             }
 
             simulation.currentBlock = simulation.blocks[currentBlockPosition.x, currentBlockPosition.y];
+            simulation.CompleteBoardInitialization();
             return simulation;
         }
 
@@ -529,14 +530,13 @@ namespace Assets.Scripts
         }
 
         /// <summary>
-        /// Returns distance from cell to cell with enemy castle
+        /// Returns a distance from the given cell to the cell with an enemy castle.
         /// </summary>
-        /// <param name="cell"></param>
-        /// <param name="playerType"></param>
-        /// <returns></returns>
+        /// <param name="playerType"> The type of the player (not an enemy). </param>
         public int GetDistanceToEnemyCastle(Cell cell, PlayerType playerType)
         {
-            var castleCell = castles[GetOpponentPlayerType(playerType)][0];
+            var enemyType = GetOpponentPlayerType(playerType);
+            var castleCell = castles[enemyType][0];
             return graph.GetDistance(cell, castleCell);
         }
 
@@ -555,15 +555,8 @@ namespace Assets.Scripts
         /// </summary>
         private void CompleteBoardInitialization()
         {
-            if (graph == null)
-            {
-                graph = new Graph(this);
-            }
-
-            if (castles == null)
-            {
-                FillCastles();
-            }
+            FillCastles();
+            graph = new Graph(this);
         }
 
         /// <summary>

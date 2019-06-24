@@ -93,7 +93,7 @@ namespace Assets.Scripts
         public BlockBoardStorage CreateEmptyBlockStorage(BoardType configurationType, out BoardManager boardManager)
         {
             var configuration = GetConfigurationByType(configurationType);
-            var storage = new BlockBoardStorage(blocksHorizontal, blocksVertical, board);
+            var storage = new BlockBoardStorage(configuration.BlocksHorizontal, configuration.BlocksHorizontal, board);
             boardManager = new BoardManager(storage, configuration.FirstStartBlock, configuration.SecondStartBlock);
             return storage;
         }
