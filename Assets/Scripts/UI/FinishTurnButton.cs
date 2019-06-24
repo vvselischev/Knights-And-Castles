@@ -2,36 +2,19 @@
 
 namespace Assets.Scripts
 {
+    /// <inheritdoc />
     /// <summary>
-    /// Simple button. Notifies InputListener, when pressed. Can be locked.
-    /// When locked, color is changed to red and clicks are not processed.
+    /// Calls finish turn button process method on the listener.
     /// </summary>
-    public class FinishTurnButton : MonoBehaviour
+    public class FinishTurnButton : LockableButton
     {
-        [SerializeField] private GameIcon icon;
-        [SerializeField] private Color defaultColor = Color.white;
-        [SerializeField] private Color lockColor = Color.red;
 
-        public InputListener inputListener { get; set; }
-
-        public void OnClick()
+        public override void OnClick()
         {
             if (enabled)
             {
-                inputListener.ProcessFinishTurnClick();
+                InputListener.ProcessFinishTurnClick();
             }
-        }
-        
-        public void Lock()
-        {
-            enabled = false;
-            icon.ChangeColor(lockColor);
-        }
-
-        public void Unlock()
-        {
-            enabled = true;
-            icon.ChangeColor(defaultColor);
         }
     }
 }

@@ -1,38 +1,17 @@
-﻿using UnityEngine;
-
-namespace Assets.Scripts
+﻿namespace Assets.Scripts
 {
-    //TODO: make it and start button children of common class
+    /// <inheritdoc />
     /// <summary>
-    /// Simple button. Notifies InputListener, when pressed. Can be locked.
-    /// When locked, color is changed to red.
+    /// Calls split button process method on the listener.
     /// </summary>
-    public class SplitButton : MonoBehaviour
+    public class SplitButton : LockableButton
     {
-        [SerializeField] private GameIcon icon;
-        [SerializeField] private Color defaultColor = Color.white;
-        [SerializeField] private Color lockColor = Color.red;
-
-        public InputListener InputListener { get; set; }
-
-        public void OnClick()
+        public override void OnClick()
         {
             if (enabled)
             {
                 InputListener.ProcessSplitButtonClick();
             }
-        }
-        
-        public void Lock()
-        {
-            enabled = false;
-            icon.ChangeColor(lockColor);
-        }
-
-        public void Unlock()
-        {
-            enabled = true;
-            icon.ChangeColor(defaultColor);
         }
     }
 }

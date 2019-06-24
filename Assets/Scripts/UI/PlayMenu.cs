@@ -16,7 +16,7 @@ namespace Assets.Scripts
         public void Initialize(BoardManager boardManager, InputListener inputListener)
         {
             this.boardManager = boardManager;
-            finishTurnButton.inputListener = inputListener;
+            finishTurnButton.InputListener = inputListener;
             splitButton.InputListener = inputListener;
         }
         

@@ -8,6 +8,9 @@ namespace Assets.Scripts
     /// </summary>
     public class ResultMenu : MonoBehaviour, IMenu
     {
+        /// <summary>
+        /// Labels for displaying statistics.
+        /// </summary>
         [SerializeField] private Text gamesWithBotText;
         [SerializeField] private Text winsBotText;
         [SerializeField] private Text gamesNetworkText;

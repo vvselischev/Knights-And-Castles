@@ -11,9 +11,18 @@ namespace Assets.Scripts
     /// </summary>
     public class Timer : MonoBehaviour
     {
-        [SerializeField] protected Text timeText;
-        [SerializeField] protected int duration = 30;
+        /// <summary>
+        /// Text to display the remaining time.
+        /// </summary>
+        [SerializeField] private Text timeText;
+        /// <summary>
+        /// The duration.
+        /// </summary>
+        [SerializeField] private int duration = 30;
 
+        /// <summary>
+        /// This event is risen when the timer finishes.
+        /// </summary>
         public event VoidHandler OnFinish;
 
         private long secondsLeft;
@@ -31,6 +40,9 @@ namespace Assets.Scripts
             StartCoroutine(UpdateTimer());
         }
 
+        /// <summary>
+        /// Updates the timer and the text.
+        /// </summary>
         private IEnumerator UpdateTimer()
         {
             while (started)
@@ -48,6 +60,9 @@ namespace Assets.Scripts
             }
         }
 
+        /// <summary>
+        /// Returns the current time in seconds.
+        /// </summary>
         private long GetCurrentTimeSeconds()
         {
             return (long)TimeSpan.FromTicks(DateTime.Now.Ticks).TotalSeconds; 
