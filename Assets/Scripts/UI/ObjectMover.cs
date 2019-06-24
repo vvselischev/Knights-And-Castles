@@ -16,6 +16,9 @@ namespace Assets.Scripts
         /// </summary>
         public event VoidHandler ReachedTarget;
         
+        /// <summary>
+        /// The object to move.
+        /// </summary>
         private GameObject sourceObject;
 
         /// <summary>
@@ -27,18 +30,20 @@ namespace Assets.Scripts
             sourceObject.transform.localPosition = startPointObject.transform.localPosition;
         }
 
+        /// <summary>
+        /// Initialization on startup.
+        /// Gets the follower component and subscribes on the finish movement event.
+        /// </summary>
         private void Awake()
         {
             follower = gameObject.GetComponent<Follower>();
-            follower.ReachedTarget += FollowerReachedTarget;
+            follower.ReachedTarget += () =>
+            {
+                ReachedTarget?.Invoke();
+            };
             sourceObject = gameObject;
         }
-
-        private void FollowerReachedTarget()
-        {
-            ReachedTarget?.Invoke();
-        }
-
+        
         /// <summary>
         /// Starts the movement.
         /// </summary>

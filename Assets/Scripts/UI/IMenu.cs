@@ -6,7 +6,13 @@
     /// </summary>
     public interface IMenu
     {
+        /// <summary>
+        /// Activates the menu canvas and all elements on it.
+        /// </summary>
         void Activate();
+        /// <summary>
+        /// Deactivates the menu canvas and all elements on it.
+        /// </summary>
         void Deactivate();
     }
 }

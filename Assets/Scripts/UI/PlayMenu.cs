@@ -20,12 +20,18 @@ namespace Assets.Scripts
             splitButton.InputListener = inputListener;
         }
         
+        /// <inheritdoc />
+        /// <summary>
+        /// </summary>
         public void Activate()
         {
             gameObject.SetActive(true);
             canvas.enabled = true;
         }
 
+        /// <inheritdoc />
+        /// <summary>
+        /// </summary>
         public void Deactivate()
         {
             gameObject.SetActive(false);

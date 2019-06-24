@@ -10,10 +10,12 @@ namespace Assets.Scripts
     {
         [SerializeField] private StateType nextState;
 
+        /// <summary>
+        /// Remembers the chosen play game state and moves to the board mode choosing.
+        /// </summary>
         public void OnClick()
         {
             var stateManager = StateManager.Instance;
-
             stateManager.ChooseBoardGameState.NextStateType = nextState;
             stateManager.ChangeState(StateType.CHOOSE_BOARD_GAME_STATE);
         }

@@ -10,8 +10,14 @@ namespace Assets.Scripts
     /// </summary>
     public class StateManager : MonoBehaviour
     {
+        /// <summary>
+        /// A dictionary to get the state by its type.
+        /// </summary>
         private Dictionary<StateType, IGameState> states;
 
+        /// <summary>
+        /// States fields for convenient DI in the editor.
+        /// </summary>
         [SerializeField] private StartGameState startGameState;
         [SerializeField] private NetworkPlayGameState networkPlayGameState;
         [SerializeField] private AIPlayGameState aiPlayGameState;
@@ -21,7 +27,7 @@ namespace Assets.Scripts
         [SerializeField] private ResultGameState resultGameState;
         [SerializeField] private InfoGameState infoGameState;
         
-        //For convenient DI in the editor and since some objects need them to initialize.
+        //States are made properties since some objects need them to initialize.
         public StartGameState StartGameState => startGameState;
         public NetworkPlayGameState NetworkPlayGameState => networkPlayGameState;
         public AIPlayGameState AIPlayGameState => aiPlayGameState;
@@ -56,6 +62,10 @@ namespace Assets.Scripts
             return states[stateType];
         }
 
+        /// <summary>
+        /// Initializes the dictionary of states.
+        /// States are matched with their types.
+        /// </summary>
         private void Initialize()
         {
             states = new Dictionary<StateType, IGameState>

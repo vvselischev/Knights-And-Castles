@@ -43,10 +43,18 @@ namespace Assets.Scripts
         public BoardType ConfigurationType { get; set; }
         private MenuActivator menuActivator = MenuActivator.Instance;
 
-        private const int MAX_TURNS = 10000;
-
+        /// <summary>
+        /// Limit of turns in one round.
+        /// </summary>
+        private const int maxTurns = 10000;
+        /// <summary>
+        /// The number of turns played in the current round.
+        /// </summary>
         private int playedTurns;
 
+        /// <inheritdoc />
+        /// <summary>
+        /// </summary>
         public virtual void InvokeState()
         {
             SetupGame();
@@ -86,9 +94,14 @@ namespace Assets.Scripts
             exitListener.OnExitClicked += OnBackButtonPressed;
         }
 
+        /// <inheritdoc />
+        /// <summary>
+        /// Unsubscribe all events, clear the storage.
+        /// </summary>
         public virtual void CloseState()
         {
             menuActivator.CloseMenu();
+            //Events must be unsubscribed so as not to be called several times.
             timer.OnFinish -= ChangeTurn;
             exitListener.OnExitClicked -= OnBackButtonPressed;
             lerpedText.FinishedLerp -= CloseGame;
@@ -102,7 +115,6 @@ namespace Assets.Scripts
         protected virtual void InitNewRound()
         {
             playedTurns = 0;
-
             armyText.Init();
 
             turnManager.SetTurn(GetFirstTurn());
@@ -145,9 +157,13 @@ namespace Assets.Scripts
             stateManager.ChangeState(StateType.START_GAME_STATE);
         }
         
+        /// <summary>
+        /// Changes turn to opponents'.
+        /// If the total number of played turns exceeds the limit, finishes the game.
+        /// </summary>
         protected virtual void ChangeTurn()
         {
-            if (playedTurns == MAX_TURNS)
+            if (playedTurns == maxTurns)
             {
                 turnManager.SetTurn(TurnType.RESULT);
                 timer.StopTimer();
@@ -162,6 +178,10 @@ namespace Assets.Scripts
             //Further behaviour should be specified in child classes.
         }
 
+        /// <summary>
+        /// Determines the player to make the first move.
+        /// First player is the first to move by default.
+        /// </summary>
         protected virtual TurnType GetFirstTurn()
         {
             //Default:

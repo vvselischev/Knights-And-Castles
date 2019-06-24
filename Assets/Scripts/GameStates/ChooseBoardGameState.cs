@@ -15,6 +15,10 @@ namespace Assets.Scripts
         /// Property to remember the play mode, chosen in StartGameState.
         /// </summary>
         public StateType NextStateType { get; set; }
+        
+        /// <inheritdoc />
+        /// <summary>
+        /// </summary>
         public void InvokeState()
         {
             exitListener.Enable();
@@ -22,12 +26,18 @@ namespace Assets.Scripts
             menuActivator.OpenMenu(chooseBoardMenu);
         }
 
+        /// <summary>
+        /// Moves to the start menu.
+        /// </summary>
         private void MoveToStartMenu()
         {
             var stateManager = StateManager.Instance;
             stateManager.ChangeState(StateType.START_GAME_STATE);
         }
 
+        /// <inheritdoc />
+        /// <summary>
+        /// </summary>
         public void CloseState()
         {
             menuActivator.CloseMenu();

@@ -7,11 +7,17 @@ namespace Assets.Scripts
     /// </summary>
     public class SimpleMenu : MonoBehaviour, IMenu
     {
+        /// <inheritdoc />
+        /// <summary>
+        /// </summary>
         public void Activate()
         {
             gameObject.SetActive(true);
         }
 
+        /// <inheritdoc />
+        /// <summary>
+        /// </summary>
         public void Deactivate()
         {
             gameObject.SetActive(false);

@@ -1,18 +1,30 @@
-﻿using Assets.Scripts;
-using UnityEngine;
+﻿using UnityEngine;
 
-public class StartGameState : MonoBehaviour, IGameState
+namespace Assets.Scripts
 {
-    private MenuActivator menuActivator = MenuActivator.Instance;
-    [SerializeField] private SimpleMenu startMenu;
-
-    public void InvokeState()
+    /// <summary>
+    /// Represents the state of the main menu in the game.
+    /// Simply activates and deactivates the main menu.
+    /// </summary>
+    public class StartGameState : MonoBehaviour, IGameState
     {
-        menuActivator.OpenMenu(startMenu);
-    }
+        private MenuActivator menuActivator = MenuActivator.Instance;
+        [SerializeField] private SimpleMenu startMenu;
 
-    public void CloseState()
-    {
-        menuActivator.CloseMenu();
+        /// <inheritdoc />
+        /// <summary>
+        /// </summary>
+        public void InvokeState()
+        {
+            menuActivator.OpenMenu(startMenu);
+        }
+
+        /// <inheritdoc />
+        /// <summary>
+        /// </summary>
+        public void CloseState()
+        {
+            menuActivator.CloseMenu();
+        }
     }
 }
