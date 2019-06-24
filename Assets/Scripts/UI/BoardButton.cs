@@ -8,15 +8,23 @@ namespace Assets.Scripts
     /// </summary>
     public class BoardButton : MonoBehaviour
     {
+        /// <summary>
+        /// Buttons coordinates on the board.
+        /// Note, that these coordinates relate to the ui,
+        /// so if the board is inverted, they remain the same.
+        /// </summary>
         private int boardX;
         private int boardY;
 
+        /// <summary>
+        /// Colour frame across the button.
+        /// </summary>
         [SerializeField] private GameIcon frame;
 
         public InputListener InputListener { get; set; }
 
         /// <summary>
-        /// This position will be transferred to the InputListener when pressed.
+        /// This position will be transferred to the listener when pressed.
         /// </summary>
         public void Initialize(int x, int y)
         {
@@ -24,6 +32,10 @@ namespace Assets.Scripts
             boardY = y;
         }
 
+        /// <summary>
+        /// Method is called when this button is pressed.
+        /// If enabled, transfers its coordinates to the listener.
+        /// </summary>
         public void OnClick()
         {
             if (enabled)

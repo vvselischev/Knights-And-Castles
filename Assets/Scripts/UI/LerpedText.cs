@@ -34,7 +34,7 @@ namespace Assets.Scripts
 
         private IEnumerator ScaleTextCoroutine()
         {
-            while (textClone.rectTransform.localScale.x < maxScale - EPS) //TODO: fix .x
+            while (textClone.rectTransform.localScale.x < maxScale - EPS)
             {
                 textClone.rectTransform.localScale = Vector3.Lerp(textClone.rectTransform.localScale,
                     new Vector3(maxScale, maxScale, maxScale), Time.deltaTime * fraction);

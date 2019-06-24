@@ -108,7 +108,6 @@ namespace Assets.Scripts
                 }
             }
         }
-
         
         /// <summary>
         /// Returns board height

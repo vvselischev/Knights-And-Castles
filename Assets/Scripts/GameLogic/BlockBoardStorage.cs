@@ -51,6 +51,7 @@ namespace Assets.Scripts
 
         /// <summary>
         /// Constructs an empty storage. Fill method is supposed to be called after.
+        /// Blocks' positions are 1-indexed.
         /// </summary>
         public BlockBoardStorage(int width, int height, CheckeredButtonBoard board)
         {
@@ -107,6 +108,7 @@ namespace Assets.Scripts
         /// <summary>
         /// Fills the whole board with items from arrays given from arguments.
         /// Every block is assumed to have the same size.
+        /// Blocks and out arrays are 1-indexed.
         /// </summary>
         public void Fill(BoardStorageItem[,] items, BoardStorageItem[,] bonusItems)
         {
@@ -131,6 +133,7 @@ namespace Assets.Scripts
         /// <summary>
         /// Gets all army and bonus items from board and puts them to arrays given as arguments.
         /// Assuming that all blocks have the same size.
+        /// Blocks and out arrays are 1-indexed.
         /// </summary>
         public void ConvertToArrays(out BoardStorageItem[,] items, out BoardStorageItem[,] bonusItems)
         {
@@ -741,8 +744,8 @@ namespace Assets.Scripts
         /// <summary>
         /// Method is used specifically for testing.
         /// </summary>
-        public void FillBlockForTesting(IntVector2 blockPosition, BoardStorageItem[,] items, BoardStorageItem[,] bonusItems, 
-            int width = 2, int height = 2) 
+        public void FillBlockWithoutCheckeredBoard(IntVector2 blockPosition, BoardStorageItem[,] items, 
+            BoardStorageItem[,] bonusItems, int width = 2, int height = 2) 
         { 
             blocks[blockPosition.x, blockPosition.y] = new SingleBoardStorage(width, height, null); 
             blocks[blockPosition.x, blockPosition.y].Fill(items, bonusItems); 

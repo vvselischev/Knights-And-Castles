@@ -47,7 +47,7 @@ namespace Assets.Scripts
                 index++;
             }
 
-            FillEdges(cells);
+            AddEdges(cells);
             CalculateDistances();
         }
 
@@ -78,10 +78,10 @@ namespace Assets.Scripts
         }
 
         /// <summary>
-        /// Calculates distance from given vertex to all others using 0-1 BFS
+        /// Calculates distance from given vertex to all others using 0-1 BFS.
+        /// We use this algorithm because edges that go through passes do not spend a move.
         /// </summary>
-        /// <param name="startIndex"></param>
-        private void CalculateDistancesFromVertex(int startIndex) // 0-1 BFS
+        private void CalculateDistancesFromVertex(int startIndex)
         {
             for (var i = 0; i < size; i++)
             {
@@ -100,17 +100,18 @@ namespace Assets.Scripts
 
                 foreach (var neighbour in edges[vertex])
                 {
-                    if (distance[startIndex, neighbour.To] > distance[startIndex, vertex] + neighbour.Weight)
+                    if (distance[startIndex, neighbour.To] <= distance[startIndex, vertex] + neighbour.Weight)
                     {
-                        distance[startIndex, neighbour.To] = distance[startIndex, vertex] + neighbour.Weight;
-                        if (neighbour.Weight == 0)
-                        {
-                            bfsDequeue.AddFirst(neighbour.To);
-                        }
-                        else
-                        {
-                            bfsDequeue.AddLast(neighbour.To);
-                        }
+                        continue;
+                    }
+                    distance[startIndex, neighbour.To] = distance[startIndex, vertex] + neighbour.Weight;
+                    if (neighbour.Weight == 0)
+                    {
+                        bfsDequeue.AddFirst(neighbour.To);
+                    }
+                    else
+                    {
+                        bfsDequeue.AddLast(neighbour.To);
                     }
                 }
             }
@@ -120,21 +121,30 @@ namespace Assets.Scripts
         /// Add edges to graph
         /// </summary>
         /// <param name="cells"></param>
-        private void FillEdges(IEnumerable<Cell> cells)
+        private void AddEdges(IEnumerable<Cell> cells)
         {
-            foreach (var cell in cells)
-            {
-                var adjacent = boardStorage.GetAdjacent(cell);
-                AddEdges(cell, adjacent);
-            }
+            AddAdjacentEdges(cells);
+            AddEdgesThroughPasses();
+        }
 
+        private void AddEdgesThroughPasses()
+        {
             var passes = boardStorage.GetPassesAsFromToCells();
 
             foreach (var pass in passes)
             {
                 var from = pass.From;
-                edges[nodeIndexByCell[from]].Clear();
+                edges[nodeIndexByCell[@from]].Clear();
                 AddEdge(from, pass.To, 0);
+            }
+        }
+
+        private void AddAdjacentEdges(IEnumerable<Cell> cells)
+        {
+            foreach (var cell in cells)
+            {
+                var adjacent = boardStorage.GetAdjacent(cell);
+                AddEdges(cell, adjacent);
             }
         }
 

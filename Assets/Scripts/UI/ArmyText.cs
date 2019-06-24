@@ -12,6 +12,9 @@ namespace Assets.Scripts
         [SerializeField] 
         private Text armyCompositionText;
 
+        /// <summary>
+        /// Clears the text and displays it.
+        /// </summary>
         public void Init()
         {
             Clear();
@@ -34,6 +37,9 @@ namespace Assets.Scripts
             }
         }
 
+        /// <summary>
+        /// Replaces the text with an empty string.
+        /// </summary>
         public void Clear()
         {
             armyCompositionText.text = "";

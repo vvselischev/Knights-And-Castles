@@ -7,13 +7,27 @@ namespace Assets.Scripts
     /// </summary>
     public class Pass : BoardStorageItem
     {
+        /// <summary>
+        /// The coordinate of the block that contains the exit of the pass.
+        /// </summary>
         public IntVector2 ToBlock { get; }
+        /// <summary>
+        /// The coordinate inside the block of the entrance of the pass.
+        /// </summary>
         public IntVector2 FromPosition { get; set; }
+        /// <summary>
+        /// The coordinate inside the ToBlock of the exit of the pass.
+        /// </summary>
         public IntVector2 ToPosition { get; set; }
+        //We do not need FromBlock
+        
+        /// <summary>
+        /// To change the current block to the new one that contains the exit.
+        /// </summary>
         private BoardManager boardManager;
 
         /// <summary>
-        /// Changes block to the one, containing the exit of this pass.
+        /// Changes block to the one, that contains the exit of this pass.
         /// </summary>
         public void ChangeBlock()
         {
@@ -22,6 +36,7 @@ namespace Assets.Scripts
         
         /// <summary>
         /// Transfers the given army and changes block.
+        /// Removes the given army from the current block, changes the block and places the army to the new block.
         /// </summary>
         public void PassArmy(ArmyStorageItem army)
         {

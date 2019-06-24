@@ -1,5 +1,6 @@
 ﻿namespace Assets.Scripts
 {
+    /// <inheritdoc />
     /// <summary>
     /// Implementation of neutral aggressive army in game
     /// </summary>

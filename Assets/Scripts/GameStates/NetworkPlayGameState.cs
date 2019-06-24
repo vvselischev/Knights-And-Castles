@@ -114,11 +114,11 @@ namespace Assets.Scripts
 
             if (isHost)
             {
-                secondController.FinishedMove += OnOpponentFinishedMove;
+                secondController.ArmyFinishedMove += OnOpponentFinishedArmyFinishedMove;
             }
             else
             {
-                firstController.FinishedMove += OnOpponentFinishedMove;
+                firstController.ArmyFinishedMove += OnOpponentFinishedArmyFinishedMove;
             }
             
             controllerManager = new ControllerManager(firstController, secondController);
@@ -127,7 +127,7 @@ namespace Assets.Scripts
             turnManager.Initialize(boardManager, controllerManager);
         }
 
-        private void OnOpponentFinishedMove()
+        private void OnOpponentFinishedArmyFinishedMove()
         {
             boardStorage.DisableBoardButtons();
         }
@@ -215,11 +215,11 @@ namespace Assets.Scripts
         {
             if (isHost)
             {
-                controllerManager.SecondController.FinishedMove -= OnOpponentFinishedMove;
+                controllerManager.SecondController.ArmyFinishedMove -= OnOpponentFinishedArmyFinishedMove;
             }
             else
             {
-                controllerManager.FirstController.FinishedMove -= OnOpponentFinishedMove;
+                controllerManager.FirstController.ArmyFinishedMove -= OnOpponentFinishedArmyFinishedMove;
             }
             
             multiplayerController.OnPlayerLeft -= ProcessPlayerLeft;

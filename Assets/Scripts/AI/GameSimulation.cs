@@ -20,6 +20,14 @@ namespace Assets.Scripts
                 Cell = cell;
             }
         }
+
+        /// <summary>
+        /// Depth of recursion determines the number of moves AI tries to predict.
+        /// However, if there are a lot of armies on board, it takes too much time on mobile device to use big depth.
+        /// </summary>
+        private const int stupidDepth = 3;
+        private const int cleverDepth = 5;
+        private const int maxArmiesForClever = 3;
         
         private IBoardStorage boardStorage;
 
@@ -133,13 +141,13 @@ namespace Assets.Scripts
             var otherPlayerArmyCells = FindPlayerArmies()[GetOppositePlayerType(playerType)];
 
             int depth;
-            if (currentPlayerArmyCells.Count + otherPlayerArmyCells.Count >= 4)
+            if (currentPlayerArmyCells.Count + otherPlayerArmyCells.Count > maxArmiesForClever)
             {
-                depth = 3;
+                depth = stupidDepth;
             }
             else
             {
-                depth = 5;
+                depth = cleverDepth;
             }
             
             return AnalyzeStrategy(playerType, true, depth, currentPlayerArmyCells, 

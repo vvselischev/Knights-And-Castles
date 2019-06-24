@@ -4,7 +4,7 @@ namespace Assets.Scripts
 {
     /// <summary>
     /// Simple button. Notifies InputListener, when pressed. Can be locked.
-    /// When locked, color is changed to red.
+    /// When locked, color is changed to red and clicks are not processed.
     /// </summary>
     public class FinishTurnButton : MonoBehaviour
     {
@@ -32,7 +32,6 @@ namespace Assets.Scripts
         {
             enabled = true;
             icon.ChangeColor(defaultColor);
-            icon.Reset();
         }
     }
 }
