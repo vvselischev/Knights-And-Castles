@@ -1,37 +1,70 @@
-﻿﻿using System;
+﻿using System;
 using System.Collections.Generic;
- using System.Linq;
- using UnityEngine;
+using System.ComponentModel;
+using System.Linq;
+using UnityEngine;
 using UnityEngine.UI;
 
 namespace Assets.Scripts
 {
     /// <summary>
-    /// Class for board storage creation.
+    /// Class for board storage creation, serialization and deserialization.
+    /// When creating storage randomly, fair algorithm is used to make players' parts of board
+    /// have approximately the same amount of enemy and friendly units.
+    /// Board has 1-indexation.
     /// </summary>
     public class BoardFactory : MonoBehaviour
     {
         private System.Random random = new System.Random();
 
+        /// <summary>
+        /// Temporary variables to share configuration between board creation methods.
+        /// </summary>
         private BoardConfiguration configuration;
-
         private int blockWidth;
         private int blockHeight;
         private int blocksHorizontal;
         private int blocksVertical;
         
+        /// <summary>
+        /// Game object of pattern icons of armies on board.
+        /// </summary>
         [SerializeField] private GameObject patternIcon;
+        /// <summary>
+        /// Relative parent for army icons on board.
+        /// </summary>
         [SerializeField] private GameObject parent;
 
         [SerializeField] private CheckeredButtonBoard board; //just to transfer it to board storage 
-        [SerializeField] private BoardManager boardManager; //just to transfer ift to passes
+        [SerializeField] private BoardManager boardManager; //just to transfer it to passes
 
+        /// <summary>
+        /// The difference in player's forces.
+        /// </summary>
         private int imbalance = startImbalance; // first is always in better position
         private const int startImbalance = 100;
-        private const int RandomNumberOfUnitsFrom = 10;
-        private const int RandomNumberOfUnitsTo = 30;
+        
+        /// <summary>
+        /// Minimum number of units during the creation.
+        /// </summary>
+        private const int randomNumberOfUnitsFrom = 10;
+        /// <summary>
+        /// Maximum number of units during the creation.
+        /// </summary>
+        private const int randomNumberOfUnitsTo = 30;
+
+        /// <summary>
+        /// Probabilities for the particular cell during random filling.
+        /// Their sum must be equal to 1.
+        /// </summary>
+        private const double emptyCellProbability = 0.25;
+        private const double neutralFriendlyCellProbability = 0.25;
+        private const double neutralAggressiveCellProbability = 0.5;
         
 
+        /// <summary>
+        /// Sprites for icons on board.
+        /// </summary>
         [SerializeField] private Sprite neutralFriendlySprite;
 
         [SerializeField] private Sprite neutralAggressiveSprite;
@@ -45,104 +78,227 @@ namespace Assets.Scripts
         [SerializeField] private Sprite passSprite;
 
         /// <summary>
-        /// Creates an empty storage of the given type and boardManager associated with it.
+        /// Integer ids of different army types for de-/serialization and random choice.
         /// </summary>
-        public BlockBoardStorage CreateEmptyStorage(BoardType configurationType, out BoardManager boardManager)
+        private const int emptyCellId = 0;
+        private const int neutralFriendlyCellId = 1;
+        private const int neutralAggressiveCellId = 2;
+        // Here is the gap for other possible neutral types.
+        private const int firstPlayerCellId = 11;
+        private const int secondPlayerCellId = 12;
+
+        /// <summary>
+        /// Creates an empty block storage of the given type and boardManager associated with it.
+        /// </summary>
+        public BlockBoardStorage CreateEmptyBlockStorage(BoardType configurationType, out BoardManager boardManager)
+        {
+            var configuration = GetConfigurationByType(configurationType);
+            var storage = new BlockBoardStorage(blocksHorizontal, blocksVertical, board);
+            boardManager = new BoardManager(storage, configuration.FirstStartBlock, configuration.SecondStartBlock);
+            return storage;
+        }
+
+        /// <summary>
+        /// Returns the object with board configuration by the given type.
+        /// </summary>
+        private BoardConfiguration GetConfigurationByType(BoardType configurationType)
         {
             if (configurationType == BoardType.SMALL)
             {
-                configuration = new SmallBoardConfiguration();
+                return configuration = new SmallBoardConfiguration();
             }
-            else
+            return configuration = new LargeBoardConfiguration();
+        }
+        
+        /// <summary>
+        /// Creates tables of army and bonus layers for the whole board.
+        /// Tables are 1-indexed.
+        /// </summary>
+        private void CreateGlobalTables(out BoardStorageItem[,] boardTable, out BoardStorageItem[,] bonusTable)
+        {
+            boardTable = new BoardStorageItem[blockWidth * blocksHorizontal + 1, blockHeight * blocksVertical + 1];
+            bonusTable = new BoardStorageItem[blockWidth * blocksHorizontal + 1, blockHeight * blocksVertical + 1];
+        }
+
+        /// <summary>
+        /// Fills the given storage randomly according to the given configuration type.
+        /// The given board manager must be the one produced in constructor when creating given board storage.
+        /// It will be transferred to passes.
+        /// Creates two tables for army and bonus layers, fills them with BoardStorageItems (Army + Icon) and
+        /// transfers them to the board storage.
+        /// Note, that this method works properly with any implementations of IBoardStorage.
+        /// </summary>
+        public void FillBoardStorageRandomly(IBoardStorage boardStorage, BoardType configurationType, 
+            BoardManager boardManager)
+        {
+            //Initialize and save most common parameters to fields in order not to touch the configuration object every time.
+            InitializeConfigurationParameters(configurationType, boardManager);
+            
+            //Create tables for army and bonus layers.
+            CreateGlobalTables(out var currentBoardTable, out var currentBonusTable);
+            
+            //Fill bonus layer.
+            FillBonusTable(currentBonusTable);
+
+            //Fill army layer.
+            for (var col = 1; col <= blockWidth * blocksHorizontal; col++)
             {
-                configuration = new LargeBoardConfiguration();
+                for (var row = 1; row <= blockHeight * blocksVertical; row++)
+                {
+                    if (!InitializeCell(col, row, out var currentArmy, out var currentSprite))
+                    {
+                        //The cell is empty.
+                        continue;
+                    }
+                    //Now we know that the cell is not empty.
+                    CompleteArmyCellInitialization(currentBoardTable, col, row, currentArmy, currentSprite);
+                }
             }
-            imbalance = startImbalance;
+            //Fill the storage using filled tables.
+            boardStorage.Fill(currentBoardTable, currentBonusTable);
+        }
+
+        /// <summary>
+        /// Fills the bonus layer of the board, namely castles and passes.
+        /// </summary>
+        private void FillBonusTable(BoardStorageItem[,] bonusTable)
+        {
+            InstantiateCastles(bonusTable);
+            InstantiatePasses(bonusTable);
+        }
+
+        /// <summary>
+        /// Save most common parameters to fields so as not to touch the configuration object every time (for convenience)
+        /// The same is with the board manager to transfer it to passes.
+        /// Initializes the imbalance for army generation.
+        /// </summary>
+        private void InitializeConfigurationParameters(BoardType configurationType, BoardManager boardManager)
+        {
+            configuration = GetConfigurationByType(configurationType);
             blockWidth = configuration.BlockWidth;
             blockHeight = configuration.BlockHeight;
             blocksHorizontal = configuration.BlocksHorizontal;
             blocksVertical = configuration.BlocksVertical;
-            var storage = new BlockBoardStorage(blocksHorizontal, blocksVertical, board);
-            boardManager = new BoardManager(storage, configuration.FirstStartBlock, configuration.SecondStartBlock);
             this.boardManager = boardManager;
-            return storage;
+            //Initialize also imbalance.
+            imbalance = startImbalance;
         }
-        
+
         /// <summary>
-        /// Fills the given storage randomly.
-        /// 25% empty cell
-        /// 25% neutral friendly cell
-        /// 50% neutral enemy cell
+        /// Determines whether the given cell will have an army (user or neutral) or it will be empty.
+        /// In the first case produces not null generated army and corresponding sprite, and returns true.
+        /// In the second case outer parameters are null and method returns false.
         /// </summary>
-        public void FillBoardStorageRandomly(IBoardStorage boardStorage)
+        private bool InitializeCell(int col, int row, out Army currentArmy, out Sprite currentSprite)
         {
-            var currentBoardTable = new BoardStorageItem[blockWidth * blocksHorizontal + 1, blockHeight * blocksVertical + 1];
-            var currentBonusTable = new BoardStorageItem[blockWidth * blocksHorizontal + 1, blockHeight * blocksVertical + 1];
-            
-            InstantiateCastles(currentBonusTable);
-            InstantiatePasses(currentBonusTable);
-            
-            for (var col = 1; col <= blockWidth * blocksHorizontal; col++)
+            currentArmy = null;
+            currentSprite = null;
+            if (ExistsPlayerArmy(col, row, PlayerType.FIRST))
             {
-                for (var row = 1; row <= blockHeight * blocksVertical; row++)
-                {                    
-                    Army currentArmy;
-                    Sprite currentSprite;
-                    if (ExistsPlayerArmy(col, row, PlayerType.FIRST))
-                    {
-                        currentArmy = new UserArmy(PlayerType.FIRST, GenerateArmyComposition(RandomNumberOfUnitsFrom, 
-                            RandomNumberOfUnitsTo));
-                        currentSprite = firstUserSprite;
-                    }
-                    else if (ExistsPlayerArmy(col, row, PlayerType.SECOND))
-                    {
-                        currentArmy = new UserArmy(PlayerType.SECOND, GenerateArmyComposition(RandomNumberOfUnitsFrom, 
-                            RandomNumberOfUnitsTo));
-                        currentSprite = secondUserSprite;
-                    }
-                    else if (ExistsPass(col, row))
-                    {
-                        //We do not want to have a 'surprise' army at the end of the pass.
-                        continue;
-                    }
-                    else
-                    {
-                        //0 -- Empty, 1 -- Friendly, 2, 3 -- Aggressive
-                        var randomValue = random.Next() % 4;
-                        if (randomValue == 0)
-                        {
-                            continue;
-                        }
-
-                        if (randomValue == 1)
-                        {
-                            currentSprite = neutralFriendlySprite;
-                            currentArmy = new NeutralFriendlyArmy(
-                                GenerateBalancedArmyComposition(true, new IntVector2(col, row)));
-                        }
-                        else
-                        {
-                            currentSprite = neutralAggressiveSprite;
-                            currentArmy = new NeutralAggressiveArmy(
-                                GenerateBalancedArmyComposition(false, new IntVector2(col, row)));
-                        }
-                    }
-
-                    var iconGO = InstantiateIcon(currentSprite);
-                    iconGO.SetActive(false);
-                    currentBoardTable[col, row] = new ArmyStorageItem(currentArmy, iconGO);
-                }
+                InitializePlayerArmyCell(PlayerType.FIRST, out currentArmy, out currentSprite);
             }
-            
-            boardStorage.Fill(currentBoardTable, currentBonusTable);
+            else if (ExistsPlayerArmy(col, row, PlayerType.SECOND))
+            {
+                InitializePlayerArmyCell(PlayerType.SECOND, out currentArmy, out currentSprite);
+            }
+            else if (ExistsPass(col, row))
+            {
+                //We do not want to have a 'surprise' army at the end of the pass.
+                return false;
+            }
+            else
+            {
+                var cellTypeId = GetRandomCellTypeId();
+                if (cellTypeId == emptyCellId)
+                {
+                    return false;
+                }
+
+                InitializeNeutralCell(cellTypeId, col, row, out currentArmy, out currentSprite);    
+            }
+            return true;
         }
 
+        /// <summary>
+        /// Generates an army for player and produces the corresponding sprite by the given player type.
+        /// </summary>
+        private void InitializePlayerArmyCell(PlayerType playerType, out Army army, out Sprite sprite)
+        {
+            sprite = null;
+            army = new UserArmy(playerType, GenerateArmyComposition(randomNumberOfUnitsFrom, randomNumberOfUnitsTo));
+            if (playerType == PlayerType.FIRST)
+            {
+                sprite = firstUserSprite;
+            }
+            else if (playerType == PlayerType.SECOND)
+            {
+                sprite = secondUserSprite;
+            }
+        }
+
+        /// <summary>
+        /// Creates an icon by the given sprite (it is inactive at this point) and fills the given cell with
+        /// created ArmyStorageItem.
+        /// </summary>
+        private void CompleteArmyCellInitialization(BoardStorageItem[,] currentBoardTable, int col, int row,
+            Army currentArmy, Sprite currentSprite)
+        {
+            var iconGO = InstantiateIcon(currentSprite);
+            iconGO.SetActive(false);
+            currentBoardTable[col, row] = new ArmyStorageItem(currentArmy, iconGO);
+        }
+
+        /// <summary>
+        /// Produces an army and corresponding sprite by the given neutral type.
+        /// 
+        /// </summary>
+        private void InitializeNeutralCell(int neutralTypeId, int col, int row, out Army army, out Sprite sprite)
+        {
+            army = null;
+            sprite = null;
+            if (neutralTypeId == neutralFriendlyCellId)
+            {
+                sprite = neutralFriendlySprite;
+                army = new NeutralFriendlyArmy(GenerateBalancedArmyComposition(ArmyType.NEUTRAL_FRIENDLY, 
+                    new IntVector2(col, row)));
+            }
+            else if (neutralTypeId == neutralAggressiveCellId)
+            {
+                sprite = neutralAggressiveSprite;
+                army = new NeutralAggressiveArmy(GenerateBalancedArmyComposition(ArmyType.NEUTRAL_AGGRESSIVE, 
+                    new IntVector2(col, row)));
+            }
+        }
+
+        /// <summary>
+        /// Returns the cell id with the probabilities described as constants above.
+        /// </summary>
+        private int GetRandomCellTypeId()
+        {
+            var randomValue = random.NextDouble();
+            if (randomValue < emptyCellProbability)
+            {
+                return emptyCellId;
+            }
+            if (emptyCellProbability <= randomValue && 
+                randomValue < emptyCellProbability + neutralFriendlyCellProbability)
+            {
+                return neutralFriendlyCellId;
+            }
+            return neutralAggressiveCellId;
+        }
+
+        /// <summary>
+        /// Determines whether the given cell contains a given player army according to the configuration.
+        /// </summary>
         private bool ExistsPlayerArmy(int col, int row, PlayerType playerType)
         {
             var position = new IntVector2(col, row);
+            //We are just creating the board, so it is enough to look at start player positions in the configuration.
             if (playerType == PlayerType.FIRST)
             {
                 var startFirstPositions = configuration.StartFirstPositions;
+                //Configurations store position as local to the corresponding blocks, so we must convert it to global.
                 return startFirstPositions.Any(localPosition =>
                     GetGlobalPosition(localPosition, configuration.FirstStartBlock).Equals(position));
             }
@@ -159,11 +315,15 @@ namespace Assets.Scripts
             return false;
         }
 
+        /// <summary>
+        /// Determines whether the given cell contains a pass entrance or a pass exit according to the configuration.
+        /// </summary>
         private bool ExistsPass(int col, int row)
         {
             var position = new IntVector2(col, row);
             for (var i = 0; i < configuration.PassesNumber; i++)
             {
+                //Given coordinates are global, so we need to convert the position in the configuration to global.
                 var globalFromPosition = GetGlobalPosition(configuration.PassesFromPositions[i],
                     configuration.PassesFromBlocks[i]);
                 var globalToPosition = GetGlobalPosition(configuration.PassesToPositions[i],
@@ -176,13 +336,21 @@ namespace Assets.Scripts
             return false;
         }
 
+        /// <summary>
+        /// Returns the position on the whole board by the position inside the block and the position of the block.
+        /// </summary>
         private IntVector2 GetGlobalPosition(IntVector2 localPosition, IntVector2 block)
         {
+            //Positions are 1-indexed!
             var globalX = (block.x - 1) * blockWidth + localPosition.x;
             var globalY = (block.y - 1) * blockHeight + localPosition.y;  
             return new IntVector2(globalX, globalY);
         }
         
+        /// <summary>
+        /// Fills the given table with passes according to the configuration.
+        /// Only the entrance of the pass is set to the storage, since we do not care where it leads.
+        /// </summary>
         private void InstantiatePasses(BoardStorageItem[,] bonusTable)
         {
             for (var i = 0; i < configuration.PassesNumber; i++)
@@ -197,15 +365,21 @@ namespace Assets.Scripts
             }
         }
 
+        /// <summary>
+        /// Fills the given table with castles of both players according to the configuration.
+        /// </summary>
         private void InstantiateCastles(BoardStorageItem[,] bonusTable)
         {
-            InstantiateCastlesFromList(configuration.FirstCastlesPositions, configuration.FirstCastlesBlocks,
+            InstantiateCastlesForPlayer(configuration.FirstCastlesPositions, configuration.FirstCastlesBlocks,
                 PlayerType.FIRST, bonusTable);
-            InstantiateCastlesFromList(configuration.SecondCastlesPositions, configuration.SecondCastlesBlocks, 
+            InstantiateCastlesForPlayer(configuration.SecondCastlesPositions, configuration.SecondCastlesBlocks, 
                 PlayerType.SECOND, bonusTable);
         }
-
-        private void InstantiateCastlesFromList(IntVector2[] positions, IntVector2[] blocks, 
+        
+        /// <summary>
+        /// Fills the table with castles of the given player by given arrays of position and corresponding blocks.
+        /// </summary>
+        private void InstantiateCastlesForPlayer(IntVector2[] positions, IntVector2[] blocks, 
             PlayerType ownerType, BoardStorageItem[,] bonusTable)
         {
             for (var i = 0; i < positions.Length; i++)
@@ -218,24 +392,20 @@ namespace Assets.Scripts
             }
         }
 
-
         /// <summary>
         /// Converts the given array of bytes to the board storage by the following convention:
         /// From left to right, from bottom to up.
-        /// x == 0 => Empty
-        /// x == 1 => NeutralFriendly
-        /// x == 2 => NeutralAggressive
-        /// x == 11 => FirstPlayer
-        /// x == 12 => SecondPlayer
-        /// x = 1, 2, 11, 12 => after x goes (v1, v2, v3) -- spearmen, archers, cavalrymen
+        /// First the cellTypeId goes.
+        /// If it is not an id of an empty cell, it is followed by three bytes: spearmen, archers, cavalrymen
+        /// in the current army respectively.
+        /// The rest of the initialization process is the same as in the random filling.
         /// </summary>
-        public void FillBoardStorageFromArray(byte[] array, IBoardStorage boardStorage)
-        {            
-            var currentBoardTable = new BoardStorageItem[blockWidth * blocksHorizontal + 1, blockHeight * blocksVertical + 1];
-            var currentBonusTable = new BoardStorageItem[blockWidth * blocksHorizontal + 1, blockHeight * blocksVertical + 1];
-            
-            InstantiateCastles(currentBonusTable);
-            InstantiatePasses(currentBonusTable);
+        public void FillBoardStorageFromArray(byte[] array, IBoardStorage boardStorage, BoardType configurationType, 
+            BoardManager boardManager)
+        {
+            InitializeConfigurationParameters(configurationType, boardManager);
+            CreateGlobalTables(out var currentBoardTable, out var currentBonusTable);
+            FillBonusTable(currentBonusTable);
             
             var currentInd = 0;
             for (var col = 1; col <= blockWidth * blocksHorizontal; col++)
@@ -245,14 +415,11 @@ namespace Assets.Scripts
                     var currentType = array[currentInd];
                     currentInd++;
 
-                    if (currentType == 0)
+                    if (currentType == emptyCellId)
                     {
                         continue;
                     }
 
-                    Army currentArmy = null;
-                    Sprite currentSprite = null;
-                    
                     var spearmen = array[currentInd];
                     currentInd++;
                     var archers = array[currentInd];
@@ -261,41 +428,50 @@ namespace Assets.Scripts
                     currentInd++;
                     var armyComposition = new ArmyComposition(spearmen, archers, cavalrymen);
 
-                    if (currentType == 11)
-                    {
-                        currentArmy = new UserArmy(PlayerType.FIRST, armyComposition);
-                        currentSprite = firstUserSprite;
-                    }
-                    else if (currentType == 12)
-                    {
-                        currentArmy = new UserArmy(PlayerType.SECOND, armyComposition);
-                        currentSprite = secondUserSprite;
-                    }
-                    else if (currentType == 1)
-                    {
-                        currentArmy = new NeutralFriendlyArmy(armyComposition);
-                        currentSprite = neutralFriendlySprite;
-                    }
-                    else if (currentType == 2)
-                    {
-                        currentArmy = new NeutralAggressiveArmy(armyComposition);
-                        currentSprite = neutralAggressiveSprite;
-                    }
-
-                    var iconGO = InstantiateIcon(currentSprite);
-                    iconGO.SetActive(false);
-                    currentBoardTable[col, row] = new ArmyStorageItem(currentArmy, iconGO);
+                    InitializeCellById(currentType, armyComposition, out var currentArmy, out var currentSprite);
+                    CompleteArmyCellInitialization(currentBoardTable, col, row, currentArmy, currentSprite);
                 }
             }
-            
             boardStorage.Fill(currentBoardTable, currentBonusTable);
         }
 
         /// <summary>
+        /// Produces an army with the given composition and a corresponding sprite by the given cellTypeId.
+        /// </summary>
+        private void InitializeCellById(byte cellTypeId, ArmyComposition armyComposition, 
+            out Army army, out Sprite sprite)
+        {
+            army = null;
+            sprite = null;
+            if (cellTypeId == firstPlayerCellId)
+            {
+                army = new UserArmy(PlayerType.FIRST, armyComposition);
+                sprite = firstUserSprite;
+            }
+            else if (cellTypeId == secondPlayerCellId)
+            {
+                army = new UserArmy(PlayerType.SECOND, armyComposition);
+                sprite = secondUserSprite;
+            }
+            else if (cellTypeId == neutralFriendlyCellId)
+            {
+                army = new NeutralFriendlyArmy(armyComposition);
+                sprite = neutralFriendlySprite;
+            }
+            else if (cellTypeId == neutralAggressiveCellId)
+            {
+                army = new NeutralAggressiveArmy(armyComposition);
+                sprite = neutralAggressiveSprite;
+            }
+        }
+
+        /// <summary>
         /// Converts the given storage to the list of bytes by the same convention as in FillBoardStorageFromArray.
+        /// Bonus layer is stored in the configuration so we do not need to transfer them.
         /// </summary>
         public List<byte> ConvertBoardStorageToBytes(BlockBoardStorage boardStorage)
         {
+            //Ignore bonus layer.
             boardStorage.ConvertToArrays(out var items, out _);
             
             var byteList = new List<byte>();
@@ -303,44 +479,63 @@ namespace Assets.Scripts
             {
                 for (var row = 1; row <= blockHeight * blocksVertical; row++)
                 {
-                    byte currentType = 0;
+                    byte currentType = emptyCellId;
                     Army army = null;
                     if (items[col, row] != null && items[col, row] is ArmyStorageItem)
                     {
                         army = ((ArmyStorageItem) items[col, row]).Army;
-                        if (army.PlayerType == PlayerType.FIRST)
-                        {
-                            currentType = 11;
-                        }
-                        else if (army.PlayerType == PlayerType.SECOND)
-                        {
-                            currentType = 12;
-                        }
-                        else if (army.PlayerType == PlayerType.NEUTRAL)
-                        {
-                            if (army is NeutralFriendlyArmy)
-                            {
-                                currentType = 1;
-                            }
-                            else if (army is NeutralAggressiveArmy)
-                            {
-                                currentType = 2;
-                            }
-                        }
+                        currentType = (byte)GetArmyIdType(army);
                     }
                     byteList.Add(currentType);
                     
-                    if (currentType != 0)
+                    if (currentType != emptyCellId) // it is an army, not an empty cell
                     {
-                        var armyComposition = army.ArmyComposition;
-                        byteList.Add((byte)armyComposition.Spearmen);
-                        byteList.Add((byte)armyComposition.Archers);
-                        byteList.Add((byte)armyComposition.Cavalrymen);
+                        SerializeArmyComposition(army, byteList);
                     }
                 }
             }
 
             return byteList;
+        }
+
+        /// <summary>
+        /// Adds an army composition to the given list.
+        /// Sequentially the number of spearmen, archers and cavalrymen is added (in this order, converted to byte).
+        /// </summary>
+        private void SerializeArmyComposition(Army army, List<byte> bytes)
+        {
+            var armyComposition = army.ArmyComposition;
+            bytes.Add((byte) armyComposition.Spearmen);
+            bytes.Add((byte) armyComposition.Archers);
+            bytes.Add((byte) armyComposition.Cavalrymen);
+        }
+
+        /// <summary>
+        /// Returns the cellTypeId of the given army.
+        /// </summary>
+        private int GetArmyIdType(Army army)
+        {
+            var currentType = emptyCellId;
+            if (army.PlayerType == PlayerType.FIRST)
+            {
+                currentType = firstPlayerCellId;
+            }
+            else if (army.PlayerType == PlayerType.SECOND)
+            {
+                currentType = secondPlayerCellId;
+            }
+            else if (army.PlayerType == PlayerType.NEUTRAL)
+            {
+                if (army is NeutralFriendlyArmy)
+                {
+                    currentType = neutralFriendlyCellId;
+                }
+                else if (army is NeutralAggressiveArmy)
+                {
+                    currentType = neutralAggressiveCellId;
+                }
+            }
+            return currentType;
         }
 
         /// <summary>
@@ -353,26 +548,50 @@ namespace Assets.Scripts
             return InstantiateIcon(item.StoredObject.GetComponent<Image>().sprite);
         }
         
+        /// <summary>
+        /// Creates a copy of the pattern icon with the given sprite.
+        /// Parent transform is set in the editor.
+        /// The copy is placed on the position of the pattern icon (do not rely on it).
+        /// Return the game object of the copied icon.
+        /// </summary>
         private GameObject InstantiateIcon(Sprite sprite)
         {
+            //Take pattern image and clone it.
             var patternImage = patternIcon.GetComponent<Image>();
-
             var newImage = Instantiate(patternImage);
             newImage.enabled = true;
 
+            //Set the parent transform to the copied image and the given sprite.
             var rectTransform = newImage.GetComponent<RectTransform>();
             rectTransform.SetParent(parent.transform, false);
             newImage.GetComponent<Image>().sprite = sprite;
             
+            //Return its game object.
             return newImage.gameObject;
         }
 
+        /// <summary>
+        /// Generates a random army composition where units are in the given diapason
+        /// but not less than randomNumberOfUnitsFrom and not greater than randomNumberOfUnitsTo.
+        /// </summary>
         private ArmyComposition GenerateArmyComposition(int from, int to)
         {
-            int randomSpearmen = (from + random.Next() % (to - from)) % 100,
-                randomArchers = (from + random.Next() % (to - from)) % 100,
-                randomCavalrymen = (from + random.Next() % (to - from)) % 100;
+            var randomSpearmen = GenerateRandomNumberOfUnits(from, to);
+            var randomArchers = GenerateRandomNumberOfUnits(from, to);
+            var randomCavalrymen = GenerateRandomNumberOfUnits(from, to);
             return new ArmyComposition(randomSpearmen, randomArchers, randomCavalrymen);
+        }
+
+        /// <summary>
+        /// Generates a random number of units in the given diapason in the given diapason
+        /// but not less than randomNumberOfUnitsFrom and not greater than randomNumberOfUnitsTo.
+        /// </summary>
+        private int GenerateRandomNumberOfUnits(int from, int to)
+        {
+            var result = from + random.Next() % (to - from);
+            result = Math.Max(randomNumberOfUnitsFrom, result);
+            result = Math.Min(result, randomNumberOfUnitsTo);
+            return result;
         }
 
         /// <summary>
@@ -380,30 +599,27 @@ namespace Assets.Scripts
         /// Analyzing this information it can be added more or less units to the generated army.
         /// For these purposes in this function multiplier is calculated which generated army composition multiplies on.
         /// </summary>
-        private ArmyComposition GenerateBalancedArmyComposition(bool isFriendly, IntVector2 position)
+        private ArmyComposition GenerateBalancedArmyComposition(ArmyType armyType, IntVector2 position)
         {
             var boardWidthPlusHeight = blockWidth * blocksHorizontal + blockHeight * blocksVertical;
             var balancePositionMultiplier = boardWidthPlusHeight - 2 * (position.x + position.y);
-            if (!isFriendly)
+            if (armyType != ArmyType.NEUTRAL_FRIENDLY)
             {
                 balancePositionMultiplier *= -1;
             }
 
             var additional = Math.Abs(balancePositionMultiplier / (double)boardWidthPlusHeight);
+            var multiplier = GetMultiplier(balancePositionMultiplier, additional);
 
-            double multiplier;
-            if (HasSameSign(imbalance, balancePositionMultiplier))
-            {
-                multiplier = 1 - additional + 0.05; // to avoid zero division
-            }
-            else
-            {
-                multiplier = 1 + additional + 0.05; // to avoid zero division
-            }
+            var resultArmyComposition = GenerateArmyComposition((int)(randomNumberOfUnitsFrom * multiplier), 
+                (int)(randomNumberOfUnitsTo * multiplier));
 
-            var resultArmyComposition = GenerateArmyComposition(
-                (int)(RandomNumberOfUnitsFrom * multiplier), (int)(RandomNumberOfUnitsTo * multiplier));
+            UpdateImbalance(resultArmyComposition);
+            return resultArmyComposition;
+        }
 
+        private void UpdateImbalance(ArmyComposition resultArmyComposition)
+        {
             if (imbalance < 0)
             {
                 imbalance += resultArmyComposition.TotalUnitQuantity();
@@ -412,8 +628,22 @@ namespace Assets.Scripts
             {
                 imbalance -= resultArmyComposition.TotalUnitQuantity();
             }
+        }
 
-            return resultArmyComposition;
+        private double GetMultiplier(int balancePositionMultiplier, double additional)
+        {
+            // to avoid zero division
+            const double zeroOffset = 0.05;
+            double multiplier;
+            if (HasSameSign(imbalance, balancePositionMultiplier))
+            {
+                multiplier = 1 - additional + zeroOffset; 
+            }
+            else
+            {
+                multiplier = 1 + additional + zeroOffset;
+            }
+            return multiplier;
         }
 
         private bool HasSameSign(int a, int b)

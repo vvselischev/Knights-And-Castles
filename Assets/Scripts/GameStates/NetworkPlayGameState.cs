@@ -73,7 +73,7 @@ namespace Assets.Scripts
 
         private void SetupRoundHost()
         {
-            boardFactory.FillBoardStorageRandomly(boardStorage);
+            boardFactory.FillBoardStorageRandomly(boardStorage, ConfigurationType, boardManager);
 
             var message = boardFactory.ConvertBoardStorageToBytes(boardStorage);
             
@@ -94,7 +94,7 @@ namespace Assets.Scripts
  
             multiplayerController.OnMessageReceived -= SetupRoundFromNetwork;
 
-            boardFactory.FillBoardStorageFromArray(message.Skip(1).ToArray(), boardStorage);
+            boardFactory.FillBoardStorageFromArray(message.Skip(1).ToArray(), boardStorage, ConfigurationType, boardManager);
             FinishSetup();
             
             InitNewRound();

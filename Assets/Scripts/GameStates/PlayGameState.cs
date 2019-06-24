@@ -50,7 +50,7 @@ namespace Assets.Scripts
         public virtual void InvokeState()
         {
             SetupGame();
-            boardFactory.FillBoardStorageRandomly(boardStorage);
+            boardFactory.FillBoardStorageRandomly(boardStorage, ConfigurationType, boardManager);
             
             board.SetInputListener(inputListener);
             var firstController =
@@ -76,7 +76,7 @@ namespace Assets.Scripts
 
             lerpedText.FinishedLerp += CloseGame;
             
-            boardStorage = boardFactory.CreateEmptyStorage(ConfigurationType, out boardManager);
+            boardStorage = boardFactory.CreateEmptyBlockStorage(ConfigurationType, out boardManager);
             
             playedTurns = 0;
 
