@@ -27,6 +27,8 @@ namespace Assets.Scripts
         /// </summary>
         public double Experience { get; private set; }
 
+        private const double minBalance = 0.5;
+
         public ArmyComposition(int spearmen, int archers, int cavalrymen, double experience = 1)
         {
             Spearmen = spearmen;
@@ -115,12 +117,39 @@ namespace Assets.Scripts
         }
 
         /// <summary>
-        /// Calculates the army power as the product of total number of units and the experience.
+        /// Calculates the army power as the product of total number of units, experience and balance.
         /// </summary>
         /// <returns></returns>
         public double ArmyPower()
         {
-            return TotalUnitQuantity() * Experience;
+            return TotalUnitQuantity() * Experience * Balance();
+        }
+
+        /// <summary>
+        /// Calculates position balance, which depends on difference between min and max units
+        /// </summary>
+        /// <returns> value from minBalance to 1 </returns>
+        private double Balance()
+        {
+            var minQuantity = MinUnitQuantity();
+            var maxQuantity = MaxUnitQuantity();
+
+            if (minQuantity == 0)
+            {
+                return minBalance;
+            }
+
+            return Math.Min(1, minQuantity * 2.0 / maxQuantity + minBalance);
+        }
+
+        private int MinUnitQuantity()
+        {
+            return Math.Min(Math.Min(Spearmen, Archers), Cavalrymen);
+        }
+
+        private int MaxUnitQuantity()
+        {
+            return Math.Max(Math.Max(Spearmen, Archers), Cavalrymen);
         }
 
         /// <summary>
