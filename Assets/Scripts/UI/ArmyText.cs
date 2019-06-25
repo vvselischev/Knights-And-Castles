@@ -69,5 +69,10 @@ namespace Assets.Scripts
         {
             armyCompositionText.gameObject.SetActive(false);
         }
+
+        public void DisplayMaximumArmiesOnBoard()
+        {
+            armyCompositionText.text = "You cannot have" + "\n" + "more than five armies!";
+        }
     }
 }

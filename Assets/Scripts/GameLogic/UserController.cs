@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 
 namespace Assets.Scripts
@@ -212,12 +212,19 @@ namespace Assets.Scripts
             if (chosenArmyItem == null || 
                 !splitButtonClicked ||
                 boardStorage.GetBonusItem(position) is Pass ||
-                !ReachableFromChosen(position) || 
-                boardStorage.FindPlayerArmies(playerType).Count >= MAX_ARMIES)
+                !ReachableFromChosen(position))
             {
+                
                 return false;
             }
-            
+
+            if (boardStorage.FindPlayerArmies(playerType).Count >= MAX_ARMIES)
+            {
+                //An attempt to create too many armies.
+                armyText.DisplayMaximumArmiesOnBoard();
+                return false;
+            }
+
             //All conditions satisfied, perform split.
             ProcessSplit(chosenArmyPosition, position);
             SetActiveFrame(position);
