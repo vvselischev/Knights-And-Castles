@@ -46,9 +46,14 @@ namespace Assets.Scripts
         INFO_GAME_STATE,
         
         /// <summary>
+        /// State to display the tutorial menu.
+        /// </summary>
+        TUTORIAL_MENU_GAME_STATE,
+        
+        /// <summary>
         /// State to display the pages with game description.
         /// </summary>
-        TUTORIAL_GAME_STATE
+        TUTORIAL_PAGES_GAME_STATE
     }
 
 }

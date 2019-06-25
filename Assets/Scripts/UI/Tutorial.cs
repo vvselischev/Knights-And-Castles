@@ -9,7 +9,7 @@ namespace Assets.Scripts
     /// </summary>
     public class Tutorial : MonoBehaviour
     {
-        [SerializeField] private List<Canvas> pages = new List<Canvas>();
+        [SerializeField] private List<GameObject> pages = new List<GameObject>();
         [SerializeField] private ExitListener exitListener;
         private int currentPage;
 
@@ -69,6 +69,7 @@ namespace Assets.Scripts
             exitListener.Disable();
             exitListener.OnExitClicked -= Deactivate;
             DeactivatePage(currentPage);
+            StateManager.Instance.ChangeState(StateType.TUTORIAL_MENU_GAME_STATE);
         }
 
         /// <summary>
@@ -76,7 +77,7 @@ namespace Assets.Scripts
         /// </summary>
         private void DeactivatePage(int pageIndex)
         {
-            pages[pageIndex].gameObject.SetActive(false);
+            pages[pageIndex].SetActive(false);
         }
         
         /// <summary>
@@ -84,7 +85,7 @@ namespace Assets.Scripts
         /// </summary>
         private void ActivatePage(int pageIndex)
         {
-            pages[pageIndex].gameObject.SetActive(true);
+            pages[pageIndex].SetActive(true);
         }
     }
 }

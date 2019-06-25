@@ -6,7 +6,7 @@ namespace Assets.Scripts
     /// A state of tutorial menu.
     /// All ui elements are driven by the canvas the menu attached to.
     /// </summary>
-    public class TutorialGameState : MonoBehaviour, IGameState
+    public class TutorialMenuGameState : MonoBehaviour, IGameState
     {
         private MenuActivator menuActivator = MenuActivator.Instance;
         [SerializeField] private SimpleMenu tutorialMenu;
