@@ -83,12 +83,7 @@ namespace Assets.Scripts
         /// </summary>
         private void CalculateDistancesFromVertex(int startIndex)
         {
-            for (var i = 0; i < size; i++)
-            {
-                distance[startIndex, i] = size + 1; // Distance is always less than size + 1
-            }
-
-            distance[startIndex, startIndex] = 0;
+            PrepareDistances(startIndex);            
 
             var bfsDequeue = new LinkedList<int>();
             bfsDequeue.AddLast(startIndex);
@@ -115,6 +110,16 @@ namespace Assets.Scripts
                     }
                 }
             }
+        }
+
+        private void PrepareDistances(int vertex)
+        {
+            for (var i = 0; i < size; i++)
+            {
+                distance[vertex, i] = size + 1; // Distance is always less than size + 1
+            }
+
+            distance[vertex, vertex] = 0;
         }
 
         /// <summary>

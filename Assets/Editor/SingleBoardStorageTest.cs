@@ -12,7 +12,6 @@ namespace Editor
         {
             var board = new SingleBoardStorage(2, 3, null);
 
-
             for (int i = 1; i <= board.GetBoardWidth(); i++)
             {
                 for (int j = 1; j <= board.GetBoardHeight(); j++)
@@ -29,20 +28,23 @@ namespace Editor
         [Test]
         public void TestFindPlayerArmies()
         {
+            var firstPlayerType = PlayerType.FIRST;
+            var secondPlayerType = PlayerType.SECOND;
+            
             int size = 3;
             var board = new SingleBoardStorage(size, size, null);
             var bonusTable = new BoardStorageItem[size + 1, size + 1];
             var boardTable = new BoardStorageItem[size + 1, size + 1];
 
-            boardTable[2, 2] = new ArmyStorageItem(new UserArmy(PlayerType.FIRST, null), null);
-            boardTable[1, 2] = new ArmyStorageItem(new UserArmy(PlayerType.FIRST, null), null);
+            boardTable[2, 2] = new ArmyStorageItem(new UserArmy(firstPlayerType, null), null);
+            boardTable[1, 2] = new ArmyStorageItem(new UserArmy(firstPlayerType, null), null);
             
             board.Fill(boardTable, bonusTable);
             
-            Assert.True(board.ContainsPlayerArmies(PlayerType.FIRST));
-            Assert.False(board.ContainsPlayerArmies(PlayerType.SECOND));
+            Assert.True(board.ContainsPlayerArmies(firstPlayerType));
+            Assert.False(board.ContainsPlayerArmies(secondPlayerType));
 
-            var armies = board.FindPlayerArmies(PlayerType.FIRST);
+            var armies = board.FindPlayerArmies(firstPlayerType);
 
             Assert.True(armies.Contains(board.GetCellByPosition(new IntVector2(1, 2))));
             Assert.True(armies.Contains(board.GetCellByPosition(new IntVector2(2, 2))));
@@ -62,7 +64,7 @@ namespace Editor
             board.Fill(boardTable, bonusTable);
             
             Assert.True(board.GetPasses().Count() == 1);
-            Assert.AreSame(board.GetPasses().First(), pass);
+            Assert.AreSame(board.GetPasses().GetEnumerator().Current, pass);
         }
 
         [Test]

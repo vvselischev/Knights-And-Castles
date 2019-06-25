@@ -21,6 +21,9 @@ namespace Assets.Scripts
             }
         }
 
+        private static PlayerType aiPlayerType = PlayerType.SECOND;
+        private static PlayerType personPlayerType = PlayerType.FIRST;
+        
         /// <summary>
         /// Depth of recursion determines the number of moves AI tries to predict.
         /// However, if there are a lot of armies on board, it takes too much time on mobile device to use big depth.
@@ -28,8 +31,13 @@ namespace Assets.Scripts
         private const int stupidDepth = 3;
         private const int cleverDepth = 5;
         private const int maxArmiesForClever = 3;
-        
+
         private IBoardStorage boardStorage;
+        
+        /// <summary>
+        /// If positions profit differs less than on epsilon such positions are considered the same
+        /// </summary>
+        private static double EPSILON = 0.000001;
 
         public GameSimulation(IBoardStorage boardStorage)
         {
@@ -40,14 +48,17 @@ namespace Assets.Scripts
         {
             var armiesByType = new Dictionary<PlayerType, List<Cell>>
             {
-                {PlayerType.FIRST, boardStorage.FindPlayerArmies(PlayerType.FIRST)},
-                {PlayerType.SECOND, boardStorage.FindPlayerArmies(PlayerType.SECOND)}
+                {personPlayerType, boardStorage.FindPlayerArmies(personPlayerType)},
+                {aiPlayerType, boardStorage.FindPlayerArmies(aiPlayerType)}
             };
 
 
             return armiesByType;
         }
 
+        /// <summary>
+        /// Calculates how current position is profitable for current player
+        /// </summary>
         private double AnalyzePosition(List<Cell> currentPlayerArmyCells, List<Cell> otherPlayerArmyCells)
         {
             var currentPlayerPositionProfit = CalcPlayerPositionProfit(currentPlayerArmyCells);
@@ -56,6 +67,9 @@ namespace Assets.Scripts
             return currentPlayerPositionProfit - otherPlayerPositionProfit;
         }
 
+        /// <summary>
+        /// Calculates player position profit as summary of all his armies profits.
+        /// </summary>
         private double CalcPlayerPositionProfit(List<Cell> currentPlayerArmyCells)
         {
             double result = 0;
@@ -106,9 +120,6 @@ namespace Assets.Scripts
         /// <summary>
         /// Calculates position profit for given position
         /// </summary>
-        /// <param name="armyPower"></param>
-        /// <param name="distanceToEnemyCastle"></param>
-        /// <returns></returns>
         private double CalcArmyPositionProfit(double armyPower, int distanceToEnemyCastle)
         {
             if (distanceToEnemyCastle == 0)
@@ -119,21 +130,28 @@ namespace Assets.Scripts
             return armyPower / distanceToEnemyCastle;
         }
 
+        /// <summary>
+        /// FIRST and SECOND player types are supposed to be opposite, if other player type was provided as argument
+        /// exception is thrown
+        /// </summary>
         private PlayerType GetOppositePlayerType(PlayerType playerType)
         {
-            if (playerType == PlayerType.FIRST)
+            if (playerType == personPlayerType)
             {
-                return PlayerType.SECOND;
+                return aiPlayerType;
             }
 
-            if (playerType == PlayerType.SECOND)
+            if (playerType == aiPlayerType)
             {
-                return PlayerType.FIRST;
+                return personPlayerType;
             }
             
             throw new ArgumentException("such playerType is not allowed");
         }
 
+        /// <summary>
+        /// Analyzes position and finds move for which guaranteed position profit is max
+        /// </summary>
         public MoveInformation FindBestMove(PlayerType playerType)
         {
             //TODO: do it simultaneously.
@@ -154,6 +172,12 @@ namespace Assets.Scripts
                 otherPlayerArmyCells).Item2;
         }
 
+        /// <summary>
+        /// Analyzes current position and finds move for which guaranteed profit is max
+        /// </summary>
+        /// <param name="playerType"></param>
+        /// <param name="isFirstTurn"> this parameter is important for finding active armies,
+        /// if it is false then all armies are supposed to be active</param>
         private Tuple<double, MoveInformation> AnalyzeStrategy(PlayerType playerType, bool isFirstTurn,
             int depth, List<Cell> currentPlayerArmyCells, List<Cell> otherPlayerArmyCells)
         {
@@ -164,51 +188,75 @@ namespace Assets.Scripts
             }
 
             var possibleMoves = GetListOfMoves(currentPlayerArmyCells, isFirstTurn);
-            var resultBenefit = double.PositiveInfinity;
-            MoveInformation bestMoveInformation = null; // not move
 
             if (possibleMoves == null)
             {
                 throw new ArgumentException("no possible moves"); // strange exception
             }
 
+            return AnalyzeMoves(playerType, possibleMoves, depth, currentPlayerArmyCells, otherPlayerArmyCells);
+        }
+
+        /// <summary>
+        /// Among possible moves method chooses the one, which guarantees max position profit
+        /// </summary>
+        private Tuple<double, MoveInformation> AnalyzeMoves(PlayerType playerType, List<MoveInformation> possibleMoves,
+            int depth, List<Cell> currentPlayerArmyCells, List<Cell> otherPlayerArmyCells)
+        {
+            var resultBenefit = double.PositiveInfinity;
+            MoveInformation bestMoveInformation = null; // not move
+            
             foreach (var moveInformation in possibleMoves)
             {
-                var intermediateResult = MakeAnalyzingMoves(moveInformation, depth, playerType, 
-                    currentPlayerArmyCells, otherPlayerArmyCells);
-
+                var intermediateResult = MakeAnalyzingMoves(moveInformation, depth, playerType, currentPlayerArmyCells, otherPlayerArmyCells);
                 var distanceEnemyCastleTo = boardStorage.GetDistanceToEnemyCastle(moveInformation.To, playerType);
                 var distanceEnemyCastleFrom = boardStorage.GetDistanceToEnemyCastle(moveInformation.From, playerType);
                 
                 if (distanceEnemyCastleTo == 0) 
                 {
                     resultBenefit = playerType == PlayerType.FIRST ? double.PositiveInfinity : double.NegativeInfinity; 
-
                     bestMoveInformation = moveInformation; 
                     break; 
                 }
-                
-                //Enemy will lose
-                if (double.IsNegativeInfinity(intermediateResult.Item1) && distanceEnemyCastleTo < distanceEnemyCastleFrom)
+
+                if (IsMoveBetter(resultBenefit, intermediateResult.Item1, bestMoveInformation, playerType, distanceEnemyCastleTo))
                 {
                     resultBenefit = intermediateResult.Item1;
                     bestMoveInformation = moveInformation;
-                    break;
-                }
-                
-                if (intermediateResult.Item1 < resultBenefit || 
-                    Math.Abs(intermediateResult.Item1 - resultBenefit) < 0.00001 
-                    && (bestMoveInformation == null || 
-                        boardStorage.GetDistanceToEnemyCastle(bestMoveInformation.To, playerType) > distanceEnemyCastleTo)) 
-                { 
-                    resultBenefit = intermediateResult.Item1; 
-                    bestMoveInformation = moveInformation; 
+
+                    if (IsMovePerfect(resultBenefit, distanceEnemyCastleTo, distanceEnemyCastleFrom))
+                    {
+                        break;
+                    }
                 }
             }
             
             return new Tuple<double, MoveInformation>(resultBenefit, bestMoveInformation);
         }
 
+        /// <summary>
+        /// Checks that move leads to win in min number of steps
+        /// </summary>
+        private Boolean IsMovePerfect(double moveBenefit, double distanceEnemyCastleTo, double distanceEnemyCastleFrom)
+        {
+            return double.IsNegativeInfinity(moveBenefit) && distanceEnemyCastleTo < distanceEnemyCastleFrom;
+        }
+
+        /// <summary>
+        /// Checks that analyzing move is better than current the best
+        /// </summary>
+        private Boolean IsMoveBetter(double currentBenefit, double moveBenefit, MoveInformation currentMove, 
+            PlayerType playerType, double distanceEnemyCastleTo)
+        {
+            return moveBenefit < currentBenefit ||
+                   Math.Abs(moveBenefit - currentBenefit) < EPSILON
+                   && (currentMove == null ||
+                        boardStorage.GetDistanceToEnemyCastle(currentMove.To, playerType) > distanceEnemyCastleTo);
+        }
+
+        /// <summary>
+        /// Make all possible moves and chooses the once which guarantees the max profit 
+        /// </summary>
         private Tuple<double, MoveInformation> MakeAnalyzingMoves(MoveInformation moveInformation, int depth, 
             PlayerType playerType,  List<Cell> currentPlayerArmyCells, 
             List<Cell> otherPlayerArmyCells)
@@ -216,48 +264,14 @@ namespace Assets.Scripts
             var memorizedFrom = new ItemAndPosition(GetItemByPosition(moveInformation.From), moveInformation.From);
             var memorizedTo = new ItemAndPosition(GetItemByPosition(moveInformation.To), moveInformation.To);
            
-            MakeMove(moveInformation.From, moveInformation.To, false);
-            currentPlayerArmyCells.Remove(moveInformation.From);
-            currentPlayerArmyCells.Remove(moveInformation.To);
-            otherPlayerArmyCells.Remove(moveInformation.From);
-            otherPlayerArmyCells.Remove(moveInformation.To);
-
-            var resultItem = boardStorage.GetItem(moveInformation.To) as ArmyStorageItem;
-
-            if (resultItem.Army != null && resultItem.Army is UserArmy userArmy)
-            {
-                if (playerType == userArmy.PlayerType)
-                {
-                    currentPlayerArmyCells.Add(moveInformation.To);
-                }
-                else
-                {
-                    otherPlayerArmyCells.Add(moveInformation.To);
-                }
-            }
+            MakeMove(moveInformation.From, moveInformation.To);
+            ChangeArmyListAfterMoving(currentPlayerArmyCells, playerType, moveInformation);
+            ChangeArmyListAfterMoving(otherPlayerArmyCells, GetOppositePlayerType(playerType), moveInformation);
 
             Tuple<double, MoveInformation> result; 
-            if (otherPlayerArmyCells.Count == 0) 
-            { 
-                if (playerType == PlayerType.FIRST) 
-                { 
-                    result = new Tuple<double, MoveInformation>(double.PositiveInfinity, null); 
-                } 
-                else 
-                { 
-                    result = new Tuple<double, MoveInformation>(double.NegativeInfinity, null); 
-                } 
-            } 
-            else if (currentPlayerArmyCells.Count == 0) 
-            { 
-                if (playerType == PlayerType.FIRST) 
-                { 
-                    result = new Tuple<double, MoveInformation>(double.NegativeInfinity, null); 
-                } 
-                else 
-                { 
-                    result = new Tuple<double, MoveInformation>(double.PositiveInfinity, null); 
-                } 
+            if (PlayerArmiesWereKilled(currentPlayerArmyCells) || PlayerArmiesWereKilled(otherPlayerArmyCells))
+            {
+                result = OnOnceArmiesKilled(currentPlayerArmyCells, otherPlayerArmyCells, playerType);
             } 
             else 
             { 
@@ -267,37 +281,99 @@ namespace Assets.Scripts
             }
 
             CancelMove(memorizedFrom, memorizedTo);
-            currentPlayerArmyCells.Remove(moveInformation.To);
-            otherPlayerArmyCells.Remove(moveInformation.To);
-            if (memorizedFrom.Item?.Army != null)
-            {
-                if (memorizedFrom.Item.Army.PlayerType == playerType)
-                {
-                    currentPlayerArmyCells.Add(moveInformation.From);
-                }
-
-                 if (memorizedFrom.Item.Army.PlayerType == GetOppositePlayerType(playerType))
-                 {
-                    otherPlayerArmyCells.Add(moveInformation.From);
-                 }
-            }
-
-            if (memorizedTo.Item?.Army != null)
-            {
-                if (memorizedTo.Item.Army.PlayerType == playerType)
-                {
-                    currentPlayerArmyCells.Add(moveInformation.To);
-                }
-
-                if (memorizedTo.Item.Army.PlayerType == GetOppositePlayerType(playerType))
-                {
-                    otherPlayerArmyCells.Add(moveInformation.To);
-                }
-            }
+            ChangeArmyListAfterCancellingMove(currentPlayerArmyCells, otherPlayerArmyCells, 
+                playerType, moveInformation, memorizedFrom, memorizedTo);
 
             return result;
         }
 
+        /// <summary>
+        /// Checks that no more player armies were left
+        /// </summary>
+        private Boolean PlayerArmiesWereKilled(List<Cell> armyCells)
+        {
+            return armyCells.Count == 0;
+        }
+
+        /// <summary>
+        /// Returns position profit if one of the players loses all armies
+        /// </summary>
+        private Tuple<double, MoveInformation> OnOnceArmiesKilled(List<Cell> currentPlayerArmyCells, 
+            List<Cell> otherPlayerArmyCells, PlayerType playerType)
+        {
+            if (otherPlayerArmyCells.Count == 0 && playerType == personPlayerType ||
+                currentPlayerArmyCells.Count == 0 && playerType == aiPlayerType)
+            {
+                return new Tuple<double, MoveInformation>(double.PositiveInfinity, null);
+            } 
+            
+            return new Tuple<double, MoveInformation>(double.NegativeInfinity, null);
+        }
+
+        /// <summary>
+        /// After cancelling move in game simulation all armies should return to their cells and list of
+        /// armies should be updated
+        /// </summary>
+        private void ChangeArmyListAfterCancellingMove(List<Cell> currentPlayerArmyCells, 
+            List<Cell> otherPlayerArmyCells, PlayerType playerType, MoveInformation move, 
+            ItemAndPosition memorizedFrom, ItemAndPosition memorizedTo)
+        {
+            currentPlayerArmyCells.Remove(move.To);
+            otherPlayerArmyCells.Remove(move.To);
+            
+            if (memorizedFrom.Item?.Army != null)
+            {
+                AddCellToArmyCellsList(currentPlayerArmyCells, otherPlayerArmyCells, playerType, 
+                    memorizedFrom.Item.Army.PlayerType, move.From);
+            }
+
+            if (memorizedTo.Item?.Army != null)
+            {
+                AddCellToArmyCellsList(currentPlayerArmyCells, otherPlayerArmyCells, playerType, 
+                    memorizedTo.Item.Army.PlayerType, move.To);
+            }
+        }
+
+        /// <summary>
+        /// Adds cell to appropriate list of armies due to armies player type on it
+        /// </summary>
+        private void AddCellToArmyCellsList(List<Cell> currentPlayerArmyCells, List<Cell> otherPlayerArmyCells, 
+            PlayerType playerType, PlayerType armyPlayerType, Cell cell)
+        {
+            if (armyPlayerType == playerType)
+            {
+                currentPlayerArmyCells.Add(cell);
+            }
+
+            if (armyPlayerType == GetOppositePlayerType(playerType))
+            {
+                otherPlayerArmyCells.Add(cell);
+            }
+        }
+
+        /// <summary>
+        /// After army was moved its position was changed and maybe position of some other armies was changed too
+        /// (if it was located on target cell), so list of armies should be updated
+        /// </summary>
+        private void ChangeArmyListAfterMoving(List<Cell> armyCells, PlayerType playerType, MoveInformation move)
+        {
+            armyCells.Remove(move.From);
+            armyCells.Remove(move.To);
+
+            var resultItem = boardStorage.GetItem(move.To) as ArmyStorageItem;
+
+            if (resultItem?.Army != null && resultItem.Army is UserArmy userArmy)
+            {
+                if (playerType == userArmy.PlayerType)
+                {
+                    armyCells.Add(move.To);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Cancels move by setting items back
+        /// </summary>
         private void CancelMove(ItemAndPosition from, ItemAndPosition to)
         {
             from.Item.Army.SetActive();
@@ -305,17 +381,22 @@ namespace Assets.Scripts
             boardStorage.SetItem(to.Cell, to.Item);
         }
 
+        /// <summary>
+        /// Returns item from board located on given cell
+        /// </summary>
         private ArmyStorageItem GetItemByPosition(Cell cell)
         {
             return boardStorage.GetItem(cell) as ArmyStorageItem;
         }
 
-        public void MakeMove(Cell from, Cell to, bool isRealMove) //changes boardStorageEmulation
+        /// <summary>
+        /// Makes move in simulation from one cell to another
+        /// </summary>
+        public void MakeMove(Cell from, Cell to)
         {
             var fromItem = boardStorage.GetItem(from) as ArmyStorageItem;
             var toItem = boardStorage.GetItem(to) as ArmyStorageItem;
 
-            
             if (fromItem == null)
             {
                 throw new ArgumentException("cannot move nonexistent army");
@@ -325,25 +406,19 @@ namespace Assets.Scripts
             if (toItem?.Army == null)
             {
                 boardStorage.SetItem(to, fromItem);
-
-                if (isRealMove && fromItem.Army is UserArmy userArmy)
-                {
-                    userArmy.SetInactive();
-                }
             }
             else
             {
                 var resultArmy = toItem.Army.PerformAction(fromItem.Army);
                 
-                if (!isRealMove)
-                {
-                    resultArmy.SetActive();
-                }
-
+                resultArmy.SetActive();
                 boardStorage.SetItem(to, new ArmyStorageItem(resultArmy, null));
             }
         }
 
+        /// <summary>
+        /// Returns moves to all adjacent cells
+        /// </summary>
         private List<MoveInformation> GetListOfMoves(IEnumerable<Cell> playerArmiesCells, bool isFirstTurn)
         {
             var possibleMoves = new List<MoveInformation>();
@@ -363,6 +438,9 @@ namespace Assets.Scripts
             return possibleMoves;
         }
         
+        /// <summary>
+        /// Adds to collection all moves to adjacent cells
+        /// </summary>
         private void AddPossibleMoves(ICollection<MoveInformation> possibleMoves, Cell cell)
         {
             var adjacentCells = boardStorage.GetAdjacent(cell);
@@ -372,6 +450,9 @@ namespace Assets.Scripts
             }
         }
 
+        /// <summary>
+        /// Returns number of active armies on a board
+        /// </summary>
         public int GetNumberOfActiveArmies(PlayerType playerType)
         {
             return boardStorage.FindActivePlayerArmies(playerType).Count;
