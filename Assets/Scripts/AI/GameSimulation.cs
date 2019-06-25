@@ -203,22 +203,24 @@ namespace Assets.Scripts
         private Tuple<double, MoveInformation> AnalyzeMoves(PlayerType playerType, List<MoveInformation> possibleMoves,
             int depth, List<Cell> currentPlayerArmyCells, List<Cell> otherPlayerArmyCells)
         {
-            var resultBenefit = double.PositiveInfinity;
-            MoveInformation bestMoveInformation = null; // not move
+            var resultBenefit = double.PositiveInfinity; // The best guaranteed profit
+            MoveInformation bestMoveInformation = null; // The best move, null means that it is better not to move
             
             foreach (var moveInformation in possibleMoves)
             {
+                // Analyzing single move
                 var intermediateResult = MakeAnalyzingMoves(moveInformation, depth, playerType, currentPlayerArmyCells, otherPlayerArmyCells);
                 var distanceEnemyCastleTo = boardStorage.GetDistanceToEnemyCastle(moveInformation.To, playerType);
                 var distanceEnemyCastleFrom = boardStorage.GetDistanceToEnemyCastle(moveInformation.From, playerType);
                 
-                if (distanceEnemyCastleTo == 0) 
+                if (distanceEnemyCastleTo == 0) // If castle was reached
                 {
-                    resultBenefit = playerType == PlayerType.FIRST ? double.PositiveInfinity : double.NegativeInfinity; 
+                    resultBenefit = playerType == personPlayerType ? double.PositiveInfinity : double.NegativeInfinity; 
                     bestMoveInformation = moveInformation; 
                     break; 
                 }
 
+                // Comparing best and current moves
                 if (IsMoveBetter(resultBenefit, intermediateResult.Item1, bestMoveInformation, playerType, distanceEnemyCastleTo))
                 {
                     resultBenefit = intermediateResult.Item1;
@@ -261,27 +263,27 @@ namespace Assets.Scripts
             PlayerType playerType,  List<Cell> currentPlayerArmyCells, 
             List<Cell> otherPlayerArmyCells)
         {
-            var memorizedFrom = new ItemAndPosition(GetItemByPosition(moveInformation.From), moveInformation.From);
+            var memorizedFrom = new ItemAndPosition(GetItemByPosition(moveInformation.From), moveInformation.From); // memorizing position
             var memorizedTo = new ItemAndPosition(GetItemByPosition(moveInformation.To), moveInformation.To);
            
             MakeMove(moveInformation.From, moveInformation.To);
-            ChangeArmyListAfterMoving(currentPlayerArmyCells, playerType, moveInformation);
+            ChangeArmyListAfterMoving(currentPlayerArmyCells, playerType, moveInformation); // changing list of armies after move
             ChangeArmyListAfterMoving(otherPlayerArmyCells, GetOppositePlayerType(playerType), moveInformation);
 
             Tuple<double, MoveInformation> result; 
-            if (PlayerArmiesWereKilled(currentPlayerArmyCells) || PlayerArmiesWereKilled(otherPlayerArmyCells))
+            if (PlayerArmiesWereKilled(currentPlayerArmyCells) || PlayerArmiesWereKilled(otherPlayerArmyCells)) // If game ends because of armies of one player were killed
             {
                 result = OnOnceArmiesKilled(currentPlayerArmyCells, otherPlayerArmyCells, playerType);
             } 
             else 
             { 
-                result = AnalyzeStrategy(GetOppositePlayerType(playerType), false, 
+                result = AnalyzeStrategy(GetOppositePlayerType(playerType), false, // Just analyzing the move profit
                     depth - 1, otherPlayerArmyCells, 
                     currentPlayerArmyCells); 
             }
 
             CancelMove(memorizedFrom, memorizedTo);
-            ChangeArmyListAfterCancellingMove(currentPlayerArmyCells, otherPlayerArmyCells, 
+            ChangeArmyListAfterCancellingMove(currentPlayerArmyCells, otherPlayerArmyCells, // Changing list of armies after cancelling move
                 playerType, moveInformation, memorizedFrom, memorizedTo);
 
             return result;
