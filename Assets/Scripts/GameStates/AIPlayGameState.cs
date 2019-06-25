@@ -10,6 +10,9 @@ namespace Assets.Scripts
         private AIPlayer aiPlayer;
         private UserResultType resultType;
 
+        /// <inheritdoc />
+        /// <summary>
+        /// </summary>
         public override void InvokeState()
         {
             base.InvokeState();
@@ -18,6 +21,10 @@ namespace Assets.Scripts
                 boardManager, inputListener);
         }
 
+        /// <summary>
+        /// Changes the turn to the opponent's.
+        /// If the next turn is bot, then the board is disabled and enabled otherwise.
+        /// </summary>
         protected override void ChangeTurn()
         {
             base.ChangeTurn();
@@ -38,16 +45,21 @@ namespace Assets.Scripts
             }
         }
 
+        /// <summary>
+        /// Starts displaying the string with the game result and saves it for further processing.
+        /// </summary>
         public override void OnFinishGame(ResultType resultType)
         {
             base.OnFinishGame(resultType);
             if (resultType == ResultType.FIRST_WIN)
             {
+                //User wins
                 lerpedText.PerformLerpString("You win!", Color.green);
                 this.resultType = UserResultType.WIN;
             }
             else if (resultType == ResultType.SECOND_WIN)
             {
+                //Bot wins
                 lerpedText.PerformLerpString("You lose...", Color.red);
                 this.resultType = UserResultType.LOSE;
             }
@@ -58,12 +70,20 @@ namespace Assets.Scripts
             }
         }
 
+        /// <summary>
+        /// Method is called when the result string displaying is finished.
+        /// Initializes the result state and moves to it.
+        /// </summary>
         protected override void CloseGame()
         {
             stateManager.ResultGameState.Initialize(resultType, playMode);
             stateManager.ChangeState(StateType.RESULT_GAME_STATE);
         }
 
+        /// <summary>
+        /// Initializes new round.
+        /// Enables the UI of the user with the current (first) move.
+        /// </summary>
         protected override void InitNewRound()
         {
             base.InitNewRound();

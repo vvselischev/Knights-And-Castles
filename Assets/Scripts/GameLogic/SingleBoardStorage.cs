@@ -108,7 +108,6 @@ namespace Assets.Scripts
                 }
             }
         }
-
         
         /// <summary>
         /// Returns board height
@@ -319,7 +318,7 @@ namespace Assets.Scripts
         /// <summary>
         /// Creates copy of board for AI
         /// </summary>
-        public IBoardStorage CreateSimulationStorage()
+        public IBoardStorage CloneBoardStorage()
         {
             var simulationStorage = new SingleBoardStorage(GetBoardWidth(), GetBoardHeight(), board)
             {
@@ -496,22 +495,6 @@ namespace Assets.Scripts
         public bool IsCastle(IntVector2 position)
         {
             return bonusTable[position.x, position.y] is Castle;
-        }
-        
-        /// <summary>
-        /// Disables frame by position
-        /// </summary>
-        public void DisableFrame(IntVector2 position)
-        {
-            board.GetBoardButton(position).DisableFrame();
-        }
-        
-        /// <summary>
-        /// Enables frame by position
-        /// </summary>
-        public void EnableFrame(IntVector2 position)
-        {
-            board.GetBoardButton(position).EnableFrame();
         }
         
         /// <summary>

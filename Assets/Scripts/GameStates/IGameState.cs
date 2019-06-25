@@ -5,7 +5,13 @@
     /// </summary>
     public interface IGameState
     {
+        /// <summary>
+        /// Method is called when the state is invoked.
+        /// </summary>
         void InvokeState();
+        /// <summary>
+        /// Method is called when the state becomes closed.
+        /// </summary>
         void CloseState();
     }
 }

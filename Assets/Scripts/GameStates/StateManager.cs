@@ -10,8 +10,14 @@ namespace Assets.Scripts
     /// </summary>
     public class StateManager : MonoBehaviour
     {
+        /// <summary>
+        /// A dictionary to get the state by its type.
+        /// </summary>
         private Dictionary<StateType, IGameState> states;
 
+        /// <summary>
+        /// States fields for convenient DI in the editor.
+        /// </summary>
         [SerializeField] private StartGameState startGameState;
         [SerializeField] private NetworkPlayGameState networkPlayGameState;
         [SerializeField] private AIPlayGameState aiPlayGameState;
@@ -20,8 +26,9 @@ namespace Assets.Scripts
         [SerializeField] private ChooseBoardGameState chooseBoardGameState;
         [SerializeField] private ResultGameState resultGameState;
         [SerializeField] private InfoGameState infoGameState;
+        [SerializeField] private TutorialGameState tutorialGameState;
         
-        //For convenient DI in the editor and since some objects need them to initialize.
+        //States are made properties since some objects need them to initialize.
         public StartGameState StartGameState => startGameState;
         public NetworkPlayGameState NetworkPlayGameState => networkPlayGameState;
         public AIPlayGameState AIPlayGameState => aiPlayGameState;
@@ -30,7 +37,8 @@ namespace Assets.Scripts
         public ChooseBoardGameState ChooseBoardGameState => chooseBoardGameState;
         public ResultGameState ResultGameState => resultGameState;
         public InfoGameState InfoGameState => infoGameState;
-
+        public TutorialGameState TutorialGameState => tutorialGameState;
+        
         public IGameState CurrentState { get; private set; }
         public static StateManager Instance { get; private set; }
         
@@ -56,6 +64,10 @@ namespace Assets.Scripts
             return states[stateType];
         }
 
+        /// <summary>
+        /// Initializes the dictionary of states.
+        /// States are matched with their types.
+        /// </summary>
         private void Initialize()
         {
             states = new Dictionary<StateType, IGameState>
@@ -67,7 +79,8 @@ namespace Assets.Scripts
                 {StateType.AI_GAME_STATE, AIPlayGameState},
                 {StateType.ONE_DEVICE_MULTIPLAYER_STATE, OneDeviceMultiplayerGameState},
                 {StateType.RESULT_GAME_STATE, ResultGameState},
-                {StateType.INFO_GAME_STATE, InfoGameState}
+                {StateType.INFO_GAME_STATE, InfoGameState},
+                {StateType.TUTORIAL_GAME_STATE, TutorialGameState}
             };
         }
 

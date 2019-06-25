@@ -9,9 +9,14 @@ namespace Assets.Scripts
     /// </summary>
     public class ArmyText : MonoBehaviour
     {
-        [SerializeField] 
-        private Text armyCompositionText;
+        /// <summary>
+        /// The text object.
+        /// </summary>
+        [SerializeField] private Text armyCompositionText;
 
+        /// <summary>
+        /// Clears the text and displays it.
+        /// </summary>
         public void Init()
         {
             Clear();
@@ -21,7 +26,6 @@ namespace Assets.Scripts
         /// <summary>
         /// Displays a given army composition.
         /// </summary>
-        /// <param name="army"></param>
         public void UpdateText(Army army)
         {
             if (army == null)
@@ -34,6 +38,9 @@ namespace Assets.Scripts
             }
         }
 
+        /// <summary>
+        /// Replaces the text with an empty string.
+        /// </summary>
         public void Clear()
         {
             armyCompositionText.text = "";

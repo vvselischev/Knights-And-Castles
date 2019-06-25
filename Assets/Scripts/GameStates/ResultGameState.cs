@@ -25,15 +25,34 @@ namespace Assets.Scripts
             this.playStateType = playStateType;
         }
 
+        /// <inheritdoc />
+        /// <summary>
+        /// Updates the user record in the database according to the previously set result type.
+        /// </summary>
         public void InvokeState()
         {
             exitListener.Enable();
             exitListener.OnExitClicked += OnExit;
-            
             menuActivator.OpenMenu(resultMenu);
 
-            var records = dataService.GetRecords().ToList();
+            //Get the existing record or create a new one.
+            var record = GetUserRecord();
+
+            //Update record with the current result.
+            UpdateRecord(record);
+            //Save it to the database.
+            dataService.UpdateRecord(record);
+
+            resultMenu.DisplayStatistics(record, resultType);
+        }
+
+        /// <summary>
+        /// Returns the user record from the database or creates a new one if does not exist.
+        /// </summary>
+        private Record GetUserRecord()
+        {
             Record record;
+            var records = dataService.GetRecords().ToList();
             if (records.Count > 0)
             {
                 record = records[0];
@@ -42,7 +61,14 @@ namespace Assets.Scripts
             {
                 record = new Record();
             }
+            return record;
+        }
 
+        /// <summary>
+        /// Updates the given record according to the game mode and result.
+        /// </summary>
+        private void UpdateRecord(Record record)
+        {
             if (playStateType == StateType.AI_GAME_STATE)
             {
                 record.GamesWithBot++;
@@ -59,18 +85,20 @@ namespace Assets.Scripts
                     record.WinsNetwork++;
                 }
             }
-
-            dataService.UpdateRecord(record);
-
-            resultMenu.DisplayStatistics(record, resultType);
         }
 
+        /// <summary>
+        /// Method is called by the exit listener when exit button is pressed.
+        /// </summary>
         private void OnExit()
         {
             var stateManager = StateManager.Instance;
             stateManager.ChangeState(StateType.START_GAME_STATE);
         }
 
+        /// <inheritdoc />
+        /// <summary>
+        /// </summary>
         public void CloseState()
         {
             exitListener.OnExitClicked -= OnExit;

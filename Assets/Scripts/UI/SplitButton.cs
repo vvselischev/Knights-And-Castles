@@ -2,20 +2,15 @@
 
 namespace Assets.Scripts
 {
-    //TODO: make it and start button children of common class
+    /// <inheritdoc />
     /// <summary>
-    /// Simple button. Notifies InputListener, when pressed. Can be locked.
-    /// When locked, color is changed to red.
+    /// Calls split button process method on the listener.
     /// </summary>
-    public class SplitButton : MonoBehaviour
+    public class SplitButton : LockableButton
     {
-        [SerializeField] private GameIcon icon;
-        [SerializeField] private Color defaultColor = Color.white;
-        [SerializeField] private Color lockColor = Color.red;
-
-        public InputListener InputListener { get; set; }
-
-        public void OnClick()
+        [SerializeField] private GameIcon frame;
+        
+        public override void OnClick()
         {
             if (enabled)
             {
@@ -23,16 +18,20 @@ namespace Assets.Scripts
             }
         }
         
-        public void Lock()
+        /// <summary>
+        /// Disables frame around the button.
+        /// </summary>
+        public void DisableFrame()
         {
-            enabled = false;
-            icon.ChangeColor(lockColor);
+            frame.Disable();
         }
 
-        public void Unlock()
+        /// <summary>
+        /// Enables frame around the button.
+        /// </summary>
+        public void EnableFrame()
         {
-            enabled = true;
-            icon.ChangeColor(defaultColor);
+            frame.Enable();
         }
     }
 }

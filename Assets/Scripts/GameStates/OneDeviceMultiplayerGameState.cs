@@ -8,6 +8,9 @@ namespace Assets.Scripts
     /// </summary>
     public class OneDeviceMultiplayerGameState : PlayGameState
     {
+        /// <inheritdoc />
+        /// <summary>
+        /// </summary>
         public override void InvokeState()
         {
             base.InvokeState();
@@ -40,11 +43,17 @@ namespace Assets.Scripts
             }
         }
 
+        /// <inheritdoc />
+        /// <summary>
+        /// </summary>
         protected override void CloseGame()
         {
             stateManager.ChangeState(StateType.START_GAME_STATE);
         }
 
+        /// <inheritdoc />
+        /// <summary>
+        /// </summary>
         protected override void InitNewRound()
         {
             base.InitNewRound();

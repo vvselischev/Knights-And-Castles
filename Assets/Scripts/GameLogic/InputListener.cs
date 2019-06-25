@@ -39,7 +39,7 @@ namespace Assets.Scripts
             if (controllerManager.HasActiveController())
             {
                 var currentController = controllerManager.CurrentController;
-                currentController.FinishTurn();
+                currentController.OnFinishTurnClick();
             }
         }
 

@@ -14,13 +14,25 @@ namespace Assets.Scripts
 
     /// <summary>
     /// A class for a convenient turn change.
-    /// Changes active controllers, player icons in the left-up corner.
-    /// Performs logic to save and restore player active blocks via BoardManager.
+    /// Changes active controllers and player icons in the left-up corner.
+    /// Saves and restores player active blocks using BoardManager:
+    /// When a turn comes to the player, activates the block that was the last active during this player's last turn
+    /// or default block set in Board Manager, if is the first turn.
     /// </summary>
     public class TurnManager : MonoBehaviour
     {
+        /// <summary>
+        /// To change an active controller.
+        /// </summary>
         private ControllerManager controllerManager;
+        /// <summary>
+        /// To save and restore player blocks.
+        /// </summary>
         private BoardManager boardManager;
+        
+        /// <summary>
+        /// Icons for both players in the left-up corner of the ui.
+        /// </summary>
         [SerializeField] private GameObject firstIcon;
         [SerializeField] private GameObject secondIcon;
 
@@ -28,6 +40,24 @@ namespace Assets.Scripts
         /// Returns the current turn.
         /// </summary>
         public TurnType CurrentTurn { get; private set; }
+
+        /// <summary>
+        /// Returns the current player type.
+        /// </summary>
+        public PlayerType GetCurrentPlayerType()
+        {
+            if (CurrentTurn == TurnType.FIRST)
+            {
+                return PlayerType.FIRST;
+            }
+
+            if (CurrentTurn == TurnType.SECOND)
+            {
+                return PlayerType.SECOND;
+            }
+
+            return PlayerType.NEUTRAL;
+        }
 
         /// <summary>
         /// Should be called anytime when boardManager or controllerManager are changed.

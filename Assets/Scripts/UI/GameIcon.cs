@@ -10,33 +10,56 @@ namespace Assets.Scripts
     {
         private Sprite defaultSprite;
         private Image currentImage;
+        
+        /// <summary>
+        /// Color of the icon when it is enabled.
+        /// </summary>
+        private Color enabledColor = Color.yellow;
 
+        /// <summary>
+        /// Determines, whether this icon should be enabled after reset.
+        /// </summary>
         [SerializeField] private bool enabledByDefault = true;
 
+        /// <summary>
+        /// Returns to the default state.
+        /// </summary>
         public void Reset()
         {
             currentImage.enabled = enabledByDefault;
             currentImage.sprite = defaultSprite;
         }
-
+        
+        /// <summary>
+        /// Color the image with the given color.
+        /// </summary>
         public void ChangeColor(Color color)
         {
             currentImage.enabled = true;
             currentImage.color = color;
         }
 
+        /// <summary>
+        /// Disables the icon.
+        /// </summary>
         public void Disable()
         {
             Reset();
             currentImage.enabled = false;
         }
         
+        /// <summary>
+        /// Enables the icon.
+        /// </summary>
         public void Enable()
         {
             currentImage.enabled = true;
-            currentImage.color = Color.yellow;
+            currentImage.color = enabledColor;
         }
 
+        /// <summary>
+        /// Save current state (set in the editor) as default.
+        /// </summary>
         public void Awake()
         {
             defaultSprite = GetComponent<Image>().sprite;

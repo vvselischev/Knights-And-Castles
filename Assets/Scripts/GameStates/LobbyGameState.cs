@@ -29,10 +29,8 @@ namespace Assets.Scripts
 
         public BoardType ConfigurationType { get; set; }
 
-        public void InvokeState()
+        private void Awake()
         {
-            lobbyText.text = "Authentication...";
-            menuActivator.OpenMenu(lobbyMenu);
             multiplayerController = MultiplayerController.GetInstance();
             multiplayerController.OnRoomSetupCompleted += OnOpponentFound;
             multiplayerController.OnRoomSetupError += DisplayRoomSetupError;
@@ -40,6 +38,13 @@ namespace Assets.Scripts
             multiplayerController.OnMessageReceived += ProcessMessage;
             multiplayerController.OnAuthenticated += DisplayAfterAuthenticatedMessage;
             multiplayerController.OnAuthenticationError += DisplayAuthenticationError;
+        }
+
+        public void InvokeState()
+        {
+            lobbyText.text = "Authentication...";
+            menuActivator.OpenMenu(lobbyMenu);
+            
             
             stateManager.NetworkPlayGameState.ConfigurationType = ConfigurationType;
 
@@ -144,11 +149,6 @@ namespace Assets.Scripts
             exitListener.OnExitClicked -= OnExit;
             exitListener.Disable();
             menuActivator.CloseMenu();
-            multiplayerController.OnRoomSetupCompleted -= OnOpponentFound;
-            multiplayerController.OnOpponentDisconnected -= DisplayOpponentDisconnected;
-            multiplayerController.OnRoomSetupError -= DisplayRoomSetupError;
-            multiplayerController.OnMessageReceived -= ProcessMessage;
-            multiplayerController.OnAuthenticated -= DisplayAfterAuthenticatedMessage;
         }
     }
 }

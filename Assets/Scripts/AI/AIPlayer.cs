@@ -1,7 +1,7 @@
 namespace Assets.Scripts
 {
     /// <summary>
-    /// Implementation of army in a game
+    /// Implementation of AI in the game.
     /// </summary>
     public class AIPlayer
     {
@@ -23,7 +23,7 @@ namespace Assets.Scripts
         }
 
         /// <summary>
-        /// Activates AI
+        /// Activates AI so it starts to make moves.
         /// </summary>
         public void Activate()
         {
@@ -35,7 +35,7 @@ namespace Assets.Scripts
         /// </summary>
         private void MakeTurn()
         {
-            controller.FinishedMove -= MakeTurn;
+            controller.ArmyFinishedMove -= MakeTurn;
             var gameSimulation = new GameSimulation(boardStorage);
             var myArmiesNumber = gameSimulation.GetNumberOfActiveArmies(playerType);
             
@@ -58,14 +58,14 @@ namespace Assets.Scripts
         }
 
         /// <summary>
-        /// After AI find move? this move should be done and
+        /// After AI finds move, this move should be done and
         /// state should be updated and MakeTurn method should be called again
         /// </summary>
         private void OnTurnEnd(MoveInformation bestMove)
         {
             //Add callback to this method when move will be performed
-            controller.FinishedMove += MakeTurn;
-            MakeMove(bestMove.From, bestMove.To);  
+            controller.ArmyFinishedMove += MakeTurn;
+            MakeMove(bestMove.From, bestMove.To);    
         }
 
         private void MakeMove(Cell from, Cell to)

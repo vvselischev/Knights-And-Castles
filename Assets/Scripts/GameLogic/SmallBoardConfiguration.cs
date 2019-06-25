@@ -1,5 +1,6 @@
 namespace  Assets.Scripts
 {
+    /// <inheritdoc />
     /// <summary>
     /// Board settings for small board mode.
     /// </summary>

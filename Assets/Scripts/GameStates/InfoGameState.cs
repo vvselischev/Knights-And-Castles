@@ -13,6 +13,10 @@ namespace Assets.Scripts
         [SerializeField] private SimpleMenu startMenu;
         [SerializeField] private Text infoText;
         [SerializeField] private ExitListener exitListener;
+        
+        /// <inheritdoc />
+        /// <summary>
+        /// </summary>
         public void InvokeState()
         {
             menuActivator.OpenMenu(startMenu);
@@ -20,6 +24,9 @@ namespace Assets.Scripts
             exitListener.OnExitClicked += OnExit;
         }
 
+        /// <summary>
+        /// Method is called by the exit listener when exit button is pressed.
+        /// </summary>
         private void OnExit()
         {
             var stateManager = StateManager.Instance;
@@ -34,6 +41,9 @@ namespace Assets.Scripts
             infoText.text = text;
         }
 
+        /// <inheritdoc />
+        /// <summary>
+        /// </summary>
         public void CloseState()
         {
             exitListener.OnExitClicked -= OnExit;
