@@ -497,6 +497,10 @@ namespace Assets.Scripts
             {
                 SetSplitModeActive(true);
             }
+            else
+            {
+                armyText.SelectArmyRequest();
+            }
         }
 
         private void SetSplitModeActive(bool splitModeActive)

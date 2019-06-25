@@ -47,6 +47,14 @@ namespace Assets.Scripts
         }
 
         /// <summary>
+        /// Displays the request to select an army.
+        /// </summary>
+        public void SelectArmyRequest()
+        {
+            armyCompositionText.text = "You must select" + "\n" + "an army to split!";
+        }
+
+        /// <summary>
         /// Enables the text. It is displayed on screen.
         /// </summary>
         public void Enable()

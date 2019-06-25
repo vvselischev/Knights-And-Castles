@@ -66,15 +66,11 @@ namespace Assets.Scripts
         /// Sprites for icons on board.
         /// </summary>
         [SerializeField] private Sprite neutralFriendlySprite;
-
         [SerializeField] private Sprite neutralAggressiveSprite;
-
         [SerializeField] private Sprite firstUserSprite;
-
         [SerializeField] private Sprite secondUserSprite;
-
-        [SerializeField] private Sprite castleSprite;
-
+        [SerializeField] private Sprite firstUserCastleSprite;
+        [SerializeField] private Sprite secondUserCastleSprite;
         [SerializeField] private Sprite passSprite;
 
         /// <summary>
@@ -206,6 +202,11 @@ namespace Assets.Scripts
                 //We do not want to have a 'surprise' army at the end of the pass.
                 return false;
             }
+            else if (ExistsCastle(col, row))
+            {
+                //And we do not to have neutrals on castles.
+                return false;
+            }
             else
             {
                 var cellTypeId = GetRandomCellTypeId();
@@ -335,6 +336,36 @@ namespace Assets.Scripts
             }
             return false;
         }
+        
+        /// <summary>
+        /// Determines whether the given cell contains a castle according to the configuration.
+        /// </summary>
+        private bool ExistsCastle(int col, int row)
+        {
+            var position = new IntVector2(col, row);
+            for (var i = 0; i < configuration.FirstCastlesBlocks.Length; i++)
+            {
+                //Given coordinates are global, so we need to convert the position in the configuration to global.
+                var globalPosition = GetGlobalPosition(configuration.FirstCastlesPositions[i],
+                    configuration.FirstCastlesBlocks[i]);
+                if (position.Equals(globalPosition))
+                {
+                    return true;
+                }
+            }
+            
+            for (var i = 0; i < configuration.SecondCastlesBlocks.Length; i++)
+            {
+                //Given coordinates are global, so we need to convert the position in the configuration to global.
+                var globalPosition = GetGlobalPosition(configuration.SecondCastlesPositions[i],
+                    configuration.SecondCastlesBlocks[i]);
+                if (position.Equals(globalPosition))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
 
         /// <summary>
         /// Returns the position on the whole board by the position inside the block and the position of the block.
@@ -384,6 +415,15 @@ namespace Assets.Scripts
         {
             for (var i = 0; i < positions.Length; i++)
             {
+                Sprite castleSprite = null;
+                if (ownerType == PlayerType.FIRST)
+                {
+                    castleSprite = firstUserCastleSprite;
+                }
+                else if (ownerType == PlayerType.SECOND)
+                {
+                    castleSprite = secondUserCastleSprite;
+                }
                 var castleObject = InstantiateIcon(castleSprite);
                 castleObject.SetActive(false);
                 var castle = new Castle(castleObject, ownerType);

@@ -203,8 +203,10 @@ namespace Assets.Scripts
         private Tuple<double, MoveInformation> AnalyzeMoves(PlayerType playerType, List<MoveInformation> possibleMoves,
             int depth, List<Cell> currentPlayerArmyCells, List<Cell> otherPlayerArmyCells)
         {
-            var resultBenefit = double.PositiveInfinity; // The best guaranteed profit
-            MoveInformation bestMoveInformation = null; // The best move, null means that it is better not to move
+            // The best guaranteed profit
+            var resultBenefit = double.PositiveInfinity; 
+            // The best move, null means that it is better not to move
+            MoveInformation bestMoveInformation = null; 
             
             foreach (var moveInformation in possibleMoves)
             {
@@ -213,8 +215,9 @@ namespace Assets.Scripts
                 var distanceEnemyCastleTo = boardStorage.GetDistanceToEnemyCastle(moveInformation.To, playerType);
                 var distanceEnemyCastleFrom = boardStorage.GetDistanceToEnemyCastle(moveInformation.From, playerType);
                 
-                if (distanceEnemyCastleTo == 0) // If castle was reached
+                if (distanceEnemyCastleTo == 0) 
                 {
+                    // If castle was reached
                     resultBenefit = playerType == personPlayerType ? double.PositiveInfinity : double.NegativeInfinity; 
                     bestMoveInformation = moveInformation; 
                     break; 
@@ -262,28 +265,33 @@ namespace Assets.Scripts
         private Tuple<double, MoveInformation> MakeAnalyzingMoves(MoveInformation moveInformation, int depth, 
             PlayerType playerType,  List<Cell> currentPlayerArmyCells, 
             List<Cell> otherPlayerArmyCells)
-        {
-            var memorizedFrom = new ItemAndPosition(GetItemByPosition(moveInformation.From), moveInformation.From); // memorizing position
+        { 
+            // memorizing position
+            var memorizedFrom = new ItemAndPosition(GetItemByPosition(moveInformation.From), moveInformation.From);
             var memorizedTo = new ItemAndPosition(GetItemByPosition(moveInformation.To), moveInformation.To);
            
             MakeMove(moveInformation.From, moveInformation.To);
-            ChangeArmyListAfterMoving(currentPlayerArmyCells, playerType, moveInformation); // changing list of armies after move
+            
+            // changing list of armies after move
+            ChangeArmyListAfterMoving(currentPlayerArmyCells, playerType, moveInformation); 
             ChangeArmyListAfterMoving(otherPlayerArmyCells, GetOppositePlayerType(playerType), moveInformation);
 
-            Tuple<double, MoveInformation> result; 
-            if (PlayerArmiesWereKilled(currentPlayerArmyCells) || PlayerArmiesWereKilled(otherPlayerArmyCells)) // If game ends because of armies of one player were killed
+            Tuple<double, MoveInformation> result;
+            // If game ends because of armies of one player were killed
+            if (PlayerArmiesWereKilled(currentPlayerArmyCells) || PlayerArmiesWereKilled(otherPlayerArmyCells)) 
             {
                 result = OnOnceArmiesKilled(currentPlayerArmyCells, otherPlayerArmyCells, playerType);
             } 
             else 
             { 
-                result = AnalyzeStrategy(GetOppositePlayerType(playerType), false, // Just analyzing the move profit
-                    depth - 1, otherPlayerArmyCells, 
-                    currentPlayerArmyCells); 
+                // Just analyzing the move profit
+                result = AnalyzeStrategy(GetOppositePlayerType(playerType), false, 
+                    depth - 1, otherPlayerArmyCells, currentPlayerArmyCells); 
             }
 
             CancelMove(memorizedFrom, memorizedTo);
-            ChangeArmyListAfterCancellingMove(currentPlayerArmyCells, otherPlayerArmyCells, // Changing list of armies after cancelling move
+            // Changing list of armies after cancelling move
+            ChangeArmyListAfterCancellingMove(currentPlayerArmyCells, otherPlayerArmyCells, 
                 playerType, moveInformation, memorizedFrom, memorizedTo);
 
             return result;

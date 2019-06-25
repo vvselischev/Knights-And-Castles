@@ -10,7 +10,7 @@ namespace Assets.Scripts
     public class InfoGameState : MonoBehaviour, IGameState
     {
         private MenuActivator menuActivator = MenuActivator.Instance;
-        [SerializeField] private SimpleMenu startMenu;
+        [SerializeField] private SimpleMenu menu;
         [SerializeField] private Text infoText;
         [SerializeField] private ExitListener exitListener;
         
@@ -19,7 +19,7 @@ namespace Assets.Scripts
         /// </summary>
         public void InvokeState()
         {
-            menuActivator.OpenMenu(startMenu);
+            menuActivator.OpenMenu(menu);
             exitListener.Enable();
             exitListener.OnExitClicked += OnExit;
         }

@@ -181,7 +181,6 @@ namespace Assets.Scripts
             }
         }
 
-        
         /// <summary>
         /// Determines the winner if some user lefts the game.
         /// </summary>
