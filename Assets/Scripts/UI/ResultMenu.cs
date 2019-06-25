@@ -8,6 +8,9 @@ namespace Assets.Scripts
     /// </summary>
     public class ResultMenu : MonoBehaviour, IMenu
     {
+        /// <summary>
+        /// Labels for displaying statistics.
+        /// </summary>
         [SerializeField] private Text gamesWithBotText;
         [SerializeField] private Text winsBotText;
         [SerializeField] private Text gamesNetworkText;
@@ -16,11 +19,17 @@ namespace Assets.Scripts
         [SerializeField] private Text winsNetworkPercentageText;
         [SerializeField] private Text resultText;
         
+        /// <inheritdoc />
+        /// <summary>
+        /// </summary>
         public void Activate()
         {
             gameObject.SetActive(true);
         }
 
+        /// <inheritdoc />
+        /// <summary>
+        /// </summary>
         public void Deactivate()
         {
             gameObject.SetActive(false);
@@ -32,7 +41,56 @@ namespace Assets.Scripts
         /// <param name="resultType">Result type for the title.</param>
         public void DisplayStatistics(Record record, UserResultType resultType)
         {
-            //TODO: maybe better to make colors serialized to setup in the editor.
+            UpdateResultText(resultType);
+            UpdateStatisticLabels(record);
+        }
+
+        /// <summary>
+        /// Updates the labels according to the given record.
+        /// </summary>
+        private void UpdateStatisticLabels(Record record)
+        {
+            gamesWithBotText.text = record.GamesWithBot.ToString();
+            winsBotText.text = record.WinsBot.ToString();
+            gamesNetworkText.text = record.GamesNetwork.ToString();
+            winsNetworkText.text = record.WinsNetwork.ToString();
+            UpdatePercentageStatisticLabels(record);
+        }
+
+        /// <summary>
+        /// Updates the labels that contain percentage.
+        /// </summary>
+        private void UpdatePercentageStatisticLabels(Record record)
+        {
+            if (record.GamesWithBot > 0)
+            {
+                //Convert relative part to percents.
+                winsBotPercentageText.text = record.WinsBot * 100 / record.GamesWithBot + "%";
+            }
+            else
+            {
+                //No games were played with the bot.
+                winsBotPercentageText.text = "0%";
+            }
+
+            if (record.GamesNetwork > 0)
+            {
+                //Convert relative part to percents.
+                winsNetworkPercentageText.text = record.WinsNetwork * 100 / record.GamesNetwork + "%";
+            }
+            else
+            {
+                //No games were played with network.
+                winsNetworkPercentageText.text = "0%";
+            }
+        }
+
+        /// <summary>
+        /// Updates the text on the top of the menu depending on the result for the user.
+        /// </summary>
+        private void UpdateResultText(UserResultType resultType)
+        {
+            //TODO: maybe better to make colors and strings serialized to setup in the editor?
             if (resultType == UserResultType.WIN)
             {
                 resultText.color = Color.green;
@@ -52,29 +110,6 @@ namespace Assets.Scripts
             {
                 resultText.color = Color.black;
                 resultText.text = "Statistics";
-            }
-            
-            gamesWithBotText.text = record.GamesWithBot.ToString();
-            winsBotText.text = record.WinsBot.ToString();
-            gamesNetworkText.text = record.GamesNetwork.ToString();
-            winsNetworkText.text = record.WinsNetwork.ToString();
-
-            if (record.GamesWithBot > 0)
-            {
-                winsBotPercentageText.text = record.WinsBot * 100 / record.GamesWithBot + "%";
-            }
-            else
-            {
-                winsBotPercentageText.text = "0%";
-            }
-
-            if (record.GamesNetwork > 0)
-            {
-                winsNetworkPercentageText.text = record.WinsNetwork * 100 / record.GamesNetwork + "%";
-            }
-            else
-            {
-                winsNetworkPercentageText.text = "0%";
             }
         }
     }

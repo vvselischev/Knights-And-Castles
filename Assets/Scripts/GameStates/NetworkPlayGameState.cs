@@ -1,10 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using GooglePlayGames.BasicApi.Multiplayer;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace Assets.Scripts
 {
@@ -23,9 +21,11 @@ namespace Assets.Scripts
         private bool isHost;
         private TurnType myTurnType;
         private UserResultType currentUserResultType;
-
         private string myId;
 
+        /// <inheritdoc />
+        /// <summary>
+        /// </summary>
         public override void InvokeState()
         {
             inputListener = networkInputListener;
@@ -109,16 +109,18 @@ namespace Assets.Scripts
         private void FinishSetup()
         {
             board.SetInputListener(networkInputListener);
-            var firstController = new UserController(PlayerType.FIRST, boardStorage, boardFactory, this, armyText);
-            var secondController = new UserController(PlayerType.SECOND, boardStorage, boardFactory, this, armyText);
+            var firstController = new UserController(PlayerType.FIRST, boardStorage, boardFactory, this, 
+                armyText, roundEffects);
+            var secondController = new UserController(PlayerType.SECOND, boardStorage, boardFactory, this, 
+                armyText, roundEffects);
 
             if (isHost)
             {
-                secondController.FinishedMove += OnOpponentFinishedMove;
+                secondController.ArmyFinishedMove += OnOpponentFinishedArmyFinishedMove;
             }
             else
             {
-                firstController.FinishedMove += OnOpponentFinishedMove;
+                firstController.ArmyFinishedMove += OnOpponentFinishedArmyFinishedMove;
             }
             
             controllerManager = new ControllerManager(firstController, secondController);
@@ -127,7 +129,7 @@ namespace Assets.Scripts
             turnManager.Initialize(boardManager, controllerManager);
         }
 
-        private void OnOpponentFinishedMove()
+        private void OnOpponentFinishedArmyFinishedMove()
         {
             boardStorage.DisableBoardButtons();
         }
@@ -155,13 +157,13 @@ namespace Assets.Scripts
         {
             if (pause && stateManager.CurrentState is NetworkPlayGameState)
             {
-                ProcessPlayerLeft("-1");
+                ProcessPlayerLeft("");
             }
         }
 
         private void ProcessPlayerLeft(string message)
         {
-            if (myId == message || message == "-1")
+            if (myId == message || message == "")
             {
                 currentUserResultType = UserResultType.LOSE;
             }
@@ -173,6 +175,10 @@ namespace Assets.Scripts
             CloseGame();
         }
         
+        /// <inheritdoc />
+        /// <summary>
+        /// Displays an appropriate text to the user.
+        /// </summary>
         public override void OnFinishGame(ResultType resultType)
         {
             base.OnFinishGame(resultType);
@@ -181,11 +187,13 @@ namespace Assets.Scripts
             {
                 if (isHost)
                 {
+                    //We are the host (the first), so we win.
                     lerpedText.PerformLerpString("You win!", Color.green);
                     currentUserResultType = UserResultType.WIN;
                 }
                 else
                 {
+                    //We are not the host (the second), so we lose.
                     lerpedText.PerformLerpString("You lose...", Color.red);
                     currentUserResultType = UserResultType.LOSE;
                 }
@@ -194,12 +202,14 @@ namespace Assets.Scripts
             {
                 if (!isHost)
                 {
+                    //We are not the host (the first), so we win.
                     lerpedText.PerformLerpString("You win!", Color.green);
                     currentUserResultType = UserResultType.WIN;
                     
                 }
                 else
                 {
+                    //We are host (the first), so we lose.
                     lerpedText.PerformLerpString("You lose...", Color.red);
                     currentUserResultType = UserResultType.LOSE;
                 }
@@ -211,15 +221,18 @@ namespace Assets.Scripts
             }
         }
 
+        /// <inheritdoc />
+        /// <summary>
+        /// </summary>
         protected override void CloseGame()
         {
             if (isHost)
             {
-                controllerManager.SecondController.FinishedMove -= OnOpponentFinishedMove;
+                controllerManager.SecondController.ArmyFinishedMove -= OnOpponentFinishedArmyFinishedMove;
             }
             else
             {
-                controllerManager.FirstController.FinishedMove -= OnOpponentFinishedMove;
+                controllerManager.FirstController.ArmyFinishedMove -= OnOpponentFinishedArmyFinishedMove;
             }
             
             multiplayerController.OnPlayerLeft -= ProcessPlayerLeft;
@@ -234,17 +247,25 @@ namespace Assets.Scripts
             //Further ProcessPlayerLeft will be invoked.
         }
 
+        /// <inheritdoc />
+        /// <summary>
+        /// </summary>
         public override void CloseState()
         {
             networkInputListener.Stop();
             base.CloseState();
         }
 
+        /// <inheritdoc />
+        /// <summary>
+        /// Host player is the first, another one is the second.
+        /// </summary>
         protected override void InitNewRound()
         {
             base.InitNewRound();
             
-            if ((turnManager.CurrentTurn == TurnType.FIRST) == isHost)
+            if ((turnManager.CurrentTurn == TurnType.FIRST && isHost) || 
+                (turnManager.CurrentTurn == TurnType.SECOND && !isHost))
             {
                 playMenu.EnableUI();
             }

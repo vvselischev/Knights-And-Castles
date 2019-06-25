@@ -9,8 +9,14 @@ namespace Assets.Scripts
     public class ChooseBoardButton : MonoBehaviour
     {
         [SerializeField] private ChooseBoardGameState chooseBoardGameState;
+        /// <summary>
+        /// Board type to initialize a game state.
+        /// </summary>
         [SerializeField] private BoardType boardType;
 
+        /// <summary>
+        /// Initializes the play state with the board configuration and moves to it.
+        /// </summary>
         public void OnClick()
         {
             var stateManager = StateManager.Instance;
@@ -18,6 +24,7 @@ namespace Assets.Scripts
 
             if (nextStateType == StateType.LOBBY_GAME_STATE)
             {
+                //Because if the next state is lobby (not play game state), we need to initialize network play state.
                 stateManager.NetworkPlayGameState.ConfigurationType = boardType;
             }
             else

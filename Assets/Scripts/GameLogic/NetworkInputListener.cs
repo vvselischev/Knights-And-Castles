@@ -11,7 +11,6 @@ namespace Assets.Scripts
     public class NetworkInputListener : InputListener
     {
         private MultiplayerController multiplayerController;
-        [SerializeField] private Text logText;
         private int blockWidth;
         private int blockHeight;
 

@@ -25,10 +25,13 @@ namespace Assets.Scripts
         private static PlayerType personPlayerType = PlayerType.FIRST;
         
         /// <summary>
-        /// If number of armies on a board greater than manyArmies, then depth of analyzing becomes less
+        /// Depth of recursion determines the number of moves AI tries to predict.
+        /// However, if there are a lot of armies on board, it takes too much time on mobile device to use big depth.
         /// </summary>
-        private static int manyArmies = 4;
-        
+        private const int stupidDepth = 3;
+        private const int cleverDepth = 5;
+        private const int maxArmiesForClever = 3;
+
         private IBoardStorage boardStorage;
         
         /// <summary>
@@ -38,7 +41,7 @@ namespace Assets.Scripts
 
         public GameSimulation(IBoardStorage boardStorage)
         {
-            this.boardStorage = boardStorage.CreateSimulationStorage();
+            this.boardStorage = boardStorage.CloneBoardStorage();
         }
 
         private Dictionary<PlayerType, List<Cell>> FindPlayerArmies()
@@ -156,13 +159,13 @@ namespace Assets.Scripts
             var otherPlayerArmyCells = FindPlayerArmies()[GetOppositePlayerType(playerType)];
 
             int depth;
-            if (currentPlayerArmyCells.Count + otherPlayerArmyCells.Count >= manyArmies)
+            if (currentPlayerArmyCells.Count + otherPlayerArmyCells.Count > maxArmiesForClever)
             {
-                depth = 3;
+                depth = stupidDepth;
             }
             else
             {
-                depth = 5;
+                depth = cleverDepth;
             }
             
             return AnalyzeStrategy(playerType, true, depth, currentPlayerArmyCells, 
@@ -175,11 +178,6 @@ namespace Assets.Scripts
         /// <param name="playerType"></param>
         /// <param name="isFirstTurn"> this parameter is important for finding active armies,
         /// if it is false then all armies are supposed to be active</param>
-        /// <param name="depth"></param>
-        /// <param name="currentPlayerArmyCells"></param>
-        /// <param name="otherPlayerArmyCells"></param>
-        /// <returns></returns>
-        /// <exception cref="ArgumentException"></exception>
         private Tuple<double, MoveInformation> AnalyzeStrategy(PlayerType playerType, bool isFirstTurn,
             int depth, List<Cell> currentPlayerArmyCells, List<Cell> otherPlayerArmyCells)
         {
@@ -202,33 +200,25 @@ namespace Assets.Scripts
         /// <summary>
         /// Among possible moves method chooses the one, which guarantees max position profit
         /// </summary>
-        /// <param name="playerType"></param>
-        /// <param name="possibleMoves"></param>
-        /// <param name="depth"></param>
-        /// <param name="currentPlayerArmyCells"></param>
-        /// <param name="otherPlayerArmyCells"></param>
-        /// <returns></returns>
         private Tuple<double, MoveInformation> AnalyzeMoves(PlayerType playerType, List<MoveInformation> possibleMoves,
             int depth, List<Cell> currentPlayerArmyCells, List<Cell> otherPlayerArmyCells)
         {
-            var resultBenefit = double.PositiveInfinity; // The best guaranteed profit
-            MoveInformation bestMoveInformation = null; // The best move, null means that it is better not to move
+            var resultBenefit = double.PositiveInfinity;
+            MoveInformation bestMoveInformation = null; // not move
             
-            foreach (var moveInformation in possibleMoves) // Just 
+            foreach (var moveInformation in possibleMoves)
             {
-                // Analyzing single move
-                var intermediateResult = MakeAnalyzingMoves(moveInformation, depth, playerType, currentPlayerArmyCells, otherPlayerArmyCells); 
+                var intermediateResult = MakeAnalyzingMoves(moveInformation, depth, playerType, currentPlayerArmyCells, otherPlayerArmyCells);
                 var distanceEnemyCastleTo = boardStorage.GetDistanceToEnemyCastle(moveInformation.To, playerType);
                 var distanceEnemyCastleFrom = boardStorage.GetDistanceToEnemyCastle(moveInformation.From, playerType);
                 
-                if (distanceEnemyCastleTo == 0) // If castle was reached
+                if (distanceEnemyCastleTo == 0) 
                 {
                     resultBenefit = playerType == PlayerType.FIRST ? double.PositiveInfinity : double.NegativeInfinity; 
                     bestMoveInformation = moveInformation; 
                     break; 
                 }
 
-                // Comparing best and current moves
                 if (IsMoveBetter(resultBenefit, intermediateResult.Item1, bestMoveInformation, playerType, distanceEnemyCastleTo))
                 {
                     resultBenefit = intermediateResult.Item1;
@@ -247,10 +237,6 @@ namespace Assets.Scripts
         /// <summary>
         /// Checks that move leads to win in min number of steps
         /// </summary>
-        /// <param name="moveBenefit"></param>
-        /// <param name="distanceEnemyCastleTo"></param>
-        /// <param name="distanceEnemyCastleFrom"></param>
-        /// <returns></returns>
         private Boolean IsMovePerfect(double moveBenefit, double distanceEnemyCastleTo, double distanceEnemyCastleFrom)
         {
             return double.IsNegativeInfinity(moveBenefit) && distanceEnemyCastleTo < distanceEnemyCastleFrom;
@@ -259,12 +245,6 @@ namespace Assets.Scripts
         /// <summary>
         /// Checks that analyzing move is better than current the best
         /// </summary>
-        /// <param name="currentBenefit"></param>
-        /// <param name="moveBenefit"></param>
-        /// <param name="currentMove"></param>
-        /// <param name="playerType"></param>
-        /// <param name="distanceEnemyCastleTo"></param>
-        /// <returns></returns>
         private Boolean IsMoveBetter(double currentBenefit, double moveBenefit, MoveInformation currentMove, 
             PlayerType playerType, double distanceEnemyCastleTo)
         {
@@ -277,37 +257,31 @@ namespace Assets.Scripts
         /// <summary>
         /// Make all possible moves and chooses the once which guarantees the max profit 
         /// </summary>
-        /// <param name="moveInformation"></param>
-        /// <param name="depth"></param>
-        /// <param name="playerType"></param>
-        /// <param name="currentPlayerArmyCells"></param>
-        /// <param name="otherPlayerArmyCells"></param>
-        /// <returns></returns>
         private Tuple<double, MoveInformation> MakeAnalyzingMoves(MoveInformation moveInformation, int depth, 
             PlayerType playerType,  List<Cell> currentPlayerArmyCells, 
             List<Cell> otherPlayerArmyCells)
         {
-            var memorizedFrom = new ItemAndPosition(GetItemByPosition(moveInformation.From), moveInformation.From); // memorizing position
+            var memorizedFrom = new ItemAndPosition(GetItemByPosition(moveInformation.From), moveInformation.From);
             var memorizedTo = new ItemAndPosition(GetItemByPosition(moveInformation.To), moveInformation.To);
            
             MakeMove(moveInformation.From, moveInformation.To);
-            ChangeArmyListAfterMoving(currentPlayerArmyCells, playerType, moveInformation); // changing list of armies after move
+            ChangeArmyListAfterMoving(currentPlayerArmyCells, playerType, moveInformation);
             ChangeArmyListAfterMoving(otherPlayerArmyCells, GetOppositePlayerType(playerType), moveInformation);
 
             Tuple<double, MoveInformation> result; 
-            if (PlayerArmiesWereKilled(currentPlayerArmyCells) || PlayerArmiesWereKilled(otherPlayerArmyCells)) // If game ends because of armies of one player were killed
+            if (PlayerArmiesWereKilled(currentPlayerArmyCells) || PlayerArmiesWereKilled(otherPlayerArmyCells))
             {
                 result = OnOnceArmiesKilled(currentPlayerArmyCells, otherPlayerArmyCells, playerType);
             } 
             else 
             { 
-                result = AnalyzeStrategy(GetOppositePlayerType(playerType), false, // Just analyzing the move profit
+                result = AnalyzeStrategy(GetOppositePlayerType(playerType), false, 
                     depth - 1, otherPlayerArmyCells, 
                     currentPlayerArmyCells); 
             }
 
             CancelMove(memorizedFrom, memorizedTo);
-            ChangeArmyListAfterCancellingMove(currentPlayerArmyCells, otherPlayerArmyCells, // Changing list of armies after cancelling move
+            ChangeArmyListAfterCancellingMove(currentPlayerArmyCells, otherPlayerArmyCells, 
                 playerType, moveInformation, memorizedFrom, memorizedTo);
 
             return result;
@@ -316,8 +290,6 @@ namespace Assets.Scripts
         /// <summary>
         /// Checks that no more player armies were left
         /// </summary>
-        /// <param name="armyCells"></param>
-        /// <returns></returns>
         private Boolean PlayerArmiesWereKilled(List<Cell> armyCells)
         {
             return armyCells.Count == 0;
@@ -326,10 +298,6 @@ namespace Assets.Scripts
         /// <summary>
         /// Returns position profit if one of the players loses all armies
         /// </summary>
-        /// <param name="currentPlayerArmyCells"></param>
-        /// <param name="otherPlayerArmyCells"></param>
-        /// <param name="playerType"></param>
-        /// <returns></returns>
         private Tuple<double, MoveInformation> OnOnceArmiesKilled(List<Cell> currentPlayerArmyCells, 
             List<Cell> otherPlayerArmyCells, PlayerType playerType)
         {
@@ -346,12 +314,6 @@ namespace Assets.Scripts
         /// After cancelling move in game simulation all armies should return to their cells and list of
         /// armies should be updated
         /// </summary>
-        /// <param name="currentPlayerArmyCells"></param>
-        /// <param name="otherPlayerArmyCells"></param>
-        /// <param name="playerType"></param>
-        /// <param name="move"></param>
-        /// <param name="memorizedFrom"></param>
-        /// <param name="memorizedTo"></param>
         private void ChangeArmyListAfterCancellingMove(List<Cell> currentPlayerArmyCells, 
             List<Cell> otherPlayerArmyCells, PlayerType playerType, MoveInformation move, 
             ItemAndPosition memorizedFrom, ItemAndPosition memorizedTo)
@@ -375,11 +337,6 @@ namespace Assets.Scripts
         /// <summary>
         /// Adds cell to appropriate list of armies due to armies player type on it
         /// </summary>
-        /// <param name="currentPlayerArmyCells"></param>
-        /// <param name="otherPlayerArmyCells"></param>
-        /// <param name="playerType"></param>
-        /// <param name="armyPlayerType"></param>
-        /// <param name="cell"></param>
         private void AddCellToArmyCellsList(List<Cell> currentPlayerArmyCells, List<Cell> otherPlayerArmyCells, 
             PlayerType playerType, PlayerType armyPlayerType, Cell cell)
         {
@@ -398,9 +355,6 @@ namespace Assets.Scripts
         /// After army was moved its position was changed and maybe position of some other armies was changed too
         /// (if it was located on target cell), so list of armies should be updated
         /// </summary>
-        /// <param name="armyCells"></param>
-        /// <param name="playerType"></param>
-        /// <param name="move"></param>
         private void ChangeArmyListAfterMoving(List<Cell> armyCells, PlayerType playerType, MoveInformation move)
         {
             armyCells.Remove(move.From);
@@ -420,8 +374,6 @@ namespace Assets.Scripts
         /// <summary>
         /// Cancels move by setting items back
         /// </summary>
-        /// <param name="from"></param>
-        /// <param name="to"></param>
         private void CancelMove(ItemAndPosition from, ItemAndPosition to)
         {
             from.Item.Army.SetActive();
@@ -432,8 +384,6 @@ namespace Assets.Scripts
         /// <summary>
         /// Returns item from board located on given cell
         /// </summary>
-        /// <param name="cell"></param>
-        /// <returns></returns>
         private ArmyStorageItem GetItemByPosition(Cell cell)
         {
             return boardStorage.GetItem(cell) as ArmyStorageItem;
@@ -442,9 +392,6 @@ namespace Assets.Scripts
         /// <summary>
         /// Makes move in simulation from one cell to another
         /// </summary>
-        /// <param name="from"></param>
-        /// <param name="to"></param>
-        /// <exception cref="ArgumentException"></exception>
         public void MakeMove(Cell from, Cell to)
         {
             var fromItem = boardStorage.GetItem(from) as ArmyStorageItem;
@@ -472,9 +419,6 @@ namespace Assets.Scripts
         /// <summary>
         /// Returns moves to all adjacent cells
         /// </summary>
-        /// <param name="playerArmiesCells"></param>
-        /// <param name="isFirstTurn"></param>
-        /// <returns></returns>
         private List<MoveInformation> GetListOfMoves(IEnumerable<Cell> playerArmiesCells, bool isFirstTurn)
         {
             var possibleMoves = new List<MoveInformation>();
@@ -497,8 +441,6 @@ namespace Assets.Scripts
         /// <summary>
         /// Adds to collection all moves to adjacent cells
         /// </summary>
-        /// <param name="possibleMoves"></param>
-        /// <param name="cell"></param>
         private void AddPossibleMoves(ICollection<MoveInformation> possibleMoves, Cell cell)
         {
             var adjacentCells = boardStorage.GetAdjacent(cell);
@@ -511,8 +453,6 @@ namespace Assets.Scripts
         /// <summary>
         /// Returns number of active armies on a board
         /// </summary>
-        /// <param name="playerType"></param>
-        /// <returns></returns>
         public int GetNumberOfActiveArmies(PlayerType playerType)
         {
             return boardStorage.FindActivePlayerArmies(playerType).Count;
