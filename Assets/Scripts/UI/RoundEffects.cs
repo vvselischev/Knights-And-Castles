@@ -14,6 +14,7 @@ namespace Assets.Scripts
         [SerializeField] private CheckeredButtonBoard board;
         [SerializeField] private TurnManager turnManager;
         [SerializeField] private SplitButton splitButton;
+        
         [SerializeField] private Color playerActiveArmyFrameColor;
         [SerializeField] private Color playerInactiveArmyFrameColor;
         [SerializeField] private Color enemyArmyFrameColor;
@@ -26,29 +27,34 @@ namespace Assets.Scripts
         private IntVector2 chosenArmyFramePosition;
         private List<IntVector2> possibleSplitPositions = new List<IntVector2>();
 
+        /// <summary>
+        /// Initialization method. Must be called before every round.
+        /// </summary>
         public void Initialize(IBoardStorage boardStorage)
         {
             this.boardStorage = boardStorage;
         }
         
+        /// <summary>
+        /// Disables this script so that no effects are performed.
+        /// </summary>
         public void DisablePlayerEffects()
         {
             isEnabled = false;
         }
 
+        /// <summary>
+        /// Enables this script so that no effects are performed.
+        /// </summary>
         public void EnablePlayerEffects()
         {
             isEnabled = true;
         }
 
-        public void DisableAllFrames()
-        {
-            foreach (var boardButton in board.GetBoardButtons())
-            {
-                boardButton.DisableFrame();
-            }
-        }
-
+        /// <summary>
+        /// If enabled, enables the frame across the split button
+        /// and frames on all possible for split positions.
+        /// </summary>
         public void EnableSplitMode(List<IntVector2> possiblePositions)
         {
             if (!isEnabled)
@@ -64,6 +70,10 @@ namespace Assets.Scripts
             }
         }
         
+        /// <summary>
+        /// If enabled, disables the frame across the split button
+        /// and frames on all possible for split positions.
+        /// </summary>
         public void DisableSplitMode()
         {
             if (!isEnabled)
