@@ -62,18 +62,6 @@ namespace Assets.Scripts
         /// <param name="position"></param>
         /// <returns></returns>
         BoardStorageItem GetItem(IntVector2 position);
-        
-        /// <summary>
-        /// Disables frame by position
-        /// </summary>
-        /// <param name="position"></param>
-        void DisableFrame(IntVector2 position);
-        
-        /// <summary>
-        /// Enables frame by position
-        /// </summary>
-        /// <param name="position"></param>
-        void EnableFrame(IntVector2 position);
 
         /// <summary>
         /// Returns bonus item by position

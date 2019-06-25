@@ -33,9 +33,9 @@ namespace Assets.Scripts
         /// </summary>
         private Button[,] boardButtons;
         /// <summary>
-        /// A list of buttons to simply enumerate them.
+        /// A list of buttons wrapped to board button object to simply enumerate them.
         /// </summary>
-        private List<Button> buttonsList = new List<Button>();
+        private List<BoardButton> buttonsList = new List<BoardButton>();
 
         /// <summary>
         /// Initializes pattern button.
@@ -61,7 +61,7 @@ namespace Assets.Scripts
         {
             DeleteButtons();
             boardButtons = new Button[Width + 1, Height + 1];
-            buttonsList = new List<Button>();
+            buttonsList = new List<BoardButton>();
             CreateButtons();
         }
 
@@ -71,6 +71,11 @@ namespace Assets.Scripts
         public BoardButton GetBoardButton(IntVector2 position)
         {
             return boardButtons[position.x, position.y].gameObject.GetComponent<BoardButton>();
+        }
+
+        public IEnumerable<BoardButton> GetBoardButtons()
+        {
+            return buttonsList;
         }
         
         /// <summary>
@@ -150,7 +155,7 @@ namespace Assets.Scripts
 
                     //Remember the button.
                     boardButtons[currentColumn, currentRow] = newButton;
-                    buttonsList.Add(newButton);
+                    buttonsList.Add(newButton.GetComponent<BoardButton>());
                 }
             }
         }

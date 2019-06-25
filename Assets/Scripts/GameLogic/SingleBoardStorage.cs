@@ -498,22 +498,6 @@ namespace Assets.Scripts
         }
         
         /// <summary>
-        /// Disables frame by position
-        /// </summary>
-        public void DisableFrame(IntVector2 position)
-        {
-            board.GetBoardButton(position).DisableFrame();
-        }
-        
-        /// <summary>
-        /// Enables frame by position
-        /// </summary>
-        public void EnableFrame(IntVector2 position)
-        {
-            board.GetBoardButton(position).EnableFrame();
-        }
-        
-        /// <summary>
         /// Rotates board on 180 angles
         /// </summary>
         public void InvertBoard()

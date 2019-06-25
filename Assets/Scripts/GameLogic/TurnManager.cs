@@ -42,6 +42,24 @@ namespace Assets.Scripts
         public TurnType CurrentTurn { get; private set; }
 
         /// <summary>
+        /// Returns the current player type.
+        /// </summary>
+        public PlayerType GetCurrentPlayerType()
+        {
+            if (CurrentTurn == TurnType.FIRST)
+            {
+                return PlayerType.FIRST;
+            }
+
+            if (CurrentTurn == TurnType.SECOND)
+            {
+                return PlayerType.SECOND;
+            }
+
+            return PlayerType.NEUTRAL;
+        }
+
+        /// <summary>
         /// Should be called anytime when boardManager or controllerManager are changed.
         /// </summary>
         public void Initialize(BoardManager boardManager, ControllerManager controllerManager)

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Assets.Scripts
 {
@@ -29,6 +30,10 @@ namespace Assets.Scripts
         /// Text of the clicked army to update.
         /// </summary>
         private ArmyText armyText;
+        /// <summary>
+        /// To use effects during the game.
+        /// </summary>
+        private RoundEffects roundEffects;
         
         private BlockBoardStorage boardStorage;
         
@@ -37,7 +42,6 @@ namespace Assets.Scripts
         /// </summary>
         private ArmyStorageItem chosenArmyItem;
         private IntVector2 chosenArmyPosition;
-        private IntVector2 activeFramePosition;
         private ObjectMover currentMover;
         private IntVector2 currentTargetPosition;
         private bool splitButtonClicked;
@@ -48,13 +52,15 @@ namespace Assets.Scripts
         private const int MAX_ARMIES = 5;
 
         public UserController(PlayerType playerType, BlockBoardStorage storage, BoardFactory boardFactory, 
-            PlayGameState playGameState, ArmyText armyText)
+            PlayGameState playGameState, ArmyText armyText, RoundEffects roundEffects)
         {
             this.playerType = playerType;
             boardStorage = storage;
             this.boardFactory = boardFactory;
             this.playGameState = playGameState;
             this.armyText = armyText;
+            this.roundEffects = roundEffects;
+            roundEffects.Initialize(storage);
         }
 
         /// <summary>
@@ -119,7 +125,7 @@ namespace Assets.Scripts
             }
 
             //Split mode is active only during the next click.
-            splitButtonClicked = false;
+            SetSplitModeActive(false);
         }
 
         /// <summary>
@@ -215,7 +221,7 @@ namespace Assets.Scripts
             //All conditions satisfied, perform split.
             ProcessSplit(chosenArmyPosition, position);
             SetActiveFrame(position);
-            splitButtonClicked = false;
+            SetSplitModeActive(false);
             chosenArmyItem = null;
             chosenArmyPosition = null;
             return true;
@@ -228,7 +234,7 @@ namespace Assets.Scripts
         /// </summary>
         private bool ProcessClickOnSameCell(IntVector2 position)
         {
-            if (activeFramePosition == null || !activeFramePosition.Equals(position))
+            if (chosenArmyPosition == null || !chosenArmyPosition.Equals(position))
             {
                 return false;
             }
@@ -238,21 +244,11 @@ namespace Assets.Scripts
         }
 
         /// <summary>
-        /// Enables the frame across the given position and deactivates the current frame (if exists).
-        /// If null is given as position, just turns off the current frame.
+        /// Transfers the current chosen position to the effects service.
         /// </summary>
         private void SetActiveFrame(IntVector2 position)
         {
-            if (activeFramePosition != null)
-            {
-                boardStorage.DisableFrame(activeFramePosition);
-            }
-
-            if (position != null)
-            {
-                boardStorage.EnableFrame(position);
-            }
-            activeFramePosition = position;
+            roundEffects.SetChosenArmyFrame(position);
         }
  
         /// <summary>
@@ -272,7 +268,7 @@ namespace Assets.Scripts
             boardStorage.SetItem(targetPosition.x, targetPosition.y, new ArmyStorageItem(splittedArmyPart, clonedIcon));
             
             //Turn off the split mode and update the text.
-            splitButtonClicked = false;
+            SetSplitModeActive(false);
             armyText.UpdateText(splittedArmyPart);
         }
 
@@ -282,7 +278,7 @@ namespace Assets.Scripts
         /// </summary>
         private void MoveChosen(IntVector2 targetPosition)
         {
-            //TODO: maybe we should disable the whole menu here
+            //TODO: maybe we should disable the whole menu here? It will remove the extra dependency in BoardStorage.
             boardStorage.DisableBoardButtons();
             
             //Removes an item from the old position.
@@ -343,7 +339,7 @@ namespace Assets.Scripts
             //We finished the army move, clear the move state.
             ClearMoveState(); 
             
-            //Enable buttons.
+            //EnablePlayerEffects buttons.
             boardStorage.EnableBoardButtons();
             
             //Signalize that we finish the move of one army.
@@ -384,7 +380,8 @@ namespace Assets.Scripts
             chosenArmyItem = null;
             currentTargetPosition = null;
             currentMover = null;
-            splitButtonClicked = false;
+            chosenArmyPosition = null;
+            SetSplitModeActive(false);
         }
         
         /// <summary>
@@ -498,8 +495,58 @@ namespace Assets.Scripts
         {
             if (chosenArmyItem != null)
             {
-                splitButtonClicked = true;
+                SetSplitModeActive(true);
             }
+        }
+
+        private void SetSplitModeActive(bool splitModeActive)
+        {
+            splitButtonClicked = splitModeActive;
+            if (splitModeActive)
+            {
+                roundEffects.EnableSplitMode(GetPossibleForSplitPositions());
+            }
+            else
+            {
+                roundEffects.DisableSplitMode();
+            }
+        }
+        
+        private List<IntVector2> GetPossibleForSplitPositions()
+        {
+            if (chosenArmyPosition == null)
+            {
+                return null;
+            }
+            
+            var possiblePositions = new List<IntVector2>();
+            
+            //Encode pairs of delta coordinates of positions adjacent to the chosen army.
+            int[] deltaX = {-1, 0, 1, 0};
+            int[] deltaY = {0, 1, 0, -1};
+            for (int i = 0; i < deltaX.Length; i++)
+            {
+                var adjacentPosition = new IntVector2(chosenArmyPosition.x + deltaX[i],
+                    chosenArmyPosition.y + deltaY[i]);
+                if (!OnBoard(adjacentPosition))
+                {
+                    //Position is outside the board.
+                    continue;
+                }
+
+                if (boardStorage.GetItem(adjacentPosition) == null)
+                {
+                    //Position is empty.
+                    possiblePositions.Add(adjacentPosition);
+                }
+            }
+            return possiblePositions;
+        }
+
+        private bool OnBoard(IntVector2 position)
+        {
+            return position.x >= 1 && position.x <= boardStorage.GetCurrentBlock().GetBoardWidth() &&
+                   position.y >= 1 && position.y <= boardStorage.GetCurrentBlock().GetBoardHeight();
         }
     }
 }

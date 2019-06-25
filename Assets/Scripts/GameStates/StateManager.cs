@@ -26,6 +26,7 @@ namespace Assets.Scripts
         [SerializeField] private ChooseBoardGameState chooseBoardGameState;
         [SerializeField] private ResultGameState resultGameState;
         [SerializeField] private InfoGameState infoGameState;
+        [SerializeField] private TutorialGameState tutorialGameState;
         
         //States are made properties since some objects need them to initialize.
         public StartGameState StartGameState => startGameState;
@@ -36,7 +37,8 @@ namespace Assets.Scripts
         public ChooseBoardGameState ChooseBoardGameState => chooseBoardGameState;
         public ResultGameState ResultGameState => resultGameState;
         public InfoGameState InfoGameState => infoGameState;
-
+        public TutorialGameState TutorialGameState => tutorialGameState;
+        
         public IGameState CurrentState { get; private set; }
         public static StateManager Instance { get; private set; }
         
@@ -77,7 +79,8 @@ namespace Assets.Scripts
                 {StateType.AI_GAME_STATE, AIPlayGameState},
                 {StateType.ONE_DEVICE_MULTIPLAYER_STATE, OneDeviceMultiplayerGameState},
                 {StateType.RESULT_GAME_STATE, ResultGameState},
-                {StateType.INFO_GAME_STATE, InfoGameState}
+                {StateType.INFO_GAME_STATE, InfoGameState},
+                {StateType.TUTORIAL_GAME_STATE, TutorialGameState}
             };
         }
 

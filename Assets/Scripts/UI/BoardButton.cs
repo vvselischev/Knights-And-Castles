@@ -72,9 +72,10 @@ namespace Assets.Scripts
         /// <summary>
         /// Enables frame around the button.
         /// </summary>
-        public void EnableFrame()
+        public void EnableFrame(Color color)
         {
             frame.Enable();
+            frame.ChangeColor(color);
         }
     }
 }

@@ -109,8 +109,10 @@ namespace Assets.Scripts
         private void FinishSetup()
         {
             board.SetInputListener(networkInputListener);
-            var firstController = new UserController(PlayerType.FIRST, boardStorage, boardFactory, this, armyText);
-            var secondController = new UserController(PlayerType.SECOND, boardStorage, boardFactory, this, armyText);
+            var firstController = new UserController(PlayerType.FIRST, boardStorage, boardFactory, this, 
+                armyText, roundEffects);
+            var secondController = new UserController(PlayerType.SECOND, boardStorage, boardFactory, this, 
+                armyText, roundEffects);
 
             if (isHost)
             {
@@ -159,9 +161,6 @@ namespace Assets.Scripts
             }
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
         private void ProcessPlayerLeft(string message)
         {
             if (myId == message || message == "")

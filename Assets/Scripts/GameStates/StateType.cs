@@ -43,7 +43,12 @@ namespace Assets.Scripts
         /// <summary>
         /// State of displaying an info message.
         /// </summary>
-        INFO_GAME_STATE
+        INFO_GAME_STATE,
+        
+        /// <summary>
+        /// State to display the pages with game description.
+        /// </summary>
+        TUTORIAL_GAME_STATE
     }
 
 }

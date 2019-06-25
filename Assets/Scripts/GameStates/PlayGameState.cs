@@ -36,6 +36,7 @@ namespace Assets.Scripts
         [SerializeField] protected CheckeredButtonBoard board;
         [SerializeField] protected InputListener inputListener;
         [SerializeField] protected StateType playMode;
+        [SerializeField] protected RoundEffects roundEffects;
         
         protected BlockBoardStorage boardStorage;
         protected ControllerManager controllerManager;
@@ -62,9 +63,9 @@ namespace Assets.Scripts
             
             board.SetInputListener(inputListener);
             var firstController =
-                new UserController(PlayerType.FIRST, boardStorage, boardFactory, this, armyText);
+                new UserController(PlayerType.FIRST, boardStorage, boardFactory, this, armyText, roundEffects);
             var secondController =
-                new UserController(PlayerType.SECOND, boardStorage, boardFactory, this, armyText);
+                new UserController(PlayerType.SECOND, boardStorage, boardFactory, this, armyText, roundEffects);
             
             controllerManager = new ControllerManager(firstController, secondController);
             inputListener.Initialize(controllerManager);
@@ -120,7 +121,7 @@ namespace Assets.Scripts
             turnManager.SetTurn(GetFirstTurn());
             timer.StartTimer();
 
-            //Disable or enable UI in child classes!
+            //DisablePlayerEffects or enable UI in child classes!
         }
 
         /// <summary>

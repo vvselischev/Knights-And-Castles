@@ -58,7 +58,7 @@ namespace Assets.Scripts
         }
 
         /// <summary>
-        /// Save current state (set in the editor) as defult.
+        /// Save current state (set in the editor) as default.
         /// </summary>
         public void Awake()
         {

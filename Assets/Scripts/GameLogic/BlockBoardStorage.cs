@@ -366,22 +366,6 @@ namespace Assets.Scripts
         }
 
         /// <summary>
-        /// Disables a frame on the given position in the current block.
-        /// </summary>
-        public void DisableFrame(IntVector2 position)
-        {
-            currentBlock.DisableFrame(position);
-        }
-
-        /// <summary>
-        /// Enables a frame on the given position in the current block.
-        /// </summary>
-        public void EnableFrame(IntVector2 position)
-        {
-            currentBlock.EnableFrame(position);
-        }
-
-        /// <summary>
         /// Returns a bonus item by the given position from the current block.
         /// </summary>
         public BoardStorageItem GetBonusItem(IntVector2 position)
