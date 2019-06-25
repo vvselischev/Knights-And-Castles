@@ -25,7 +25,7 @@ namespace Editor
             bonusItems[1, 1] = pass1;
             bonusItems[2, 2] = pass2;
             
-            board.FillBlockForTesting(new IntVector2(1, 1), items, bonusItems);
+            board.FillBlockWithoutCheckeredBoard(new IntVector2(1, 1), items, bonusItems);
 
             var passes = board.GetPassesAsFromToCells();
             Assert.True(passes.Count() == 2);
@@ -44,23 +44,13 @@ namespace Editor
             items[1, 1] = item1;
             items[2, 2] = item2;
             
-            board.FillBlockForTesting(new IntVector2(1, 1), items, bonusItems);
+            board.FillBlockWithoutCheckeredBoard(new IntVector2(1, 1), items, bonusItems);
 
             var foundItems = board.FindPlayerArmies(PlayerType.FIRST);
             
             Assert.True(foundItems.Count == 2);
         }
 
-        [Test]
-        public void TestGetOpponentPlayerType()
-        {
-            var first = PlayerType.FIRST;
-            var second = PlayerType.SECOND;
-            
-            Assert.True(BlockBoardStorage.GetOpponentPlayerType(first) == second);
-            Assert.True(BlockBoardStorage.GetOpponentPlayerType(second) == first);
-        }
-        
         [Test]
         public void TestGetUserArmiesWithoutArmies()
         {
@@ -74,7 +64,7 @@ namespace Editor
             items[1, 1] = item1;
             items[2, 2] = item2;
             
-            board.FillBlockForTesting(new IntVector2(1, 1), items, bonusItems);
+            board.FillBlockWithoutCheckeredBoard(new IntVector2(1, 1), items, bonusItems);
 
             var foundItems = board.FindPlayerArmies(PlayerType.SECOND);
             
@@ -97,12 +87,12 @@ namespace Editor
             items[1, 1] = item1;
             items[2, 2] = item2;
             
-            board.FillBlockForTesting(new IntVector2(1, 1), items, bonusItems);
+            board.FillBlockWithoutCheckeredBoard(new IntVector2(1, 1), items, bonusItems);
             
             items[1, 1] = item3;
             items[2, 2] = item4;
             
-            board.FillBlockForTesting(new IntVector2(1, 2), items, bonusItems);
+            board.FillBlockWithoutCheckeredBoard(new IntVector2(1, 2), items, bonusItems);
 
             var armies = board.FindPlayerArmies(playerType);
             Assert.True(armies.Count == 4);
@@ -127,12 +117,12 @@ namespace Editor
             bonusItems[1, 1] = pass1;
             bonusItems[2, 2] = pass2;
             
-            board.FillBlockForTesting(new IntVector2(1, 1), items, bonusItems);
+            board.FillBlockWithoutCheckeredBoard(new IntVector2(1, 1), items, bonusItems);
             
             bonusItems[1, 1] = pass3;
             bonusItems[2, 2] = pass4;
             
-            board.FillBlockForTesting(new IntVector2(1, 2), items, bonusItems);
+            board.FillBlockWithoutCheckeredBoard(new IntVector2(1, 2), items, bonusItems);
 
             var passes = board.GetPassesAsFromToCells();
             Assert.True(passes.Count() == 4);

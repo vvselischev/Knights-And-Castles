@@ -19,11 +19,11 @@ namespace Editor
                 new IntVector2(2, 2), new IntVector2(1, 1));
             
             bonusItems[1, 1] = pass1;
-            board.FillBlockForTesting(new IntVector2(1, 1), items, bonusItems);
+            board.FillBlockWithoutCheckeredBoard(new IntVector2(1, 1), items, bonusItems);
 
             bonusItems[1, 1] = null;
             bonusItems[2, 2] = pass2;
-            board.FillBlockForTesting(new IntVector2(1, 2), items, bonusItems);
+            board.FillBlockWithoutCheckeredBoard(new IntVector2(1, 2), items, bonusItems);
             
             var graph = new Graph(board);
             var cell0 = board.GetBlock(new IntVector2(1, 1)).GetCellByPosition(new IntVector2(1, 2));
@@ -41,8 +41,8 @@ namespace Editor
             
             var items = new BoardStorageItem[3, 3];
             var bonusItems = new BoardStorageItem[3, 3];
-            board.FillBlockForTesting(new IntVector2(1, 1), items, bonusItems);
-            board.FillBlockForTesting(new IntVector2(1, 2), items, bonusItems);
+            board.FillBlockWithoutCheckeredBoard(new IntVector2(1, 1), items, bonusItems);
+            board.FillBlockWithoutCheckeredBoard(new IntVector2(1, 2), items, bonusItems);
             
             var graph = new Graph(board);
             var cell0 = board.GetBlock(new IntVector2(1, 1)).GetCellByPosition(new IntVector2(1, 2));
