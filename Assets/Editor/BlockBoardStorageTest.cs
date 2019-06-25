@@ -52,7 +52,7 @@ namespace Editor
         }
 
         [Test]
-        public void TestChangePlayerType()
+        public void TestGetOpponentPlayerType()
         {
             var first = PlayerType.FIRST;
             var second = PlayerType.SECOND;
@@ -87,11 +87,12 @@ namespace Editor
             var board = new BlockBoardStorage(1, 2, null);
             var items = new BoardStorageItem[3, 3];
             var bonusItems = new BoardStorageItem[3, 3];
+            var playerType = PlayerType.FIRST;
             
-            var item1 = new ArmyStorageItem(new UserArmy(PlayerType.FIRST, null), null);
-            var item2 = new ArmyStorageItem(new UserArmy(PlayerType.FIRST, null), null);
-            var item3 = new ArmyStorageItem(new UserArmy(PlayerType.FIRST, null), null);
-            var item4 = new ArmyStorageItem(new UserArmy(PlayerType.FIRST, null), null);
+            var item1 = new ArmyStorageItem(new UserArmy(playerType, null), null);
+            var item2 = new ArmyStorageItem(new UserArmy(playerType, null), null);
+            var item3 = new ArmyStorageItem(new UserArmy(playerType, null), null);
+            var item4 = new ArmyStorageItem(new UserArmy(playerType, null), null);
             
             items[1, 1] = item1;
             items[2, 2] = item2;
@@ -103,7 +104,7 @@ namespace Editor
             
             board.FillBlockForTesting(new IntVector2(1, 2), items, bonusItems);
 
-            var armies = board.FindPlayerArmies(PlayerType.FIRST);
+            var armies = board.FindPlayerArmies(playerType);
             Assert.True(armies.Count == 4);
         }
         

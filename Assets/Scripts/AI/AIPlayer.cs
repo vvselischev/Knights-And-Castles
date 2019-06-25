@@ -30,10 +30,12 @@ namespace Assets.Scripts
             MakeTurn();
         }
 
+        /// <summary>
+        /// In this method AI makes one turn, if AI is able to make one more turn method will be called again automatically
+        /// </summary>
         private void MakeTurn()
         {
             controller.ArmyFinishedMove -= MakeTurn;
-            
             var gameSimulation = new GameSimulation(boardStorage);
             var myArmiesNumber = gameSimulation.GetNumberOfActiveArmies(playerType);
             
@@ -52,9 +54,15 @@ namespace Assets.Scripts
                 return;
             }
 
-            gameSimulation = new GameSimulation(boardStorage);
-            gameSimulation.MakeMove(bestMove.From, bestMove.To, true);
-            
+            OnTurnEnd(bestMove);
+        }
+
+        /// <summary>
+        /// After AI finds move, this move should be done and
+        /// state should be updated and MakeTurn method should be called again
+        /// </summary>
+        private void OnTurnEnd(MoveInformation bestMove)
+        {
             //Add callback to this method when move will be performed
             controller.ArmyFinishedMove += MakeTurn;
             MakeMove(bestMove.From, bestMove.To);    
