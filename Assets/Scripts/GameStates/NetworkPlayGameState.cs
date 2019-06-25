@@ -23,12 +23,16 @@ namespace Assets.Scripts
         private UserResultType currentUserResultType;
         private string myId;
 
+        private const byte setupMessageByte = (byte) 'S';
+        
         /// <inheritdoc />
         /// <summary>
         /// </summary>
         public override void InvokeState()
         {
+            //Change the default input listener.
             inputListener = networkInputListener;
+            //Perform common initialization.
             SetupGame();
             
             multiplayerController = MultiplayerController.GetInstance();
@@ -66,6 +70,9 @@ namespace Assets.Scripts
             }
         }
         
+        /// <summary>
+        /// The host is chosen based on the Participant ID (said to be practically random).
+        /// </summary>
         private string ChooseHost()
         {
             return allPlayers.Min(participant => participant.ParticipantId);
@@ -73,13 +80,13 @@ namespace Assets.Scripts
 
         private void SetupRoundHost()
         {
+            //Create random board and serialize it.
             boardFactory.FillBoardStorageRandomly(boardStorage, ConfigurationType, boardManager);
-
             var message = boardFactory.ConvertBoardStorageToBytes(boardStorage);
             
-            //Insert 'S' -- Setup message.
-            message.Insert(0, (byte) 'S');
-
+            //Insert 'S' -- Setup leftParticipantId.
+            message.Insert(0, setupMessageByte);
+            //Send the board to the opponent.
             multiplayerController.SendMessage(message.ToArray());
            
             FinishSetup();
@@ -87,14 +94,16 @@ namespace Assets.Scripts
         
         private void SetupRoundFromNetwork(byte[] message)
         {
-            if (message[0] != 'S')
+            if (message[0] != setupMessageByte)
             {
                 return;
             }
  
             multiplayerController.OnMessageReceived -= SetupRoundFromNetwork;
 
-            boardFactory.FillBoardStorageFromArray(message.Skip(1).ToArray(), boardStorage, ConfigurationType, boardManager);
+            //Skip the first byte, since it is an indicator of the leftParticipantId type (setup).
+            boardFactory.FillBoardStorageFromArray(message.Skip(1).ToArray(), boardStorage, ConfigurationType, 
+                boardManager);
             FinishSetup();
             
             InitNewRound();
@@ -116,11 +125,11 @@ namespace Assets.Scripts
 
             if (isHost)
             {
-                secondController.ArmyFinishedMove += OnOpponentFinishedArmyFinishedMove;
+                secondController.ArmyFinishedMove += OnOpponentArmyFinishedMove;
             }
             else
             {
-                firstController.ArmyFinishedMove += OnOpponentFinishedArmyFinishedMove;
+                firstController.ArmyFinishedMove += OnOpponentArmyFinishedMove;
             }
             
             controllerManager = new ControllerManager(firstController, secondController);
@@ -129,11 +138,14 @@ namespace Assets.Scripts
             turnManager.Initialize(boardManager, controllerManager);
         }
 
-        private void OnOpponentFinishedArmyFinishedMove()
+        private void OnOpponentArmyFinishedMove()
         {
             boardStorage.DisableBoardButtons();
         }
 
+        /// <inheritdoc />
+        /// <summary>
+        /// </summary>
         protected override void ChangeTurn()
         {
             base.ChangeTurn();
@@ -147,28 +159,44 @@ namespace Assets.Scripts
             }
         }
 
+        /// <inheritdoc />
+        /// <summary>
+        /// </summary>
         protected override TurnType GetFirstTurn()
         {
             //Host makes first turn (as PlayerType.First).
             return TurnType.FIRST;
         }
 
+        /// <summary>
+        /// Processes the pause mode or hiding in a tray on mobile devices.
+        /// The user who did that loses. Another one wins.
+        /// </summary>
         private void OnApplicationPause(bool pause)
         {
             if (pause && stateManager.CurrentState is NetworkPlayGameState)
             {
+                //We did it, and at this moment we do not know our id anymore.
                 ProcessPlayerLeft("");
             }
         }
 
-        private void ProcessPlayerLeft(string message)
+        
+        /// <summary>
+        /// Determines the winner if some user lefts the game.
+        /// </summary>
+        /// <param name="leftParticipantId"> The id of user who has left.
+        /// If it is an empty string, consider that we have left. </param>
+        private void ProcessPlayerLeft(string leftParticipantId)
         {
-            if (myId == message || message == "")
+            if (myId == leftParticipantId || leftParticipantId == "")
             {
+                //We have left, so we loose.
                 currentUserResultType = UserResultType.LOSE;
             }
             else
             {
+                //Another user left, so we win.
                 currentUserResultType = UserResultType.WIN;
                 multiplayerController.LeaveRoom();
             }
@@ -228,11 +256,11 @@ namespace Assets.Scripts
         {
             if (isHost)
             {
-                controllerManager.SecondController.ArmyFinishedMove -= OnOpponentFinishedArmyFinishedMove;
+                controllerManager.SecondController.ArmyFinishedMove -= OnOpponentArmyFinishedMove;
             }
             else
             {
-                controllerManager.FirstController.ArmyFinishedMove -= OnOpponentFinishedArmyFinishedMove;
+                controllerManager.FirstController.ArmyFinishedMove -= OnOpponentArmyFinishedMove;
             }
             
             multiplayerController.OnPlayerLeft -= ProcessPlayerLeft;

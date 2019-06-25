@@ -12,7 +12,7 @@ namespace Assets.Scripts
         private MenuActivator menuActivator = MenuActivator.Instance;
         [SerializeField] private SimpleMenu lobbyMenu;
         
-        //TODO: move it to lobbyMenu
+        //TODO: move it to lobbyMenu?
         [SerializeField] private Text lobbyText;
         
         [SerializeField] private StateManager stateManager;
@@ -21,12 +21,20 @@ namespace Assets.Scripts
 
         private bool waiting;
 
+        private const byte pingMessageByte = (byte) 'P';
         /// <summary>
         /// If a ping message from the opponent is not received during this time,
         /// display an error.
         /// </summary>
-        private const int MAX_TIMEOUT_SECONDS = 15;
+        private const int maxTimeoutSeconds = 15;
+        /// <summary>
+        /// Time in seconds between two ping messages.
+        /// </summary>
+        private const int pingDeltaTimeSeconds = 1;
 
+        /// <summary>
+        /// To initialize play state.
+        /// </summary>
         public BoardType ConfigurationType { get; set; }
 
         private void Awake()
@@ -35,16 +43,18 @@ namespace Assets.Scripts
             multiplayerController.OnRoomSetupCompleted += OnOpponentFound;
             multiplayerController.OnRoomSetupError += DisplayRoomSetupError;
             multiplayerController.OnOpponentDisconnected += DisplayOpponentDisconnected;
-            multiplayerController.OnMessageReceived += ProcessMessage;
+            multiplayerController.OnMessageReceived += ProcessPingMessage;
             multiplayerController.OnAuthenticated += DisplayAfterAuthenticatedMessage;
             multiplayerController.OnAuthenticationError += DisplayAuthenticationError;
         }
 
+        /// <summary>
+        /// Starts authentication and opponent searching process.
+        /// </summary>
         public void InvokeState()
         {
             lobbyText.text = "Authentication...";
-            menuActivator.OpenMenu(lobbyMenu);
-            
+            menuActivator.OpenMenu(lobbyMenu);            
             
             stateManager.NetworkPlayGameState.ConfigurationType = ConfigurationType;
 
@@ -61,26 +71,19 @@ namespace Assets.Scripts
             exitListener.OnExitClicked += OnExit;
         }
 
-        private void DisplayAuthenticationError()
+        /// <summary>
+        /// We receive ping message so both opponents are ready to play.
+        /// If it is not a ping message, ignore it.
+        /// </summary>
+        private void ProcessPingMessage(byte[] data)
         {
-            multiplayerController.LeaveRoom();
-            stateManager.InfoGameState.SetInfoText("Authentication failed!\nPlease, try again.");
-            stateManager.ChangeState(StateType.INFO_GAME_STATE);
-        }
-
-        private void DisplayAfterAuthenticatedMessage()
-        {
-            lobbyText.text = "Searching for opponent...";
-        }
-
-        private void ProcessMessage(byte[] data)
-        {
-            if (data[0] == (byte) 'P')
+            if (data[0] != pingMessageByte)
             {
-                waiting = false;
-                StopCoroutine(WaitForOpponent());
-                ChangeToNetworkState();  
+                return;
             }
+            waiting = false;
+            StopCoroutine(WaitForOpponent());
+            ChangeToNetworkState();
         }
 
         private void DisplayOpponentDisconnected()
@@ -97,6 +100,18 @@ namespace Assets.Scripts
             stateManager.ChangeState(StateType.INFO_GAME_STATE);
         }
 
+        private void DisplayAuthenticationError()
+        {
+            multiplayerController.LeaveRoom();
+            stateManager.InfoGameState.SetInfoText("Authentication failed!\nPlease, try again.");
+            stateManager.ChangeState(StateType.INFO_GAME_STATE);
+        }
+
+        private void DisplayAfterAuthenticatedMessage()
+        {
+            lobbyText.text = "Searching for opponent...";
+        }
+        
         private void OnOpponentFound()
         {
             exitListener.Disable();
@@ -105,8 +120,8 @@ namespace Assets.Scripts
         }
 
         /// <summary>
-        /// Pings the opponent.
-        /// 'P' -- ping message.
+        /// Pings the opponent every second until the max timeout.
+        /// Solves the problem of loosing the very first message even between connected participants.
         /// </summary>
         /// <returns></returns>
         private IEnumerator WaitForOpponent()
@@ -119,15 +134,15 @@ namespace Assets.Scripts
                 {
                     yield break;
                 }
-                var message = new[] {(byte)'P'};
+                var message = new[] {pingMessageByte};
                 multiplayerController.SendMessage(message);
                 secondsPassed++;
-                if (secondsPassed > MAX_TIMEOUT_SECONDS)
+                if (secondsPassed > maxTimeoutSeconds)
                 {
                     DisplayRoomSetupError();
                     yield break;
                 }
-                yield return new WaitForSeconds(1);
+                yield return new WaitForSeconds(pingDeltaTimeSeconds);
             }
         }
 
@@ -142,6 +157,10 @@ namespace Assets.Scripts
             stateManager.ChangeState(StateType.START_GAME_STATE);
         }
         
+        /// <inheritdoc />
+        /// <summary>
+        /// Stops pinging opponent if necessary.
+        /// </summary>
         public void CloseState()
         {
             waiting = false;

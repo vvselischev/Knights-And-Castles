@@ -1,6 +1,3 @@
-using UnityEngine;
-using UnityEngine.UI;
-
 namespace Assets.Scripts
 {
     /// <summary>
@@ -10,6 +7,14 @@ namespace Assets.Scripts
     /// </summary>
     public class NetworkInputListener : InputListener
     {
+        /// <summary>
+        /// Bytes for message convention.
+        /// </summary>
+        private const byte splitButtonClickByte = (byte) 'S';
+        private const byte finishTurnButtonClickByte = (byte) 'F';
+        private const byte boardClickByte = (byte) 'B';
+        private const byte moveByte = (byte) 'M';
+        
         private MultiplayerController multiplayerController;
         private int blockWidth;
         private int blockHeight;
@@ -26,6 +31,9 @@ namespace Assets.Scripts
             multiplayerController.OnMessageReceived += ProcessNetworkData;
         }
 
+        /// <summary>
+        /// Stops the listener. No input from the network is processed.
+        /// </summary>
         public void Stop()
         {
             multiplayerController.OnMessageReceived -= ProcessNetworkData;
@@ -33,51 +41,61 @@ namespace Assets.Scripts
         
         /// <summary>
         /// Processes incoming messages by the given convention:
-        /// 'M' -- move (otherwise ignore this message), followed by one of:
-        /// 'B' -- button click, followed by x and y
-        /// 'F' -- finish turn
-        /// 'S' -- split
+        /// move byte (otherwise ignore this message), followed by one of:
+        /// - board click byte, followed by x and y
+        /// - finish turn byte
+        /// - split byte
+        /// In the case of button click inverts received coordinates.
         /// </summary>
         private void ProcessNetworkData(byte[] message)
         {
-            if (message[0] != 'M')
+            if (message[0] != moveByte)
             {
                 return;
             }
 
-            if (message[1] == 'B')
+            if (message[1] == boardClickByte)
             {
                 var x = blockWidth - message[2] + 1;
                 var y = blockHeight - message[3] + 1;
                 base.ProcessBoardClick(x, y);
             }
-            else if (message[1] == 'F')
+            else if (message[1] == finishTurnButtonClickByte)
             {
                 base.ProcessFinishTurnClick();
             }
-            else if (message[1] == 'S')
+            else if (message[1] == splitButtonClickByte)
             {
                 base.ProcessSplitButtonClick();
             }
         }
 
+        /// <summary>
+        /// Transfers the board click to the network and to the base listener (for the current player).
+        /// </summary>
         public override void ProcessBoardClick(int x, int y)
         {
-            byte[] message = {(byte)'M', (byte)'B', (byte) x, (byte) y};
+            byte[] message = {moveByte, boardClickByte, (byte) x, (byte) y};
             multiplayerController.SendMessage(message);
             base.ProcessBoardClick(x, y);
         }
 
+        /// <summary>
+        /// Transfers the split button click to the network and to the base listener (for the current player).
+        /// </summary>
         public override void ProcessSplitButtonClick()
         {
-            byte[] message = {(byte) 'M', (byte) 'S'};
+            byte[] message = {moveByte, splitButtonClickByte};
             multiplayerController.SendMessage(message);
             base.ProcessSplitButtonClick();
         }
 
+        /// <summary>
+        /// Transfers the finish turn click to the network and to the base listener (for the current player).
+        /// </summary>
         public override void ProcessFinishTurnClick()
         {
-            byte[] message = {(byte) 'M', (byte) 'F'};
+            byte[] message = {moveByte, finishTurnButtonClickByte};
             multiplayerController.SendMessage(message);
             base.ProcessFinishTurnClick();
         }
