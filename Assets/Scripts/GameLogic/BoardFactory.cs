@@ -188,22 +188,12 @@ namespace Assets.Scripts
         {
             currentArmy = null;
             currentSprite = null;
-            if (ExistsPlayerArmy(col, row, PlayerType.FIRST))
+            if (ExistsPlayerArmy(col, row))
             {
-                InitializePlayerArmyCell(PlayerType.FIRST, out currentArmy, out currentSprite);
+                InitializePlayerArmyCell(col, row, out currentArmy, out currentSprite);
             }
-            else if (ExistsPlayerArmy(col, row, PlayerType.SECOND))
+            else if (ExistBonus(col, row))
             {
-                InitializePlayerArmyCell(PlayerType.SECOND, out currentArmy, out currentSprite);
-            }
-            else if (ExistsPass(col, row))
-            {
-                //We do not want to have a 'surprise' army at the end of the pass.
-                return false;
-            }
-            else if (ExistsCastle(col, row))
-            {
-                //And we do not to have neutrals on castles.
                 return false;
             }
             else
@@ -217,6 +207,47 @@ namespace Assets.Scripts
                 InitializeNeutralCell(cellTypeId, col, row, out currentArmy, out currentSprite);    
             }
             return true;
+        }
+
+        /// <summary>
+        /// Generates army for player and produces corresponding sprite.
+        /// </summary>
+        /// <param name="col"></param>
+        /// <param name="row"></param>
+        /// <param name="army"></param>
+        /// <param name="sprite"></param>
+        private void InitializePlayerArmyCell(int col, int row, out Army army, out Sprite sprite)
+        {
+            if (ExistsPlayerArmy(col, row, PlayerType.FIRST))
+            {
+                InitializePlayerArmyCell(PlayerType.FIRST, out army, out sprite);
+            }
+            else
+            {
+                InitializePlayerArmyCell(PlayerType.SECOND, out army, out sprite);
+            }
+        }
+
+        /// <summary>
+        /// Determines whether the given cell contains player army according to the configuration.
+        /// </summary>
+        /// <param name="col"></param>
+        /// <param name="row"></param>
+        /// <returns></returns>
+        private bool ExistsPlayerArmy(int col, int row)
+        {
+            return ExistsPlayerArmy(col, row, PlayerType.FIRST) || ExistsPlayerArmy(col, row, PlayerType.SECOND);
+        }
+
+        /// <summary>
+        /// Determines whether the given cell contains a castle or a pass according to the configuration.
+        /// </summary>
+        /// <param name="col"></param>
+        /// <param name="row"></param>
+        /// <returns></returns>
+        private bool ExistBonus(int col, int row)
+        {
+            return ExistsPass(col, row) || ExistsCastle(col, row);
         }
 
         /// <summary>
@@ -459,19 +490,30 @@ namespace Assets.Scripts
                         continue;
                     }
 
-                    var spearmen = array[currentInd];
-                    currentInd++;
-                    var archers = array[currentInd];
-                    currentInd++;
-                    var cavalrymen = array[currentInd];
-                    currentInd++;
-                    var armyComposition = new ArmyComposition(spearmen, archers, cavalrymen);
+                    var armyComposition = FillArmyCompositionFromArray(array, currentInd);
+                    // Three bytes were read from array
+                    currentInd += 3;
 
                     InitializeCellById(currentType, armyComposition, out var currentArmy, out var currentSprite);
                     CompleteArmyCellInitialization(currentBoardTable, col, row, currentArmy, currentSprite);
                 }
             }
             boardStorage.Fill(currentBoardTable, currentBonusTable);
+        }
+
+        /// <summary>
+        /// Reads army composition from array from given index consisting of three bytes: spearmen, archers, cavalrymen
+        /// </summary>
+        /// <param name="array"></param>
+        /// <param name="index"></param>
+        /// <returns></returns>
+        private ArmyComposition FillArmyCompositionFromArray(byte[] array, int index)
+        {
+            var spearmen = array[index];
+            var archers = array[index + 1];
+            var cavalrymen = array[index + 2];
+            
+            return new ArmyComposition(spearmen, archers, cavalrymen);
         }
 
         /// <summary>
