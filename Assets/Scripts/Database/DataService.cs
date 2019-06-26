@@ -39,7 +39,7 @@ namespace Assets.Scripts
             while (!loadDb.isDone) { }  // CAREFUL here, for safety reasons you shouldn't let this while loop unattended, place a timer and error check
             // then save to Application.persistentDataPath
             File.WriteAllBytes(filepath, loadDb.bytes);
-#else
+#elif UNITY_IOS
                  var loadDb =
  Application.dataPath + "/Raw/" + databaseName;  // this is the path to your StreamingAssets in iOS
                 // then save to Application.persistentDataPath
