@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.UI;
 
 namespace Assets.Scripts
@@ -13,6 +14,9 @@ namespace Assets.Scripts
         /// The text object.
         /// </summary>
         [SerializeField] private Text armyCompositionText;
+
+        [SerializeField] [TextArea] private string selectArmyRequestString;
+        [SerializeField] [TextArea] private string exceedingArmyLimitString;
 
         /// <summary>
         /// Clears the text and displays it.
@@ -51,7 +55,7 @@ namespace Assets.Scripts
         /// </summary>
         public void SelectArmyRequest()
         {
-            armyCompositionText.text = "You must select" + "\n" + "an army to split!";
+            armyCompositionText.text = selectArmyRequestString;
         }
 
         /// <summary>
@@ -72,7 +76,7 @@ namespace Assets.Scripts
 
         public void DisplayMaximumArmiesOnBoard()
         {
-            armyCompositionText.text = "You cannot have" + "\n" + "more than five armies!";
+            armyCompositionText.text = exceedingArmyLimitString;
         }
     }
 }

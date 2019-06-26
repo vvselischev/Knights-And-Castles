@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -18,6 +19,10 @@ namespace Assets.Scripts
         [SerializeField] private Text winsBotPercentageText;
         [SerializeField] private Text winsNetworkPercentageText;
         [SerializeField] private Text resultText;
+        [SerializeField] private string winResultString;
+        [SerializeField] private string loseResultString;
+        [SerializeField] private string drawResultString;
+        [SerializeField] private string defaultTitleString;
         
         /// <inheritdoc />
         /// <summary>
@@ -90,26 +95,26 @@ namespace Assets.Scripts
         /// </summary>
         private void UpdateResultText(UserResultType resultType)
         {
-            //TODO: maybe better to make colors and strings serialized to setup in the editor?
+            //TODO: maybe better to make colors serialized to setup in the editor?
             if (resultType == UserResultType.WIN)
             {
                 resultText.color = Color.green;
-                resultText.text = "You win!";
+                resultText.text = winResultString;
             }
             else if (resultType == UserResultType.LOSE)
             {
                 resultText.color = Color.red;
-                resultText.text = "You lose!";
+                resultText.text = loseResultString;
             }
             else if (resultType == UserResultType.DRAW)
             {
                 resultText.color = Color.black;
-                resultText.text = "Draw";
+                resultText.text = drawResultString;
             }
             else
             {
                 resultText.color = Color.black;
-                resultText.text = "Statistics";
+                resultText.text = defaultTitleString;
             }
         }
     }

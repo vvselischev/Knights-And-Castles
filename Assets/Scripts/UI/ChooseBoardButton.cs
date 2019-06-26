@@ -24,8 +24,8 @@ namespace Assets.Scripts
 
             if (nextStateType == StateType.LOBBY_GAME_STATE)
             {
-                //Because if the next state is lobby (not play game state), we need to initialize network play state.
-                stateManager.NetworkPlayGameState.ConfigurationType = boardType;
+                //Because if the next state is lobby (not play game state), we need to initialize it.
+                stateManager.LobbyGameState.ConfigurationType = boardType;
             }
             else
             {

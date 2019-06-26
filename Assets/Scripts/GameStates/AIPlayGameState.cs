@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace Assets.Scripts
@@ -9,6 +10,10 @@ namespace Assets.Scripts
     {
         private AIPlayer aiPlayer;
         private UserResultType resultType;
+
+        [SerializeField] private string userWinText;
+        [SerializeField] private string aiWinText;
+        [SerializeField] private string drawText;
 
         /// <inheritdoc />
         /// <summary>
@@ -54,18 +59,18 @@ namespace Assets.Scripts
             if (resultType == ResultType.FIRST_WIN)
             {
                 //User wins
-                lerpedText.PerformLerpString("You win!", Color.green);
+                lerpedText.PerformLerpString(userWinText, Color.green);
                 this.resultType = UserResultType.WIN;
             }
             else if (resultType == ResultType.SECOND_WIN)
             {
                 //Bot wins
-                lerpedText.PerformLerpString("You lose...", Color.red);
+                lerpedText.PerformLerpString(aiWinText, Color.red);
                 this.resultType = UserResultType.LOSE;
             }
             else if (resultType == ResultType.DRAW)
             {
-                lerpedText.PerformLerpString("Draw", Color.blue);
+                lerpedText.PerformLerpString(drawText, Color.blue);
                 this.resultType = UserResultType.DRAW;
             }
         }

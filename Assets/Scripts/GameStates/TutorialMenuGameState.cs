@@ -10,6 +10,7 @@ namespace Assets.Scripts
     {
         private MenuActivator menuActivator = MenuActivator.Instance;
         [SerializeField] private SimpleMenu tutorialMenu;
+        [SerializeField] private ExitListener exitListener;
                 
         /// <inheritdoc />
         /// <summary>
@@ -17,6 +18,13 @@ namespace Assets.Scripts
         public void InvokeState()
         {
             menuActivator.OpenMenu(tutorialMenu);
+            exitListener.Enable();
+            exitListener.OnExitClicked += OnExit;
+        }
+        
+        private void OnExit()
+        {
+            StateManager.Instance.ChangeState(StateType.START_GAME_STATE);
         }
 
         /// <inheritdoc />
@@ -25,6 +33,8 @@ namespace Assets.Scripts
         public void CloseState()
         {
             menuActivator.CloseMenu();
+            exitListener.Disable();
+            exitListener.OnExitClicked -= OnExit;
         }
     }
 }

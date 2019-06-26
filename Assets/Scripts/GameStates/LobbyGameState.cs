@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
@@ -14,6 +15,12 @@ namespace Assets.Scripts
         
         //TODO: move it to lobbyMenu?
         [SerializeField] private Text lobbyText;
+        [SerializeField] [TextArea] private string authenticationString;
+        [SerializeField] [TextArea] private string opponentDisconnectedString;
+        [SerializeField] [TextArea] private string unknownErrorString;
+        [SerializeField] [TextArea] private string authenticationFailString;
+        [SerializeField] [TextArea] private string searchingForOpponentString;
+        [SerializeField] [TextArea] private string foundOpponentString;
         
         [SerializeField] private StateManager stateManager;
         [SerializeField] private ExitListener exitListener;
@@ -33,11 +40,14 @@ namespace Assets.Scripts
         private const int pingDeltaTimeSeconds = 1;
 
         /// <summary>
-        /// To initialize play state.
+        /// To initialize play game state.
         /// </summary>
         public BoardType ConfigurationType { get; set; }
 
-        private void Awake()
+        /// <summary>
+        /// Subscribe on all necessary events, risen by network.
+        /// </summary>
+        private void SubscribeOnNetworkEvents()
         {
             multiplayerController = MultiplayerController.GetInstance();
             multiplayerController.OnRoomSetupCompleted += OnOpponentFound;
@@ -47,17 +57,32 @@ namespace Assets.Scripts
             multiplayerController.OnAuthenticated += DisplayAfterAuthenticatedMessage;
             multiplayerController.OnAuthenticationError += DisplayAuthenticationError;
         }
+        
+        /// <summary>
+        /// Unsubscribe from all necessary events, risen by network.
+        /// To prevent calling methods several times.
+        /// </summary>
+        private void UnsubscribeFromNetworkEvents()
+        {
+            multiplayerController.OnRoomSetupCompleted -= OnOpponentFound;
+            multiplayerController.OnRoomSetupError -= DisplayRoomSetupError;
+            multiplayerController.OnOpponentDisconnected -= DisplayOpponentDisconnected;
+            multiplayerController.OnMessageReceived -= ProcessPingMessage;
+            multiplayerController.OnAuthenticated -= DisplayAfterAuthenticatedMessage;
+            multiplayerController.OnAuthenticationError -= DisplayAuthenticationError;
+        }
 
         /// <summary>
         /// Starts authentication and opponent searching process.
         /// </summary>
         public void InvokeState()
         {
-            lobbyText.text = "Authentication...";
+            multiplayerController = MultiplayerController.GetInstance();
+            lobbyText.text = authenticationString;
             menuActivator.OpenMenu(lobbyMenu);            
-            
-            stateManager.NetworkPlayGameState.ConfigurationType = ConfigurationType;
+            SubscribeOnNetworkEvents();
 
+            stateManager.NetworkPlayGameState.ConfigurationType = ConfigurationType;
             if (ConfigurationType == BoardType.SMALL)
             {
                 multiplayerController.SignInAndStartMPGame(0);
@@ -89,33 +114,33 @@ namespace Assets.Scripts
         private void DisplayOpponentDisconnected()
         {
             multiplayerController.LeaveRoom();
-            stateManager.InfoGameState.SetInfoText("Opponent disconnected!\nPlease, try again.");
+            stateManager.InfoGameState.SetInfoText(opponentDisconnectedString);
             stateManager.ChangeState(StateType.INFO_GAME_STATE);
         }
 
         private void DisplayRoomSetupError()
         {
             multiplayerController.LeaveRoom();
-            stateManager.InfoGameState.SetInfoText("Something went wrong!\nPlease, try again.");
+            stateManager.InfoGameState.SetInfoText(unknownErrorString);
             stateManager.ChangeState(StateType.INFO_GAME_STATE);
         }
 
         private void DisplayAuthenticationError()
         {
             multiplayerController.LeaveRoom();
-            stateManager.InfoGameState.SetInfoText("Authentication failed!\nPlease, try again.");
+            stateManager.InfoGameState.SetInfoText(authenticationFailString);
             stateManager.ChangeState(StateType.INFO_GAME_STATE);
         }
 
         private void DisplayAfterAuthenticatedMessage()
         {
-            lobbyText.text = "Searching for opponent...";
+            lobbyText.text = searchingForOpponentString;
         }
         
         private void OnOpponentFound()
         {
             exitListener.Disable();
-            lobbyText.text = "Opponent found!";
+            lobbyText.text = foundOpponentString;
             StartCoroutine(WaitForOpponent());
         }
 
@@ -163,6 +188,7 @@ namespace Assets.Scripts
         /// </summary>
         public void CloseState()
         {
+            UnsubscribeFromNetworkEvents();
             waiting = false;
             StopCoroutine(WaitForOpponent());
             exitListener.OnExitClicked -= OnExit;

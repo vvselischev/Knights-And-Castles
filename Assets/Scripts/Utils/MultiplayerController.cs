@@ -121,7 +121,7 @@ namespace Assets.Scripts
         public void OnLeftRoom()
         {           
             //Because we do not know our id anymore.
-            OnPlayerLeft?.Invoke("-1");
+            OnPlayerLeft?.Invoke("");
             OnOpponentDisconnected?.Invoke();
         }
         

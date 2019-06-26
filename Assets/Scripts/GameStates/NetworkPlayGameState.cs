@@ -16,6 +16,11 @@ namespace Assets.Scripts
     public class NetworkPlayGameState : PlayGameState
     {
         [SerializeField] private NetworkInputListener networkInputListener;
+
+        [SerializeField] private string userWinString;
+        [SerializeField] private string userLoseString;
+        [SerializeField] private string drawString;
+        
         private MultiplayerController multiplayerController;
         private List<Participant> allPlayers;
         private bool isHost;
@@ -215,13 +220,13 @@ namespace Assets.Scripts
                 if (isHost)
                 {
                     //We are the host (the first), so we win.
-                    lerpedText.PerformLerpString("You win!", Color.green);
+                    lerpedText.PerformLerpString(userWinString, Color.green);
                     currentUserResultType = UserResultType.WIN;
                 }
                 else
                 {
                     //We are not the host (the second), so we lose.
-                    lerpedText.PerformLerpString("You lose...", Color.red);
+                    lerpedText.PerformLerpString(userLoseString, Color.red);
                     currentUserResultType = UserResultType.LOSE;
                 }
             }
@@ -230,20 +235,20 @@ namespace Assets.Scripts
                 if (!isHost)
                 {
                     //We are not the host (the first), so we win.
-                    lerpedText.PerformLerpString("You win!", Color.green);
+                    lerpedText.PerformLerpString(userWinString, Color.green);
                     currentUserResultType = UserResultType.WIN;
                     
                 }
                 else
                 {
                     //We are host (the first), so we lose.
-                    lerpedText.PerformLerpString("You lose...", Color.red);
+                    lerpedText.PerformLerpString(userLoseString, Color.red);
                     currentUserResultType = UserResultType.LOSE;
                 }
             }
             else if (resultType == ResultType.DRAW)
             {
-                lerpedText.PerformLerpString("Draw", Color.blue);
+                lerpedText.PerformLerpString(drawString, Color.blue);
                 currentUserResultType = UserResultType.DRAW;
             }
         }

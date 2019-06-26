@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace Assets.Scripts
@@ -8,6 +9,10 @@ namespace Assets.Scripts
     /// </summary>
     public class OneDeviceMultiplayerGameState : PlayGameState
     {
+        [SerializeField] private string firstPlayerWinsString;
+        [SerializeField] private string secondPlayerWinsString;
+        [SerializeField] private string drawString;
+        
         /// <inheritdoc />
         /// <summary>
         /// </summary>
@@ -31,15 +36,15 @@ namespace Assets.Scripts
             base.OnFinishGame(resultType);
             if (resultType == ResultType.FIRST_WIN)
             {
-                lerpedText.PerformLerpString("First player wins!", Color.green);
+                lerpedText.PerformLerpString(firstPlayerWinsString, Color.green);
             }
             else if (resultType == ResultType.SECOND_WIN)
             {
-                lerpedText.PerformLerpString("Second player wins!", Color.green);
+                lerpedText.PerformLerpString(secondPlayerWinsString, Color.green);
             }
             else if (resultType == ResultType.DRAW)
             {
-                lerpedText.PerformLerpString("Draw", Color.blue);
+                lerpedText.PerformLerpString(drawString, Color.blue);
             }
         }
 

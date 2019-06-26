@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -27,6 +29,13 @@ namespace Assets.Scripts
         private const float spaceBetweenButtons = -2; 
         private static float buttonWidth;
         private static float buttonHeight;
+
+        //We need to search for the objects on the scene,
+        //since this script works in the edit mode and forgets
+        //about the buttons it has created while switching to the play mode.
+        private const string patternButtonTag = "PatternButton";
+        private const string boardTag = "Board";
+        private const string clonedButtonTag = "Clone";
         
         /// <summary>
         /// An array of buttons.
@@ -44,8 +53,8 @@ namespace Assets.Scripts
         public void Start()
         {
             //Search the scene for the objects by their names.
-            patternButton = GameObject.Find("PatternButton").GetComponent<Button>();
-            parentObject = GameObject.Find("Board");
+            patternButton = GameObject.Find(patternButtonTag).GetComponent<Button>();
+            parentObject = GameObject.Find(boardTag);
 
             buttonWidth = patternButton.GetComponent<RectTransform>().rect.width;
             buttonHeight = patternButton.GetComponent<RectTransform>().rect.height;
@@ -116,7 +125,9 @@ namespace Assets.Scripts
         /// </summary>
         private void DeleteButtons()
         {
-            foreach (var button in buttonsList)
+            var buttons = FindObjectsOfType(typeof(Button));
+            foreach (var button in buttons.Cast<Button>().Where(
+                button => button.gameObject.name.Contains(clonedButtonTag)))
             {
                 DestroyImmediate(button.gameObject);
             }
