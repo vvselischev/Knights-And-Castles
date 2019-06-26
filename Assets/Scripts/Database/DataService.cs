@@ -6,6 +6,7 @@ using System.Collections;
 using System.IO;
 #endif
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace Assets.Scripts
@@ -21,10 +22,10 @@ namespace Assets.Scripts
 		public DataService(string databaseName)
 		{
 #if UNITY_EDITOR
-			var dbPath = string.Format(@"Assets/StreamingAssets/{0}", databaseName);
+			var dbPath = Path.Combine(Application.streamingAssetsPath, databaseName);
 #else
         // check if file exists in Application.persistentDataPath
-        var filepath = string.Format("{0}/{1}", Application.persistentDataPath, databaseName);
+        var filepath = Path.Combine(Application.persistentDataPath, databaseName);
 
         if (!File.Exists(filepath))
         {
@@ -38,36 +39,17 @@ namespace Assets.Scripts
             while (!loadDb.isDone) { }  // CAREFUL here, for safety reasons you shouldn't let this while loop unattended, place a timer and error check
             // then save to Application.persistentDataPath
             File.WriteAllBytes(filepath, loadDb.bytes);
-#elif UNITY_IOS
+#else
                  var loadDb =
  Application.dataPath + "/Raw/" + databaseName;  // this is the path to your StreamingAssets in iOS
                 // then save to Application.persistentDataPath
                 File.Copy(loadDb, filepath);
-#elif UNITY_WP8
-                var loadDb =
- Application.dataPath + "/StreamingAssets/" + databaseName;  // this is the path to your StreamingAssets in iOS
-                // then save to Application.persistentDataPath
-                File.Copy(loadDb, filepath);
-
-#elif UNITY_WINRT
-		var loadDb =
- Application.dataPath + "/StreamingAssets/" + databaseName;  // this is the path to your StreamingAssets in iOS
-		// then save to Application.persistentDataPath
-		File.Copy(loadDb, filepath);
-		
-#elif UNITY_STANDALONE_OSX
-		var loadDb =
- Application.dataPath + "/Resources/Data/StreamingAssets/" + databaseName;  // this is the path to your StreamingAssets in iOS
-		// then save to Application.persistentDataPath
-		File.Copy(loadDb, filepath);
 #else
-	var loadDb =
- Application.dataPath + "/StreamingAssets/" + databaseName;  // this is the path to your StreamingAssets in iOS
-	// then save to Application.persistentDataPath
-	File.Copy(loadDb, filepath);
-
+		var loadDb =
+ Path.Combine(Application.streamingAssetsPath, databaseName);  // this is the path to your StreamingAssets in iOS
+		// then save to Application.persistentDataPath
+		File.Copy(loadDb, filepath);
 #endif
-
             Debug.Log("Database written");
         }
 
