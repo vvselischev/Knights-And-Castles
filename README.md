@@ -1,7 +1,6 @@
 # Knights-And-Castles
-Currently under development
 
-Source code is in Assets/Scripts.
+You can find the source code is in Assets/Scripts.
 
 Demo video: https://drive.google.com/file/d/16w_f80SiES9CyznhGnm2MsDIx0XsIEX-/view?usp=sharing
 
